@@ -2,7 +2,8 @@
 import bus from './bus' //essa classe bus serve como transporte de dados.
 	export default {
 
-		props: ['users'],
+		props: ['listOs', 'users'],
+		// props: ['Users'],
 
 		data: function() {
 			return {
@@ -12,7 +13,10 @@ import bus from './bus' //essa classe bus serve como transporte de dados.
 				filterTerm: '',
 				dados: { //inicia o objeto dados que vai guardar variaveis dentro dele.
 
-      					} 
+      					},
+      			estado: 'success',
+      			isA: false,
+  				isB: true
 			}
 		},
 
@@ -37,13 +41,17 @@ import bus from './bus' //essa classe bus serve como transporte de dados.
             bus.$emit('dados-clientes',  dat) //envia o objeto para a classe bus com o nome "botao-foi-clicado"
             //console.log(dat) //debug
         }
+
+        		 
 			
 
 		},
 
 		ready () {
-			//this.list = JSON.parse(this.users)
+			//this.list = JSON.parse(this.listOs)
+			this.$http.get('/os/list').then((req) => this.listOs = req.data)
 			this.$http.get('/clients/list').then((req) => this.users = req.data)
+
 
 
 		}
@@ -59,15 +67,11 @@ import bus from './bus' //essa classe bus serve como transporte de dados.
  
 
 
-<button type="button" class="btn btn-primary" data-toggle="modal" data-target=".bs-example-modal-lg">Pesquisar</button>
-
-<div class="modal fade bs-example-modal-lg shown.bs.modal" :autofocus id="myModal" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel">
-  <div class="modal-dialog modal-lg" role="document">
-    <div class="modal-content">
+ 
        
-<h1>Lista de Clientes Cadastrados</h1>
-
-
+<h1>Lista de OS</h1>
+ 
+ 
 <div class="well">
 		<input type="text" class="form-control"  id="myInput" placeholder="Filtrar C" v-model="filterTerm"   >
 	</div>
@@ -78,20 +82,20 @@ import bus from './bus' //essa classe bus serve como transporte de dados.
 		<thead>
 			<tr>
 				<th><a href="#" @click="sort($event, 'id')">ID</a></th>
-				<th><a href="#" @click="sort($event, 'name')">Nome</a></th>
-				<th><a href="#" @click="sort($event, 'fone')">Telefone</a></th>
-				<th>Endereço</th>
+				<th><a href="#" @click="sort($event, 'name')">Estado</a></th>
+				<th><a href="#" @click="sort($event, 'fone')">Data</a></th>
+				<th><a href="#" @click="sort($event, 'fone')">Nome</a></th>
 				
 			</tr>
 		</thead>
 		<tbody>
 	
-			<tr v-for="u in users | filterBy filterTerm| orderBy sortProperty sortDirection">
-				
+			<tr v-for="u in listOs  | filterBy filterTerm| orderBy sortProperty sortDirection">
+				<!-- {{ date('d/m/Y - H:s', strtotime(u.created_at)) }} u.created_at-->
 				<td>{{u.id}}</td>
+				<td>{{u.state}}</td>
+				<td v-bind:class="{ 'success': isA, 'danger': isB }">{{u.created_at}}</td>
 				<td>{{u.name}}</td>
-				<td>{{u.fone}}</td>
-				<td>{{u.address}}</td>
 				<td><button class="btn btn-success" @click="inserirDados(u)" >Inserir</button></td>
 				
 			</tr>
@@ -104,15 +108,12 @@ import bus from './bus' //essa classe bus serve como transporte de dados.
 
 
 
-
-    </div>
-  </div>
-</div>
+ 
 
 <br><hr>
 
-	
-
+	<script src="http://momentjs.com/downloads/moment.js"></script>
+ 
 
 
 </template>

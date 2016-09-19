@@ -102,4 +102,26 @@ class ServiceController extends Controller{
 
 	}
 
+
+	public function listos() {
+		return view('listos');
+	}
+
+	public function listasOS() {
+		// return \Response::json(serviceOrder::all(), 200);
+
+		$listasOS = DB::table('service_orders')
+            ->join('clients', 'service_orders.client_id', '=', 'clients.id')
+            ->select('service_orders.*', 'clients.name')
+            ->get();;
+ 
+	 
+		 
+		// $clients->id=5;
+
+		return   \Response::json($listasOS) ;;
+
+
+	}
+
 }

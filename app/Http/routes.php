@@ -15,6 +15,10 @@ Route::get('usuarios/listar', ['as' => 'usuarios.listar', 'uses' => 'UsersContro
 Route::get('clients/list', function () {
 	return \Response::json(App\Clients::all(), 200);
 });
+Route::get('os/list', 'ServiceController@listasOS');
+Route::get('os/list/{id}', function ($id) {
+	return \Response::json(App\ServiceOrder::findOrFail($id), 200);
+});
 
 
  Route::get('/', function () {
@@ -39,3 +43,5 @@ Route::post('newservice', 'ServiceController@newService');
 Route::get('/teste', 'HomeController@teste');
 
 Route::get('/tst', 'ClientController@tst');
+
+Route::get('listos', 'ServiceController@listos');
