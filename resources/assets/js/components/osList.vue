@@ -1,7 +1,11 @@
 <script>
 import bus from './bus' //essa classe bus serve como transporte de dados.
+import pagination from './pagination.vue'
 	export default {
 
+		components: {
+			pagination
+		},
 		props: ['listOs', 'users'],
 		// props: ['Users'],
 
@@ -16,11 +20,23 @@ import bus from './bus' //essa classe bus serve como transporte de dados.
       					},
       			estado: 'success',
       			isA: false,
-  				isB: true
+  				isB: true,
+  				pagination: {}
 			}
 		},
 
 		methods: {
+
+			navigate(page) {
+				this.$http.get('/os/list?page='+page).then((req) => {
+
+
+				this.listOs = req.data.data
+				this.pagination = req.data
+
+
+			})
+			},
 
 			sort (ev, property) {
 
@@ -49,8 +65,16 @@ import bus from './bus' //essa classe bus serve como transporte de dados.
 
 		ready () {
 			//this.list = JSON.parse(this.listOs)
-			this.$http.get('/os/list').then((req) => this.listOs = req.data)
-			this.$http.get('/clients/list').then((req) => this.users = req.data)
+			this.$http.get('/os/list').then((req) => {
+
+
+				this.listOs = req.data
+				// this.listOs = req.data.data //discomment this for habilite pagination
+				this.pagination = req.data
+
+
+			})
+			// this.$http.get('/clients/list').then((req) => this.users = req.data)
 
 
 
@@ -75,6 +99,10 @@ import bus from './bus' //essa classe bus serve como transporte de dados.
 <div class="well">
 		<input type="text" class="form-control"  id="myInput" placeholder="Filtrar C" v-model="filterTerm"   >
 	</div>
+	<span class="input-group-addon">
+        <input type="checkbox" aria-label="..." v-model="filterTeste">
+      </span>
+
 	<div>
 
 	 <table class="table table-bordered table-striped table-hover">
@@ -82,28 +110,30 @@ import bus from './bus' //essa classe bus serve como transporte de dados.
 		<thead>
 			<tr>
 				<th><a href="#" @click="sort($event, 'id')">ID</a></th>
-				<th><a href="#" @click="sort($event, 'name')">Estado</a></th>
-				<th><a href="#" @click="sort($event, 'fone')">Data</a></th>
-				<th><a href="#" @click="sort($event, 'fone')">Nome</a></th>
+				<th><a href="#" @click="sort($event, 'state')">Estado</a></th>
+				<th><a href="#" @click="sort($event, 'created_at')">Data</a></th>
+				<th><a href="#" @click="sort($event, 'name')">Nome</a></th>
 				
 			</tr>
 		</thead>
 		<tbody>
 	
-			<tr v-for="u in listOs  | filterBy filterTerm| orderBy sortProperty sortDirection">
-				<!-- {{ date('d/m/Y - H:s', strtotime(u.created_at)) }} u.created_at-->
-				<td>{{u.id}}</td>
-				<td>{{u.state}}</td>
-				<td v-bind:class="{ 'success': isA, 'danger': isB }">{{u.created_at}}</td>
-				<td>{{u.name}}</td>
+			<tr v-for="u in listOs  | filterBy filterTerm  | orderBy sortProperty sortDirection" >
+				 
+				<td class="estado-{{u.state}}">{{u.id}}</td>
+				<td class="estado-{{u.state}}">{{u.state}}</td>
+				<td class="estado-{{u.state}}">{{u.created_at}}</td>
+				<td class="estado-{{u.state}}">{{u.name}}</td>
 				<td><button class="btn btn-success" @click="inserirDados(u)" >Inserir</button></td>
-				
+				 
 			</tr>
 		</tbody>
 		
 
 	 </table> 
-
+	 <div class="text-center">
+	 <!-- <pagination :source="pagination" @navigate="navigate"></pagination>  discomment this for habilite pagination-->
+</div>
 	</div>
 
 
@@ -112,9 +142,26 @@ import bus from './bus' //essa classe bus serve como transporte de dados.
 
 <br><hr>
 
-	<script src="http://momentjs.com/downloads/moment.js"></script>
+	
+
  
 
 
 </template>
-<style scoped=""></style>
+<style scoped="">
+	
+	.estado-1{
+		background-color: #b2e09f;
+	}
+	.estado-2{
+		background-color: #f85454;
+	}
+	.estado-3{
+		background-color: #3c8dbc;
+	}
+	.estado-4{
+		background-color: #f2ff73;
+	}
+
+
+</style>

@@ -113,7 +113,8 @@ class ServiceController extends Controller{
 		$listasOS = DB::table('service_orders')
             ->join('clients', 'service_orders.client_id', '=', 'clients.id')
             ->select('service_orders.*', 'clients.name')
-            ->get();;
+           // ->paginate(6); //this code get the list OS and paginate it
+             ->get();
  
 	 
 		 
