@@ -125,4 +125,17 @@ class ServiceController extends Controller{
 
 	}
 
+	public function visualizar($id) {
+
+			$OS = serviceOrder::find($id);
+			$clientData = Clients::find($OS->client_id);
+			$equipamentData = Equipament::find($OS->equipament_id);
+
+
+			return view('visualizaros', ['OS' => $OS, 'clientData' => $clientData, 'equipamentData' => $equipamentData]);
+
+			 
+
+	}
+
 }

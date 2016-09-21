@@ -124,7 +124,7 @@ import pagination from './pagination.vue'
 				<td class="estado-{{u.state}}">{{u.state}}</td>
 				<td class="estado-{{u.state}}">{{u.created_at}}</td>
 				<td class="estado-{{u.state}}">{{u.name}}</td>
-				<td><button class="btn btn-success" @click="inserirDados(u)" >Inserir</button></td>
+				<td> <a href="/listos/visualizar/{{u.id}}"><button class="btn btn-success">Selecionar</button></a> </td>
 				 
 			</tr>
 		</tbody>
