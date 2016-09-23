@@ -12,8 +12,8 @@ import pagination from './pagination.vue'
 		data: function() {
 			return {
 				//list: [],
-				sortProperty: 'name',
-				sortDirection: 1,
+				sortProperty: 'id',
+				sortDirection: -1,
 				filterTerm: '',
 				dados: { //inicia o objeto dados que vai guardar variaveis dentro dele.
 
@@ -150,18 +150,16 @@ import pagination from './pagination.vue'
 </template>
 <style scoped="">
 	
-	.estado-1{
+	.estado-PRONTO{
 		background-color: #b2e09f;
 	}
-	.estado-2{
+	.estado-ANALISE{
 		background-color: #f85454;
 	}
-	.estado-3{
+	.estado-ENTREGUE{
 		background-color: #3c8dbc;
 	}
-	.estado-4{
-		background-color: #f2ff73;
-	}
+	 
 
 
 </style>

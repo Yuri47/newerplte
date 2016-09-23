@@ -28,6 +28,7 @@ class ServiceController extends Controller{
 		$name = $req->input('name');
 		$fone = $req->input('fone');
 		$address = $req->input('address');
+		$type = $req->input('type');
 		$serialNumber = $req->input('serialNumber');
 		$mark = $req->input('mark');
 		$design = $req->input('design');
@@ -60,6 +61,7 @@ class ServiceController extends Controller{
 
 		$equipament = [
 			'client_id' => $id,
+			'type' => $type,
 			'serialNumber' => $serialNumber,
 			'mark' => $mark,
 			'design' => $design,
@@ -73,7 +75,7 @@ class ServiceController extends Controller{
 		$serviceOrder = [
 			'client_id' => $id,
 			'equipament_id' => $idEquipament,
-			'state' => 1,
+			'state' => 'ANALISE',
 			'technical' => '',
 			'observations' => '',
 			'finalReport' => ''
@@ -87,11 +89,23 @@ class ServiceController extends Controller{
 			$clientData = Clients::find($id);
 			$equipamentData = Equipament::find($idEquipament);
 
-			
-			
+			if ($type == 'NOTEBOOK') {
+				$terms = ' NOTEBOOK Lorem ipsum dolor sit amet, consectetur adipisicing elit. Minus consectetur laborum alias facilis autem asperiores iure voluptatum doloremque, ipsa consequatur, iusto illo. Porro, harum itaque? Maxime odit distinctio voluptatum porro?';
+
+			} else if ($type == 'COMPUTADOR') {
+				$terms = ' COMPUTADOR Lorem ipsum dolor sit amet, consectetur adipisicing elit. Minus consectetur laborum alias facilis autem asperiores iure voluptatum doloremque, ipsa consequatur, iusto illo. Porro, harum itaque? Maxime odit distinctio voluptatum porro?';
+
+			} else if ($type == 'IMPRESSORA') {
+				$terms = ' IMPRESSORA Lorem ipsum dolor sit amet, consectetur adipisicing elit. Minus consectetur laborum alias facilis autem asperiores iure voluptatum doloremque, ipsa consequatur, iusto illo. Porro, harum itaque? Maxime odit distinctio voluptatum porro?';
+
+			}
+
+			 
+
+			 
 
 
-			return view('showos', ['OS' => $OS, 'clientData' => $clientData, 'equipamentData' => $equipamentData]);
+			return view('showos', ['OS' => $OS, 'clientData' => $clientData, 'equipamentData' => $equipamentData, 'terms' => $terms]);
 				
 		
 

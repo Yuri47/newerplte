@@ -8,4 +8,5 @@ return [
     'countOs' => '',
     'users' => '',
     'author' => '',
+    'termsOS' => '',
 ];

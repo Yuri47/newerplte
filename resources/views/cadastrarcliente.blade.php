@@ -7,11 +7,11 @@
 
 @section('main-content')
    
-<div class="container">
+ 
   
 <!-- :disabled="ist.id"> -->
  
-<h1>Cadastrar Cliente</h1>  id foo: {{config('test.foo')}}
+<h1>Cadastrar Cliente</h1>   
  <vc-clients></vc-clients>
      <button type="clean" class="btn btn-primary" @click="limp" :disabled="!ist.id">Novo</button>
 
@@ -122,6 +122,18 @@
 <!-- <form action="newservice" method="POST" role="form"> -->
   <legend>Equipamento</legend>
    
+   
+  <div class="form-group">
+  <label for="">Tipo</label>
+  <select name="type" id="inputType" class="form-control" required="required">
+    <option value="NOTEBOOK">NOTEBOOK</option>
+    <option value="COMPUTADOR">COMPUTADOR</option>
+    <option value="IMPRESSORA">IMPRESSORA</option>
+  </select>
+  </div>
+  
+
+
   <div class="form-group">
     <label for="">Nº de Série</label>
     <input type="text" class="form-control" id="" name="serialNumber" placeholder="Input field">
@@ -168,7 +180,7 @@
 
 
  
-</div> <!-- FIM DA DIV CONTAINER -->
+  <!-- FIM DA DIV CONTAINER -->
 
 
 

@@ -8,6 +8,11 @@
 
 @section('main-content')
 
+{{$equipamentData}}
+{{$clientData}}
+{{$OS}}
+
+
 <h1>OS Nº: {{$OS->id}}</h1>
 <hr>
 <div class="row">
@@ -20,7 +25,7 @@
 	<h3>Equipamento</h3>
 	<div class="row">
   <div class="col-md-6">
-  <p>Tipo: NOTEBOOK</p>
+  <p>Tipo: {{$equipamentData->type}}</p>
   <p>Modelo {{$equipamentData->design}}</p>
   </div>
 

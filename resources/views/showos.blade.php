@@ -63,7 +63,7 @@
      <!--  <p>Get three equal-width columns <strong>starting at desktops and scaling to large desktops</strong>. On mobile devices, tablets and below, the columns will automatically stack.</p> -->
       <div class="row">
          
-        <div class="col-sm-4"> <h4><strong>Tipo:</strong>  NOTEBOOK</h4></div>
+        <div class="col-sm-4"> <h4><strong>Tipo:</strong>   {{$equipamentData->type}}</h4></div>
         <div class="col-sm-4"> <h4><strong>Marca:</strong>  {{$equipamentData->mark}}</h4></div>
         <div class="col-sm-4"> <h4><strong>Modelo:</strong>  {{$equipamentData->design}}</h4></div>
       </div>
@@ -78,7 +78,7 @@
         <div class="col-sm-4"> <h3>Termos</h3> </div>
         </div>
         <div class="row ">
-        <div class="col-sm-12"> Lorem ipsum dolor sit amet, consectetur adipisicing elit. Minus consectetur laborum alias facilis autem asperiores iure voluptatum doloremque, ipsa consequatur, iusto illo. Porro, harum itaque? Maxime odit distinctio voluptatum porro? </div>
+        <div class="col-sm-12"> {{$terms}} </div>
         </div>
         <br>
         <hr> 

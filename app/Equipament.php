@@ -9,6 +9,6 @@ class Equipament extends Model
     //
 
     protected $fillable = [
-        'client_id', 'serialNumber', 'mark', 'design', 'observations', 'problem'
+        'client_id','type', 'serialNumber', 'mark', 'design', 'observations', 'problem'
     ];
 }

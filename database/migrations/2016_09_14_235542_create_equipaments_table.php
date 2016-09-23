@@ -15,7 +15,8 @@ class CreateEquipamentsTable extends Migration
         // Schema::create('equipaments', function (Blueprint $table) {
         //     $table->increments('id');
         //     $table->integer('client_id');
-        //     $table->string('serialNumber');
+        //     $table->string('type');
+        //     $table->string('serialNumber'); 
         //     $table->string('mark');
         //     $table->string('design');
         //     $table->string('observations');

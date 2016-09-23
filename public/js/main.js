@@ -29101,7 +29101,7 @@ if (module.hot) {(function () {  module.hot.accept()
 })()}
 },{"./clients.vue":9,"C:\\wamp64\\www\\newerplte\\node_modules\\vueify\\node_modules\\vue-hot-reload-api\\index.js":6,"vue":4}],12:[function(require,module,exports){
 var __vueify_insert__ = require("vueify/lib/insert-css")
-var __vueify_style__ = __vueify_insert__.insert("\n\n.estado-1[_v-24780af4]{\n\tbackground-color: #b2e09f;\n}\n.estado-2[_v-24780af4]{\n\tbackground-color: #f85454;\n}\n.estado-3[_v-24780af4]{\n\tbackground-color: #3c8dbc;\n}\n.estado-4[_v-24780af4]{\n\tbackground-color: #f2ff73;\n}\n\n\n")
+var __vueify_style__ = __vueify_insert__.insert("\n\n.estado-PRONTO[_v-24780af4]{\n\tbackground-color: #b2e09f;\n}\n.estado-ANALISE[_v-24780af4]{\n\tbackground-color: #f85454;\n}\n.estado-ENTREGUE[_v-24780af4]{\n\tbackground-color: #3c8dbc;\n}\n \n\n\n")
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -29129,8 +29129,8 @@ exports.default = {
 	data: function data() {
 		return {
 			//list: [],
-			sortProperty: 'name',
-			sortDirection: 1,
+			sortProperty: 'id',
+			sortDirection: -1,
 			filterTerm: '',
 			dados: {//inicia o objeto dados que vai guardar variaveis dentro dele.
 
@@ -29196,7 +29196,7 @@ if (module.hot) {(function () {  module.hot.accept()
   if (!hotAPI.compatible) return
   var id = "C:\\wamp64\\www\\newerplte\\resources\\assets\\js\\components\\osList.vue"
   module.hot.dispose(function () {
-    __vueify_insert__.cache["\n\n.estado-1[_v-24780af4]{\n\tbackground-color: #b2e09f;\n}\n.estado-2[_v-24780af4]{\n\tbackground-color: #f85454;\n}\n.estado-3[_v-24780af4]{\n\tbackground-color: #3c8dbc;\n}\n.estado-4[_v-24780af4]{\n\tbackground-color: #f2ff73;\n}\n\n\n"] = false
+    __vueify_insert__.cache["\n\n.estado-PRONTO[_v-24780af4]{\n\tbackground-color: #b2e09f;\n}\n.estado-ANALISE[_v-24780af4]{\n\tbackground-color: #f85454;\n}\n.estado-ENTREGUE[_v-24780af4]{\n\tbackground-color: #3c8dbc;\n}\n \n\n\n"] = false
     document.head.removeChild(__vueify_style__)
   })
   if (!module.hot.data) {

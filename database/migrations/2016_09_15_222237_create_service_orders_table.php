@@ -16,7 +16,7 @@ class CreateServiceOrdersTable extends Migration
             $table->increments('id');
             $table->integer('client_id');
             $table->integer('equipament_id');
-            $table->integer('state');
+            $table->string('state');
             $table->string('technical');
             $table->string('observations');
             $table->string('finalReport');

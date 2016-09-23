@@ -55,3 +55,6 @@ npm install vueify@8.5.2
 open other cmd and type for compile files .JS and .VUE when save:
 
 gulp watch
+
+
+acrescenta na tabela equipament a coluna tipo e na tabela OS modifica a coluna estado para varchar

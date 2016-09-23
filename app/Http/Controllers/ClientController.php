@@ -30,7 +30,7 @@ class ClientController extends Controller
 
 	public function newClient(Request $req) {
 		$client = $req->except('id');
-		Clients::create($client);
+		Clients::create($client); 
 
 		 
 
