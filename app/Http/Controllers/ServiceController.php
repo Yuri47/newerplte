@@ -152,4 +152,19 @@ class ServiceController extends Controller{
 
 	}
 
+	public function updateOs(Request $request) {
+
+		//$OS = $request->all();
+
+		$OS = serviceOrder::find($request->input('id'));
+		$OS->technical = $request->input('technical');
+		$OS->state = 'PRONTO';
+		$OS->finalReport = $request->input('finalReport');
+		$OS->save();
+
+
+		 return redirect('listos/visualizar/'.$request->input('id'));
+
+	}
+
 }
