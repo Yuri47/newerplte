@@ -10,28 +10,28 @@ class CreateEquipamentsTable extends Migration
      *
      * @return void
      */
-    public function up()
-    {
-        // Schema::create('equipaments', function (Blueprint $table) {
-        //     $table->increments('id');
-        //     $table->integer('client_id');
-        //     $table->string('type');
-        //     $table->string('serialNumber'); 
-        //     $table->string('mark');
-        //     $table->string('design');
-        //     $table->string('observations');
-        //     $table->string('problem');
-        //     $table->timestamps();
-        // });
-    }
+    // public function up()
+    // {
+    //     // Schema::create('equipaments', function (Blueprint $table) {
+    //     //     $table->increments('id');
+    //     //     $table->integer('client_id');
+    //     //     $table->string('type');
+    //     //     $table->string('serialNumber'); 
+    //     //     $table->string('mark');
+    //     //     $table->string('design');
+    //     //     $table->string('observations');
+    //     //     $table->string('problem');
+    //     //     $table->timestamps();
+    //     // });
+    // }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
-    {
-        Schema::drop('equipaments');
-    }
+    // /**
+    //  * Reverse the migrations.
+    //  *
+    //  * @return void
+    //  */
+    // public function down()
+    // {
+    //     Schema::drop('equipaments');
+    // }
 }

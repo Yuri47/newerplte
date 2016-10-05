@@ -11,6 +11,7 @@
 {{$equipamentData}}
 {{$clientData}}
 {{$OS}}
+ {{$comments }}
 
 
 <h1>OS Nº: {{$OS->id}} - {{ date('d/m/Y - H:s', strtotime($OS->created_at)) }}</h1>
@@ -47,6 +48,42 @@
 <div class="col-md-6">
   <p>Problema: {{$equipamentData->problem}} </p>
   <p>Observações: {{$equipamentData->observations}}</p>
+  </div> </div>
+
+
+
+  <div class="row">
+<div class="col-md-12">
+  <h3>Comentários</h3>
+
+   
+
+
+    @foreach ($comments as $c)
+    <p> <div class="well well-small">
+       {{$c->name}} -  {{ date('d/m/Y - H:s', strtotime($c->created_at)) }}
+      <div class="well well-small">  {{$c->comment}}  </div>
+    </div> </p>
+    @endforeach
+
+
+
+<form action="/createcomment" method="POST" role="form">
+  
+
+  <div class="form-group">
+    <input type="hidden" name="_token" value="{{csrf_token()}}">
+    <input type="hidden" name="name" value="{{ Auth::user()->name }}">
+    <input type="hidden" name="os_id" value="{{$OS->id}}">
+    <label for="">Comentário</label>
+    <input type="text" class="form-control"   name="comment" placeholder="Input field">
+  </div>
+ 
+  <button type="submit" class="btn btn-primary">Enviar</button>
+  
+</form>
+ 
+  
   </div> </div>
 
   </div>

@@ -71,6 +71,7 @@ Route::get('/listos/visualizar/{id}', 'ServiceController@visualizar');
 
 Route::post('updateOs', 'ServiceController@updateOs');
 
+Route::post('createcomment', 'ServiceController@createComment');
 
 
 /*

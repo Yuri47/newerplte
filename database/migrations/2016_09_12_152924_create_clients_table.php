@@ -10,24 +10,24 @@ class CreateClientsTable extends Migration
      *
      * @return void
      */
-    public function up()
-    {
-        // Schema::create('clients', function (Blueprint $table) {
-        //     $table->increments('id');
-        //     $table->string('name');
-        //     $table->string('address');
-        //     $table->string('fone');
-        //     $table->timestamps();
-        // });
-    }
+    // public function up()
+    // {
+    //     // Schema::create('clients', function (Blueprint $table) {
+    //     //     $table->increments('id');
+    //     //     $table->string('name');
+    //     //     $table->string('address');
+    //     //     $table->string('fone');
+    //     //     $table->timestamps();
+    //     // });
+    // }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
-    {
-        Schema::drop('clients');
-    }
+    // /**
+    //  * Reverse the migrations.
+    //  *
+    //  * @return void
+    //  */
+    // public function down()
+    // {
+    //     Schema::drop('clients');
+    // }
 }

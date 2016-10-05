@@ -99,9 +99,7 @@ import pagination from './pagination.vue'
 <div class="well">
 		<input type="text" class="form-control"  id="myInput" placeholder="Filtrar C" v-model="filterTerm"   >
 	</div>
-	<span class="input-group-addon">
-        <input type="checkbox" aria-label="..." v-model="filterTeste">
-      </span>
+	 
 
 	<div>
 
@@ -154,10 +152,13 @@ import pagination from './pagination.vue'
 		background-color: #b2e09f;
 	}
 	.estado-ANALISE{
-		background-color: #f85454;
+		background-color: #f2f085;
 	}
 	.estado-ENTREGUE{
 		background-color: #3c8dbc;
+	}
+	.estado-RECEBIDO{
+		background-color: #f85454;
 	}
 	 
 

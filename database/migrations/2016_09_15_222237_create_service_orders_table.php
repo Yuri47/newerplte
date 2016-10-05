@@ -10,27 +10,27 @@ class CreateServiceOrdersTable extends Migration
      *
      * @return void
      */
-    public function up()
-    {
-        Schema::create('service_orders', function (Blueprint $table) {
-            $table->increments('id');
-            $table->integer('client_id');
-            $table->integer('equipament_id');
-            $table->string('state');
-            $table->string('technical');
-            $table->string('observations');
-            $table->string('finalReport');
-            $table->timestamps();
-        });
-    }
+    // public function up()
+    // {
+    //     Schema::create('service_orders', function (Blueprint $table) {
+    //         $table->increments('id');
+    //         $table->integer('client_id');
+    //         $table->integer('equipament_id');
+    //         $table->string('state');
+    //         $table->string('technical');
+    //         $table->string('observations');
+    //         $table->string('finalReport');
+    //         $table->timestamps();
+    //     });
+    // }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
-    {
-        Schema::drop('service_orders');
-    }
+    // /**
+    //  * Reverse the migrations.
+    //  *
+    //  * @return void
+    //  */
+    // public function down()
+    // {
+    //     Schema::drop('service_orders');
+    // }
 }

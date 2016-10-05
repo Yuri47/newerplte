@@ -8,6 +8,7 @@ use App\Http\Requests;
 use App\Clients;
 use App\Equipament;
 use App\serviceOrder;
+use App\Comment;
 use DB;
 
 
@@ -75,7 +76,7 @@ class ServiceController extends Controller{
 		$serviceOrder = [
 			'client_id' => $id,
 			'equipament_id' => $idEquipament,
-			'state' => 'ANALISE',
+			'state' => 'RECEBIDO',
 			'technical' => '',
 			'observations' => '',
 			'finalReport' => ''
@@ -144,10 +145,13 @@ class ServiceController extends Controller{
 			$OS = serviceOrder::find($id);
 			$clientData = Clients::find($OS->client_id);
 			$equipamentData = Equipament::find($OS->equipament_id);
+			$comments = Comment::where("os_id", $id)->get();
 
+			return view('visualizaros', ['OS' => $OS, 'clientData' => $clientData, 'equipamentData' => $equipamentData, 'comments' => $comments]);
+			  
+		 
 
-			return view('visualizaros', ['OS' => $OS, 'clientData' => $clientData, 'equipamentData' => $equipamentData]);
-
+ 
 			 
 
 	}
@@ -164,6 +168,15 @@ class ServiceController extends Controller{
 
 
 		 return redirect('listos/visualizar/'.$request->input('id'));
+
+	}
+
+	public function createComment(Request $request) {
+
+		$comment = $request->all();
+		Comment::create($comment);
+		return redirect('listos/visualizar/'.$request->input('os_id'));
+
 
 	}
 
