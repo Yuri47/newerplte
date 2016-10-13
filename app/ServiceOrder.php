@@ -8,6 +8,6 @@ class ServiceOrder extends Model
 {
     //
     protected $fillable = [
-        'client_id', 'equipament_id', 'state', 'technical', 'observations', 'finalReport'
+        'client_id', 'equipament_id', 'state', 'technical', 'observations', 'finalReport', 'price'
     ];
 }

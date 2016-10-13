@@ -13,6 +13,9 @@
 {{$OS}}
  {{$comments }}
 
+{{$collect}}
+
+
 
 <h1>OS Nº: {{$OS->id}} - {{ date('d/m/Y - H:s', strtotime($OS->created_at)) }}</h1>
 
@@ -91,14 +94,39 @@
 
 
 @if ($OS->state == 'PRONTO')
+
 <h3>Relatório</h3>
 <p>Técnico: {{$OS->technical}}</p>
 <p>Laudo final: {{$OS->finalReport}}</p>
-<p>Preço: R$ 80,00</p>
+<p>Preço: R$ {{$OS->price}},00</p>
+
+<h3>Retirada</h3>
+
+ 
+<form action="/collectEquip" method="POST">
+<input type="hidden" name="_token" value="{{csrf_token()}}">
+<input type="hidden" name="os_id" value="{{$OS->id}}">
 
 
 
+ 
 
+ <div class="col-md-3"> 
+   <div class="form-group">
+      <label for="">Nome</label>
+      <input type="text" class="form-control" id="" name="name" placeholder="Nome"> 
+  </div>
+ </div>
+ <div class="col-md-3"> 
+   <div class="form-group">
+      <label for="">Documento</label>
+      <input type="text" class="form-control" id="" name="doc" placeholder="Numero do Documento"> 
+  </div>
+ </div>
+  <div class="col-md-3">
+ <button class="btn btn-success" type="submit">Retirar</button> </div>
+</form>
+ 
 
 @elseif ($OS->state == 'ANALISE' || $OS->state == 'RECEBIDO')
  
@@ -131,9 +159,20 @@
  <button class="btn btn-success" type="submit">Pronto</button> </div>
 </form>
 
-
-
-
+ 
+@elseif ($OS->state == 'ENTREGUE')
+  <div class="col-md-6">
+    <h3>Relatório</h3>
+<p>Técnico: {{$OS->technical}}</p>
+<p>Laudo final: {{$OS->finalReport}}</p>
+<p>Preço: R$ 80,00</p>
+<h3>Retirada</h3>
+ @foreach ($collect as $col)
+   <p>Quem retirou: {{$col->name}}</p>
+<p>Documento: {{$col->doc}}</p>
+<p>Data:  {{ date('d/m/Y - H:s', strtotime($col->created_at)) }} </p>
+    @endforeach
+</div>
  @endif
 
 

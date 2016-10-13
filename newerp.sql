@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Tempo de geração: 13/10/2016 às 12:25
+-- Tempo de geração: 13/10/2016 às 18:50
 -- Versão do servidor: 5.7.15-0ubuntu0.16.04.1
 -- Versão do PHP: 7.0.8-0ubuntu0.16.04.3
 
@@ -179,6 +179,31 @@ INSERT INTO `clients` (`id`, `name`, `address`, `fone`, `created_at`, `updated_a
 -- --------------------------------------------------------
 
 --
+-- Estrutura para tabela `collect_equips`
+--
+
+DROP TABLE IF EXISTS `collect_equips`;
+CREATE TABLE `collect_equips` (
+  `id` int(10) UNSIGNED NOT NULL,
+  `os_id` int(11) NOT NULL,
+  `name` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `doc` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+--
+-- Fazendo dump de dados para tabela `collect_equips`
+--
+
+INSERT INTO `collect_equips` (`id`, `os_id`, `name`, `doc`, `created_at`, `updated_at`) VALUES
+(3, 100, 'Yuri', '2632574', '2016-10-13 20:33:09', '2016-10-13 20:33:09'),
+(4, 99, 'Buford Swift', '66956695', '2016-10-13 21:21:34', '2016-10-13 21:21:34'),
+(5, 89, 'Anabelle', '55897968541', '2016-10-13 21:49:40', '2016-10-13 21:49:40');
+
+-- --------------------------------------------------------
+
+--
 -- Estrutura para tabela `comments`
 --
 
@@ -206,7 +231,8 @@ INSERT INTO `comments` (`id`, `os_id`, `name`, `comment`, `created_at`, `updated
 (7, 99, 'Yuri Alexs', 'Segundo comentario', '2016-10-05 22:19:24', '2016-10-05 22:19:24'),
 (8, 99, 'Yuri Alexs', 'terceiro comentario', '2016-10-13 13:16:15', '2016-10-13 13:16:15'),
 (9, 100, 'Yuri Alexs', 'coment', '2016-10-13 14:18:33', '2016-10-13 14:18:33'),
-(10, 100, 'Yuri Alexs', 'um coment', '2016-10-13 14:40:14', '2016-10-13 14:40:14');
+(10, 100, 'Yuri Alexs', 'um coment', '2016-10-13 14:40:14', '2016-10-13 14:40:14'),
+(11, 89, 'Yuri Alexs', 'Apresentou 08 badblocks', '2016-10-13 21:49:10', '2016-10-13 21:49:10');
 
 -- --------------------------------------------------------
 
@@ -360,7 +386,8 @@ INSERT INTO `migrations` (`migration`, `batch`) VALUES
 ('2016_09_14_235542_create_equipaments_table', 2),
 ('2016_09_15_222237_create_service_orders_table', 3),
 ('2016_10_05_164515_create_comments_table', 4),
-('2016_10_05_170405_comet', 5);
+('2016_10_05_170405_comet', 5),
+('2016_10_13_160932_create_collect_equips_table', 6);
 
 -- --------------------------------------------------------
 
@@ -390,6 +417,7 @@ CREATE TABLE `service_orders` (
   `technical` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
   `observations` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
   `finalReport` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `price` decimal(8,0) NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
@@ -398,21 +426,21 @@ CREATE TABLE `service_orders` (
 -- Fazendo dump de dados para tabela `service_orders`
 --
 
-INSERT INTO `service_orders` (`id`, `client_id`, `equipament_id`, `state`, `technical`, `observations`, `finalReport`, `created_at`, `updated_at`) VALUES
-(89, 36, 92, 'ANALISE', '', '', '', '2016-09-19 20:14:07', '2016-09-19 20:14:07'),
-(91, 52, 94, 'PRONTO', 'Bob Marley', '', 'Instalação com BKP', '2016-09-23 15:42:37', '2016-10-05 20:48:15'),
-(92, 52, 95, 'PRONTO', 'Yuri Alexsander', '', 'Instalação com BKP', '2016-09-23 15:43:16', '2016-09-27 20:21:40'),
-(93, 52, 96, 'PRONTO', 'Bob Marley', '', 'Instalação com BKP', '2016-09-23 15:52:48', '2016-09-27 16:36:05'),
-(94, 33, 97, 'PRONTO', 'Yuri Alexsander', '', 'Instal', '2016-09-23 16:34:27', '2016-09-27 20:19:29'),
-(40, 82, 43, 'ANALISE', '', '', '', '2016-09-16 17:00:13', '2016-09-16 17:00:13'),
-(87, 129, 90, 'ANALISE', '', '', '', '2016-09-16 21:18:46', '2016-09-16 21:18:46'),
-(88, 130, 91, 'ANALISE', '', '', '', '2016-09-19 20:10:08', '2016-09-19 20:10:08'),
-(95, 12, 98, 'PRONTO', 'Yuri Alexsander', '', 'Instal', '2016-09-23 20:11:59', '2016-09-27 16:34:06'),
-(96, 1, 99, 'PRONTO', 'Bob Marley', '', 'Instalação com BKP', '2016-09-23 20:31:04', '2016-09-27 20:18:44'),
-(97, 33, 100, 'PRONTO', 'Bob Marley', '', 'Instalação com BKP', '2016-09-28 15:27:06', '2016-09-28 15:45:24'),
-(98, 132, 101, 'RECEBIDO', '', '', '', '2016-10-05 19:09:21', '2016-10-05 19:09:21'),
-(99, 54, 102, 'RECEBIDO', '', '', '', '2016-10-05 20:38:39', '2016-10-05 20:38:39'),
-(100, 12, 103, 'PRONTO', 'Yuri Alexsander', '', 'Instal', '2016-10-13 13:39:36', '2016-10-13 14:42:20');
+INSERT INTO `service_orders` (`id`, `client_id`, `equipament_id`, `state`, `technical`, `observations`, `finalReport`, `price`, `created_at`, `updated_at`) VALUES
+(89, 36, 92, 'ENTREGUE', 'Yuri Alexsander', '', 'Instalação', '80', '2016-09-19 20:14:07', '2016-10-13 21:49:41'),
+(91, 52, 94, 'PRONTO', 'Bob Marley', '', 'Instalação com BKP', '0', '2016-09-23 15:42:37', '2016-10-05 20:48:15'),
+(92, 52, 95, 'PRONTO', 'Yuri Alexsander', '', 'Instalação com BKP', '0', '2016-09-23 15:43:16', '2016-09-27 20:21:40'),
+(93, 52, 96, 'PRONTO', 'Bob Marley', '', 'Instalação com BKP', '0', '2016-09-23 15:52:48', '2016-09-27 16:36:05'),
+(94, 33, 97, 'PRONTO', 'Yuri Alexsander', '', 'Instal', '0', '2016-09-23 16:34:27', '2016-09-27 20:19:29'),
+(40, 82, 43, 'ANALISE', '', '', '', '0', '2016-09-16 17:00:13', '2016-09-16 17:00:13'),
+(87, 129, 90, 'ANALISE', '', '', '', '0', '2016-09-16 21:18:46', '2016-09-16 21:18:46'),
+(88, 130, 91, 'ANALISE', '', '', '', '0', '2016-09-19 20:10:08', '2016-09-19 20:10:08'),
+(95, 12, 98, 'PRONTO', 'Yuri Alexsander', '', 'Instal', '0', '2016-09-23 20:11:59', '2016-09-27 16:34:06'),
+(96, 1, 99, 'PRONTO', 'Bob Marley', '', 'Instalação com BKP', '0', '2016-09-23 20:31:04', '2016-09-27 20:18:44'),
+(97, 33, 100, 'PRONTO', 'Bob Marley', '', 'Instalação com BKP', '0', '2016-09-28 15:27:06', '2016-09-28 15:45:24'),
+(98, 132, 101, 'PRONTO', 'Yuri Alexsander', '', 'Install', '60', '2016-10-05 19:09:21', '2016-10-13 21:08:52'),
+(99, 54, 102, 'ENTREGUE', 'Yuri Alexsander', '', 'Install', '70', '2016-10-05 20:38:39', '2016-10-13 21:21:35'),
+(100, 12, 103, 'ENTREGUE', 'Yuri Alexsander', '', 'Instal', '0', '2016-10-13 13:39:36', '2016-10-13 20:33:09');
 
 -- --------------------------------------------------------
 
@@ -549,6 +577,12 @@ ALTER TABLE `clients`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Índices de tabela `collect_equips`
+--
+ALTER TABLE `collect_equips`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Índices de tabela `comments`
 --
 ALTER TABLE `comments`
@@ -590,10 +624,15 @@ ALTER TABLE `users`
 ALTER TABLE `clients`
   MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=133;
 --
+-- AUTO_INCREMENT de tabela `collect_equips`
+--
+ALTER TABLE `collect_equips`
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+--
 -- AUTO_INCREMENT de tabela `comments`
 --
 ALTER TABLE `comments`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 --
 -- AUTO_INCREMENT de tabela `equipaments`
 --

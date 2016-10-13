@@ -9,6 +9,7 @@ use App\Clients;
 use App\Equipament;
 use App\ServiceOrder;
 use App\Comment;
+use App\CollectEquip;
 use DB;
 
 
@@ -146,8 +147,10 @@ class ServiceController extends Controller{
 			$clientData = Clients::find($OS->client_id);
 			$equipamentData = Equipament::find($OS->equipament_id);
 			$comments = Comment::where("os_id", $id)->get();
+			$collect = CollectEquip::where("os_id", $id)->get();
 
-			return view('os.visualizaros', ['OS' => $OS, 'clientData' => $clientData, 'equipamentData' => $equipamentData, 'comments' => $comments]);
+
+			return view('os.visualizaros', ['OS' => $OS, 'clientData' => $clientData, 'equipamentData' => $equipamentData, 'comments' => $comments, 'collect' => $collect]);
 			  
 		 
 
@@ -162,6 +165,7 @@ class ServiceController extends Controller{
 
 		$OS = ServiceOrder::find($request->input('id'));
 		$OS->technical = $request->input('technical');
+		$OS->price = $request->input('price');
 		$OS->state = 'PRONTO';
 		$OS->finalReport = $request->input('finalReport');
 		$OS->save();
@@ -187,5 +191,18 @@ class ServiceController extends Controller{
 
 
 	}
+
+	public function collectEquip(Request $request) {
+
+		CollectEquip::create($request->all());
+
+		$OS = ServiceOrder::find($request->input('os_id'));
+		$OS->state = 'ENTREGUE';
+		$OS->save();
+
+
+		return redirect('listos/visualizar/'.$request->input('os_id'));
+
+	} 
 
 }

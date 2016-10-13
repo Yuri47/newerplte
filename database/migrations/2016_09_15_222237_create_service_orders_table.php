@@ -20,6 +20,7 @@ class CreateServiceOrdersTable extends Migration
     //         $table->string('technical');
     //         $table->string('observations');
     //         $table->string('finalReport');
+    //         $table->decimal('price');
     //         $table->timestamps();
     //     });
     // }

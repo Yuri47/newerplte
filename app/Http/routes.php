@@ -73,6 +73,8 @@ Route::post('updateOs', 'ServiceController@updateOs');
 
 Route::post('createcomment', 'ServiceController@createComment');
 
+Route::post('collectEquip', 'ServiceController@collectEquip');
+
 
 /*
 |--------------------------------------------------------------------------
