@@ -15,7 +15,7 @@ class UsersController extends Controller
 
 		
 
-		return view('usuarios');
+		return view('os.usuarios');
 	}
 
 	public function listar() {

@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use App\Http\Requests;
 use App\Clients;
 use App\Equipament;
-use App\serviceOrder;
+use App\ServiceOrder;
 use App\Comment;
 use DB;
 
@@ -73,7 +73,7 @@ class ServiceController extends Controller{
 			Equipament::create($equipament);
 			$idEquipament = DB::getPdo()->lastInsertId();
 			 
-		$serviceOrder = [
+		$ServiceOrder = [
 			'client_id' => $id,
 			'equipament_id' => $idEquipament,
 			'state' => 'RECEBIDO',
@@ -82,11 +82,11 @@ class ServiceController extends Controller{
 			'finalReport' => ''
 		];		
 
-			serviceOrder::create($serviceOrder);
+			ServiceOrder::create($ServiceOrder);
 			$idOS = DB::getPdo()->lastInsertId();
 
 
-			$OS = serviceOrder::find($idOS);
+			$OS = ServiceOrder::find($idOS);
 			$clientData = Clients::find($id);
 			$equipamentData = Equipament::find($idEquipament);
 
@@ -106,7 +106,7 @@ class ServiceController extends Controller{
 			 
 
 
-			return view('showos', ['OS' => $OS, 'clientData' => $clientData, 'equipamentData' => $equipamentData, 'terms' => $terms]);
+			return view('os.showos', ['OS' => $OS, 'clientData' => $clientData, 'equipamentData' => $equipamentData, 'terms' => $terms]);
 				
 		
 
@@ -119,11 +119,11 @@ class ServiceController extends Controller{
 
 
 	public function listos() {
-		return view('listos');
+		return view('os.listos');
 	}
 
 	public function listasOS() {
-		// return \Response::json(serviceOrder::all(), 200);
+		// return \Response::json(ServiceOrder::all(), 200);
 
 		$listasOS = DB::table('service_orders')
             ->join('clients', 'service_orders.client_id', '=', 'clients.id')
@@ -142,12 +142,12 @@ class ServiceController extends Controller{
 
 	public function visualizar($id) {
 
-			$OS = serviceOrder::find($id);
+			$OS = ServiceOrder::find($id);
 			$clientData = Clients::find($OS->client_id);
 			$equipamentData = Equipament::find($OS->equipament_id);
 			$comments = Comment::where("os_id", $id)->get();
 
-			return view('visualizaros', ['OS' => $OS, 'clientData' => $clientData, 'equipamentData' => $equipamentData, 'comments' => $comments]);
+			return view('os.visualizaros', ['OS' => $OS, 'clientData' => $clientData, 'equipamentData' => $equipamentData, 'comments' => $comments]);
 			  
 		 
 
@@ -160,7 +160,7 @@ class ServiceController extends Controller{
 
 		//$OS = $request->all();
 
-		$OS = serviceOrder::find($request->input('id'));
+		$OS = ServiceOrder::find($request->input('id'));
 		$OS->technical = $request->input('technical');
 		$OS->state = 'PRONTO';
 		$OS->finalReport = $request->input('finalReport');
@@ -175,6 +175,14 @@ class ServiceController extends Controller{
 
 		$comment = $request->all();
 		Comment::create($comment);
+
+		if ($request->input('state') == 'RECEBIDO') {
+			$OS = ServiceOrder::find($request->input('os_id'));
+			$OS->state = 'ANALISE';
+			$OS->save();
+
+		}
+
 		return redirect('listos/visualizar/'.$request->input('os_id'));
 
 

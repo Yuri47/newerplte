@@ -23,7 +23,7 @@ class ClientController extends Controller
 
     public function formclient() {
 
-    	return view('cadastrarcliente');
+    	return view('os/newos');
 
     }
 
