@@ -7,6 +7,8 @@
 
 @section('main-content')
  <h1>Home</h1>
+maior preço: 
+
 
  <div class="row">
         <div class="col-lg-3 col-xs-6">
@@ -28,9 +30,9 @@
           <!-- small box -->
           <div class="small-box bg-green">
             <div class="inner">
-              <h3>53<sup style="font-size: 20px">%</sup></h3>
+              <h3>R$ {{config('config.osPrice')}},00<sup style="font-size: 20px"></sup></h3>
 
-              <p>Bounce Rate</p>
+              <p>Valor total dos serviços</p>
             </div>
             <div class="icon">
               <i class="ion ion-stats-bars"></i>
@@ -58,9 +60,9 @@
           <!-- small box -->
           <div class="small-box bg-red">
             <div class="inner">
-              <h3>65</h3>
+              <h3>{{config('config.osOpen')}}</h3>
 
-              <p>Unique Visitors</p>
+              <p>OS em aberto</p>
             </div>
             <div class="icon">
               <i class="ion ion-pie-graph"></i>

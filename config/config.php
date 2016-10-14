@@ -9,4 +9,6 @@ return [
     'users' => '',
     'author' => '',
     'termsOS' => '',
+    'osOpen' => '',
+    'osPrice' => '',
 ];
