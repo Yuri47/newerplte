@@ -29746,4 +29746,4 @@ new _vue2.default({
 
 },{"./components/OsCartridge.vue":7,"./components/bar.vue":8,"./components/bus":9,"./components/clients.vue":10,"./components/foo.vue":11,"./components/insertClient.vue":12,"./components/osList.vue":13,"./components/services.vue":15,"vue":5,"vue-resource":4}]},{},[16]);
 
-//# sourceMappingURL=main.js.map
+//# sourceMappingURL=todo.js.map

@@ -54,7 +54,7 @@ Route::get('editclient', array('as'=>'editclient', 'uses'=>'ClientController@edi
 | Rotas de OS
 |--------------------------------------------------------------------------
 |
-|  
+|   
 |
 */
 
@@ -74,6 +74,21 @@ Route::post('updateOs', 'ServiceController@updateOs');
 Route::post('createcomment', 'ServiceController@createComment');
 
 Route::post('collectEquip', 'ServiceController@collectEquip');
+
+
+/*
+|--------------------------------------------------------------------------
+| Rotas de Cartucho
+|--------------------------------------------------------------------------
+|
+|  insertcartridge
+|
+*/
+
+Route::get('/insertcartridge', 'CartridgeController@insertCartridge');
+
+
+
 
 
 /*

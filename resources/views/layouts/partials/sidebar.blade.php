@@ -43,6 +43,13 @@
                     <li class=""><a href="{{ url('listos') }}"><i class='fa fa-link'></i> <span>Listar</span></a></li>
                 </ul>
             </li>
+             <li class="treeview">
+                <a href="#"><i class='fa fa-link'></i> <span>Cartuchos</span> <i class="fa fa-angle-left pull-right"></i></a>
+                <ul class="treeview-menu">
+                    <li class=""><a href="{{ url('insertcartridge') }}"><i class='fa fa-link'></i> <span>Cadastrar</span></a></li>
+                    <li class=""><a href="{{ url('listcartridge') }}"><i class='fa fa-link'></i> <span>Listar</span></a></li>
+                </ul>
+            </li>
             <li class="treeview">
                 <a href="#"><i class='fa fa-link'></i> <span>{{ trans('adminlte_lang::message.multilevel') }}</span> <i class="fa fa-angle-left pull-right"></i></a>
                 <ul class="treeview-menu">

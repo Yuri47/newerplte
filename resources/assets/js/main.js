@@ -2,6 +2,7 @@ import Vue from 'vue'
 import VcUsers from './components/services.vue';
 import VcClients from './components/clients.vue';
 import OsList from './components/osList.vue';
+import OsCartridge from './components/OsCartridge.vue';
 import VcInsert from './components/insertClient.vue'; 
 import foo from './components/foo.vue';
 import bar from './components/bar.vue';
@@ -15,7 +16,8 @@ Vue.use(VueResource)
  	components: {
 		VcUsers,
 		VcClients,
-		OsList
+		OsList,
+		OsCartridge
 	}, 
 
  	data: function(){
