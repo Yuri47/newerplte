@@ -92,7 +92,7 @@ import bus from './bus' //essa classe bus serve como transporte de dados.
 				<td>{{u.name}}</td>
 				<td>{{u.fone}}</td>
 				<td>{{u.address}}</td>
-				<td><button class="btn btn-success" @click="inserirDados(u)" >Inserir</button></td>
+				<td><button class="btn btn-success" @click.stop.prevent="inserirDados(u)" >Inserir</button></td>
 				
 			</tr>
 		</tbody>

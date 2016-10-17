@@ -11,18 +11,18 @@
   
 <!-- :disabled="ist.id"> -->
  
-<h1>Cadastrar Cliente</h1>   
+<h1>Cliente</h1>   
 <!--  <vc-clients></vc-clients> -->
 
 
-<form action="/newcartridge" method="POST"> 
+ 
 
 
   <os-cartridge message="{{csrf_token()}}"></os-cartridge>
  
  
 
-</form>
+ 
 
       
 
