@@ -7,13 +7,23 @@
 
 @section('main-content')
    
- 
+<input type="hidden" id="token" name="token"  value="{{ csrf_token() }}">
   
 <!-- :disabled="ist.id"> -->
  
 <h1>Cadastrar Cliente</h1>   
 <!--  <vc-clients></vc-clients> -->
- <os-cartridge></os-cartridge>
+
+
+<form action="/newcartridge" method="POST"> 
+
+
+  <os-cartridge message="{{csrf_token()}}"></os-cartridge>
+ 
+ 
+
+</form>
+
       
 
 
@@ -80,7 +90,7 @@
 
 
 <script src="/js/main.js"></script>
-<script src="/js/todo.js"></script>
+ 
   <script src="/js/jquery.min.1.11.3.js"></script>
  
   

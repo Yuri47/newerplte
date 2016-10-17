@@ -86,6 +86,7 @@ Route::post('collectEquip', 'ServiceController@collectEquip');
 */
 
 Route::get('/insertcartridge', 'CartridgeController@insertCartridge');
+Route::post('/newcartridge', 'CartridgeController@newCartridge');
 
 
 

@@ -2,43 +2,25 @@
 	import clients from './clients.vue'
 	export default {
 
-
-		 components: {
-		 	clients
-		 },
-
-		data: function() {
-			return {
-				//list: [],
-				sortProperty: 'name',
-				sortDirection: 1,
-				filterTerm: '',
-				title: '', 
-				emailEmail: '',
-				nameName: clients.nameName,
-				 bar: {
-        			msg: 'Eu sou o Bar!'
-      			}
-			}
-		},
-
-		methods: {
- 			confirm() {
- 				this.$emit('confirmed', this.bar)
- 			}
-			
-
-		},
-
-		ready () {
-			//this.list = JSON.parse(this.users)
-			//this.$http.get('/clients/list').then((req) => this.users = req.data)
-
-		},
- 	
- 		events: {
- 		   
- 	}
+		props: ['message'],
+	  
+        data:function(){
+            return {
+                input_models:{},
+                input_index:1,
+            }
+        },
+        methods:{
+            addInput(){
+                this.input_index++;
+                this.input_models[this.input_index] = 'ewqeqweqwewq';
+            },
+            removeInput(){
+                this.input_index--;
+                this.input_models[this.input_index] = '';
+            } 
+        }
+    
 
 	} 
 
@@ -46,10 +28,25 @@
 
 <template>
 
+ 
 <clients></clients>
+ <form action="newcartridge" method="post">
+ <input type="hidden" name="_token" value="{{message}}">
+ <div v-for="input in input_index">
+    <input type="text"  name="modelo_{{input}}" />
+    <input type="text"  name="nome_{{input}}" />
+ </div>
+ <button type="submit">Enviar</button>
+ <form>
 
  
 
+
+ 
+<a v-on:click="addInput()">+</a>
+<a v-on:click="removeInput()">-</a>
+
+ 
 
 
 </template>

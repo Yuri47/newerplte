@@ -17,4 +17,11 @@ class CartridgeController extends Controller
     public function insertCartridge() {
     	return view('cartridge.insert');
     }
+
+    public function newcartridge(Request $request) {
+
+    	return $request->all();
+
+    }
+
 }

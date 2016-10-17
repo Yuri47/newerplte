@@ -9,7 +9,7 @@ import bar from './components/bar.vue';
 import VueResource from 'vue-resource'
 import bus from './components/bus'
 Vue.use(VueResource)
-
+ 
  new Vue ({
  	el: 'body',
 
@@ -23,7 +23,8 @@ Vue.use(VueResource)
  	data: function(){
  		return{
  		
- 			ist: {} 
+ 			ist: {},
+ 			 
  		
 
  		 }
