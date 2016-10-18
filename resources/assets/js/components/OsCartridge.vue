@@ -169,27 +169,26 @@
         <input type="text" class="form-control" autocomplete="off" name="price_{{input}}"    >
     </div>
   </div>
-    <div class="col-md-2">
-    <div class="form-group">
-        <label for="">Pago</label>
-        <div class="radio">
-            <label><input type="radio" name="pay" value="yes">Sim</label>
-        </div>
-        <div class="radio">
-          <label><input type="radio" name="pay" value="no">Não</label>
-        </div>   
-    </div>
-    </div>
+   
  
  </div> <!-- div row -->
 
  </div> <!-- div for -->
 
 
-
- <button type="submit" >Enviar</button>
- <button @click.stop.prevent="addInput()">Add</button>
- <button @click.stop.prevent="removeInput()">Remove</button> 
+ <div class="col-md-2">
+    <div class="form-group">
+        <label for="">Pago</label>
+        <div class="radio">
+            <label><input type="radio" name="pay" value="yes">Sim</label>
+            <label><input type="radio" name="pay" value="no">Não</label>
+        </div>
+           
+    </div>
+    </div>
+ <button type="submit" class="btn btn-lg btn-success">Enviar</button>
+ <button @click.stop.prevent="addInput()" class="btn btn-lg btn-primary">Add</button>
+ <button @click.stop.prevent="removeInput()" class="btn btn-lg btn-danger">Remove</button> 
  <form>
 
     

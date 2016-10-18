@@ -84,8 +84,12 @@ Route::post('collectEquip', 'ServiceController@collectEquip');
 |  insertcartridge
 |
 */
-
+Route::get('cartridge/list', 'CartridgeController@listCartOS');
 Route::get('/insertcartridge', 'CartridgeController@insertCartridge');
+Route::get('/listcartridge', function () {
+     return view('cartridge.listCartOS');
+ });
+Route::get('/cartridge/visualizar/{id}', 'CartridgeController@visualizar');
 Route::post('/newcartridge', 'CartridgeController@newCartridge');
 
 

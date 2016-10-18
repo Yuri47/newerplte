@@ -8,6 +8,7 @@ import foo from './components/foo.vue';
 import bar from './components/bar.vue';
 import VueResource from 'vue-resource'
 import bus from './components/bus'
+import OsCartList from './components/osCartList.vue'
 Vue.use(VueResource)
  
  new Vue ({
@@ -17,7 +18,9 @@ Vue.use(VueResource)
 		VcUsers,
 		VcClients,
 		OsList,
-		OsCartridge
+		OsCartridge,
+		OsCartList
+
 	}, 
 
  	data: function(){

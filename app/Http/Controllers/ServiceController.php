@@ -136,7 +136,7 @@ class ServiceController extends Controller{
 		 
 		// $clients->id=5;
 
-		return   \Response::json($listasOS) ;;
+		return   \Response::json($listasOS) ;
 
 
 	}

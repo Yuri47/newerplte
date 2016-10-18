@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use App\Http\Requests;
 use App\Clients;
 use App\Cartridge;
-use App\osCartridge;
+use App\OsCartridge;
 use DB;
 
 class CartridgeController extends Controller
@@ -29,6 +29,8 @@ class CartridgeController extends Controller
         $fone = $request->input('fone');
         $address = $request->input('address');
 
+        $pay = $request->input('pay');
+
         $lastInsertIdClient;
 
          
@@ -45,6 +47,7 @@ class CartridgeController extends Controller
 
 
         } else if (!empty($client_id)) {
+            $lastInsertIdClient = $client_id;
             $client = Clients::find($client_id);
             $client->name = $name;
             $client->fone = $fone;
@@ -52,28 +55,72 @@ class CartridgeController extends Controller
             $client->save();
         }
 
+        $osCartridge = [
+            'client_id' => $lastInsertIdClient,
+            'state' => 'RECEBIDO',
+            'pay' => $pay
+        ];
 
-
-        $client_id = $request->input('client_id');
-        $client_id = $request->input('client_id');
-        $client_id = $request->input('client_id');
-        $client_id = $request->input('client_id');
-        $client_id = $request->input('client_id');
+        OsCartridge::create($osCartridge);
+        $osCartridge_lastId = DB::getPdo()->lastInsertId();
+         
 
 
 
 
 
         for ($i = 0; $i <= $request->input('control'); $i++) {
-            echo "modelo: ".$request->input('modelo_'.$i)." - nome:" . $request->input('nome_'.$i)."</br>";
+
+            $cartridge = [
+            'osCartridge_id' => $osCartridge_lastId,
+            'mark' => $request->input('mark_'.$i),
+            'number' => $request->input('number_'.$i),
+            'serialNumber' => $request->input('serialNumber_'.$i),
+            'price' => $request->input('price_'.$i)
+
+            ];
+            Cartridge::create($cartridge);
+
+
+
+            
 
              
         }
 
        
 
-    	 return $request->all();
+    	 return view('cartridge.listCartOS');
 
+    }
+
+    public function listCartOS() {
+
+        $listasOS = DB::table('os_cartridges')
+            ->join('clients', 'os_cartridges.client_id', '=', 'clients.id')
+            ->select('os_cartridges.*', 'clients.name')
+           // ->paginate(6); //this code get the list OS and paginate it
+             ->get();
+ 
+     
+         
+        // $clients->id=5;
+
+        return   \Response::json($listasOS) ;
+
+    }
+
+    public function vizualizar($id) {
+
+            $OS = ServiceOrder::find($id);
+            $clientData = Clients::find($OS->client_id);
+            $equipamentData = Equipament::find($OS->equipament_id);
+            $comments = Comment::where("os_id", $id)->get();
+            $collect = CollectEquip::where("os_id", $id)->get();
+
+
+            return view('os.visualizaros', ['OS' => $OS, 'clientData' => $clientData, 'equipamentData' => $equipamentData, 'comments' => $comments, 'collect' => $collect]);
+              
     }
 
 }
