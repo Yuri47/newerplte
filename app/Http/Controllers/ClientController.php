@@ -47,7 +47,7 @@ class ClientController extends Controller
         $fone = $request -> input('fone');
 		$address = $request -> input('address');
 
-		$client = Clients::find($id);
+		$client = Clients::find($id); 
 		$client->name = $name;
 		$client->fone = $fone;
 		$client->address = $address;

@@ -9,6 +9,7 @@ use App\Clients;
 use App\Cartridge;
 use App\OsCartridge;
 use DB;
+use Redirect;
 
 class CartridgeController extends Controller
 {
@@ -90,7 +91,7 @@ class CartridgeController extends Controller
 
        
 
-    	 return view('cartridge.listCartOS');
+    	 return Redirect::to('/listcartridge');
 
     }
 
@@ -110,17 +111,35 @@ class CartridgeController extends Controller
 
     }
 
-    public function vizualizar($id) {
+    public function visualizar($id) {
 
-            $OS = ServiceOrder::find($id);
-            $clientData = Clients::find($OS->client_id);
-            $equipamentData = Equipament::find($OS->equipament_id);
-            $comments = Comment::where("os_id", $id)->get();
-            $collect = CollectEquip::where("os_id", $id)->get();
+            $osCart = OsCartridge::find($id);
+            $clientData = Clients::find($osCart->client_id);
+            $cartridge = Cartridge::where("osCartridge_id", $id)->get();
+          //  $comments = Comment::where("os_id", $id)->get();
+          //  $collect = CollectEquip::where("os_id", $id)->get();
+            $totalPrice = DB::table('cartridges')->where("osCartridge_id", $id)->sum('price');
+                                      
+            
 
-
-            return view('os.visualizaros', ['OS' => $OS, 'clientData' => $clientData, 'equipamentData' => $equipamentData, 'comments' => $comments, 'collect' => $collect]);
+            return view('cartridge.visualizaros', ['osCart' => $osCart, 
+               'clientData' => $clientData, 
+               'cartridge' => $cartridge,
+                'totalPrice' => $totalPrice
+               ]);
               
+    }
+
+    public function editStateCartridge(Request $request) {
+
+
+        $idCart = $request->input('id');
+        $estado =  $request->input('estado');
+
+         $msg = ['name' => 'msg vindo da função: '.$idCart, 'estado' => $estado];
+
+        return $msg;
+
     }
 
 }

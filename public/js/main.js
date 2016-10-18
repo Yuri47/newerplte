@@ -1,186 +1,4 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-// shim for using process in browser
-var process = module.exports = {};
-
-// cached from whatever global is present so that test runners that stub it
-// don't break things.  But we need to wrap it in a try catch in case it is
-// wrapped in strict mode code which doesn't define any globals.  It's inside a
-// function because try/catches deoptimize in certain engines.
-
-var cachedSetTimeout;
-var cachedClearTimeout;
-
-function defaultSetTimout() {
-    throw new Error('setTimeout has not been defined');
-}
-function defaultClearTimeout () {
-    throw new Error('clearTimeout has not been defined');
-}
-(function () {
-    try {
-        if (typeof setTimeout === 'function') {
-            cachedSetTimeout = setTimeout;
-        } else {
-            cachedSetTimeout = defaultSetTimout;
-        }
-    } catch (e) {
-        cachedSetTimeout = defaultSetTimout;
-    }
-    try {
-        if (typeof clearTimeout === 'function') {
-            cachedClearTimeout = clearTimeout;
-        } else {
-            cachedClearTimeout = defaultClearTimeout;
-        }
-    } catch (e) {
-        cachedClearTimeout = defaultClearTimeout;
-    }
-} ())
-function runTimeout(fun) {
-    if (cachedSetTimeout === setTimeout) {
-        //normal enviroments in sane situations
-        return setTimeout(fun, 0);
-    }
-    // if setTimeout wasn't available but was latter defined
-    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
-        cachedSetTimeout = setTimeout;
-        return setTimeout(fun, 0);
-    }
-    try {
-        // when when somebody has screwed with setTimeout but no I.E. maddness
-        return cachedSetTimeout(fun, 0);
-    } catch(e){
-        try {
-            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
-            return cachedSetTimeout.call(null, fun, 0);
-        } catch(e){
-            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
-            return cachedSetTimeout.call(this, fun, 0);
-        }
-    }
-
-
-}
-function runClearTimeout(marker) {
-    if (cachedClearTimeout === clearTimeout) {
-        //normal enviroments in sane situations
-        return clearTimeout(marker);
-    }
-    // if clearTimeout wasn't available but was latter defined
-    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
-        cachedClearTimeout = clearTimeout;
-        return clearTimeout(marker);
-    }
-    try {
-        // when when somebody has screwed with setTimeout but no I.E. maddness
-        return cachedClearTimeout(marker);
-    } catch (e){
-        try {
-            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
-            return cachedClearTimeout.call(null, marker);
-        } catch (e){
-            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
-            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
-            return cachedClearTimeout.call(this, marker);
-        }
-    }
-
-
-
-}
-var queue = [];
-var draining = false;
-var currentQueue;
-var queueIndex = -1;
-
-function cleanUpNextTick() {
-    if (!draining || !currentQueue) {
-        return;
-    }
-    draining = false;
-    if (currentQueue.length) {
-        queue = currentQueue.concat(queue);
-    } else {
-        queueIndex = -1;
-    }
-    if (queue.length) {
-        drainQueue();
-    }
-}
-
-function drainQueue() {
-    if (draining) {
-        return;
-    }
-    var timeout = runTimeout(cleanUpNextTick);
-    draining = true;
-
-    var len = queue.length;
-    while(len) {
-        currentQueue = queue;
-        queue = [];
-        while (++queueIndex < len) {
-            if (currentQueue) {
-                currentQueue[queueIndex].run();
-            }
-        }
-        queueIndex = -1;
-        len = queue.length;
-    }
-    currentQueue = null;
-    draining = false;
-    runClearTimeout(timeout);
-}
-
-process.nextTick = function (fun) {
-    var args = new Array(arguments.length - 1);
-    if (arguments.length > 1) {
-        for (var i = 1; i < arguments.length; i++) {
-            args[i - 1] = arguments[i];
-        }
-    }
-    queue.push(new Item(fun, args));
-    if (queue.length === 1 && !draining) {
-        runTimeout(drainQueue);
-    }
-};
-
-// v8 likes predictible objects
-function Item(fun, array) {
-    this.fun = fun;
-    this.array = array;
-}
-Item.prototype.run = function () {
-    this.fun.apply(null, this.array);
-};
-process.title = 'browser';
-process.browser = true;
-process.env = {};
-process.argv = [];
-process.version = ''; // empty string to avoid regexp issues
-process.versions = {};
-
-function noop() {}
-
-process.on = noop;
-process.addListener = noop;
-process.once = noop;
-process.off = noop;
-process.removeListener = noop;
-process.removeAllListeners = noop;
-process.emit = noop;
-
-process.binding = function (name) {
-    throw new Error('process.binding is not supported');
-};
-
-process.cwd = function () { return '/' };
-process.chdir = function (dir) {
-    throw new Error('process.chdir is not supported');
-};
-process.umask = function() { return 0; };
-
-},{}],2:[function(require,module,exports){
 (function (global){
 /**
  * @license
@@ -196,13 +14,14 @@ process.umask = function() { return 0; };
   var undefined;
 
   /** Used as the semantic version number. */
-  var VERSION = '4.16.0';
+  var VERSION = '4.16.4';
 
   /** Used as the size to enable large array optimizations. */
   var LARGE_ARRAY_SIZE = 200;
 
-  /** Used as the `TypeError` message for "Functions" methods. */
-  var FUNC_ERROR_TEXT = 'Expected a function';
+  /** Error message constants. */
+  var CORE_ERROR_TEXT = 'Unsupported core-js use. Try https://github.com/es-shims.',
+      FUNC_ERROR_TEXT = 'Expected a function';
 
   /** Used to stand-in for `undefined` hash values. */
   var HASH_UNDEFINED = '__lodash_hash_undefined__';
@@ -278,6 +97,7 @@ process.umask = function() { return 0; };
       numberTag = '[object Number]',
       objectTag = '[object Object]',
       promiseTag = '[object Promise]',
+      proxyTag = '[object Proxy]',
       regexpTag = '[object RegExp]',
       setTag = '[object Set]',
       stringTag = '[object String]',
@@ -303,8 +123,8 @@ process.umask = function() { return 0; };
       reEmptyStringTrailing = /(__e\(.*?\)|\b__t\)) \+\n'';/g;
 
   /** Used to match HTML entities and HTML characters. */
-  var reEscapedHtml = /&(?:amp|lt|gt|quot|#39|#96);/g,
-      reUnescapedHtml = /[&<>"'`]/g,
+  var reEscapedHtml = /&(?:amp|lt|gt|quot|#39);/g,
+      reUnescapedHtml = /[&<>"']/g,
       reHasEscapedHtml = RegExp(reEscapedHtml.source),
       reHasUnescapedHtml = RegExp(reUnescapedHtml.source);
 
@@ -1591,7 +1411,7 @@ process.umask = function() { return 0; };
    * // Create a suped-up `defer` in Node.js.
    * var defer = _.runInContext({ 'setTimeout': setImmediate }).defer;
    */
-  function runInContext(context) {
+  var runInContext = (function runInContext(context) {
     context = context ? _.defaults(root.Object(), context, _.pick(root, contextProps)) : root;
 
     /** Built-in constructor references. */
@@ -1651,13 +1471,21 @@ process.umask = function() { return 0; };
     var Buffer = moduleExports ? context.Buffer : undefined,
         Symbol = context.Symbol,
         Uint8Array = context.Uint8Array,
-        defineProperty = Object.defineProperty,
+        allocUnsafe = Buffer ? Buffer.allocUnsafe : undefined,
         getPrototype = overArg(Object.getPrototypeOf, Object),
         iteratorSymbol = Symbol ? Symbol.iterator : undefined,
         objectCreate = Object.create,
         propertyIsEnumerable = objectProto.propertyIsEnumerable,
         splice = arrayProto.splice,
         spreadableSymbol = Symbol ? Symbol.isConcatSpreadable : undefined;
+
+    var defineProperty = (function() {
+      try {
+        var func = getNative(Object, 'defineProperty');
+        func({}, '', {});
+        return func;
+      } catch (e) {}
+    }());
 
     /** Mocked built-ins. */
     var ctxClearTimeout = context.clearTimeout !== root.clearTimeout && context.clearTimeout,
@@ -1685,8 +1513,7 @@ process.umask = function() { return 0; };
         Promise = getNative(context, 'Promise'),
         Set = getNative(context, 'Set'),
         WeakMap = getNative(context, 'WeakMap'),
-        nativeCreate = getNative(Object, 'create'),
-        nativeDefineProperty = getNative(Object, 'defineProperty');
+        nativeCreate = getNative(Object, 'create');
 
     /** Used to store function metadata. */
     var metaMap = WeakMap && new WeakMap;
@@ -1836,6 +1663,30 @@ process.umask = function() { return 0; };
       }
       return new LodashWrapper(value);
     }
+
+    /**
+     * The base implementation of `_.create` without support for assigning
+     * properties to the created object.
+     *
+     * @private
+     * @param {Object} proto The object to inherit from.
+     * @returns {Object} Returns the new object.
+     */
+    var baseCreate = (function() {
+      function object() {}
+      return function(proto) {
+        if (!isObject(proto)) {
+          return {};
+        }
+        if (objectCreate) {
+          return objectCreate(proto);
+        }
+        object.prototype = proto;
+        var result = new object;
+        object.prototype = undefined;
+        return result;
+      };
+    }());
 
     /**
      * The function whose prototype chain sequence wrappers inherit from.
@@ -2538,18 +2389,26 @@ process.umask = function() { return 0; };
      * @returns {Array} Returns the array of property names.
      */
     function arrayLikeKeys(value, inherited) {
-      // Safari 8.1 makes `arguments.callee` enumerable in strict mode.
-      // Safari 9 makes `arguments.length` enumerable in strict mode.
-      var result = (isArray(value) || isArguments(value))
-        ? baseTimes(value.length, String)
-        : [];
-
-      var length = result.length,
-          skipIndexes = !!length;
+      var isArr = isArray(value),
+          isArg = !isArr && isArguments(value),
+          isBuff = !isArr && !isArg && isBuffer(value),
+          isType = !isArr && !isArg && !isBuff && isTypedArray(value),
+          skipIndexes = isArr || isArg || isBuff || isType,
+          result = skipIndexes ? baseTimes(value.length, String) : [],
+          length = result.length;
 
       for (var key in value) {
         if ((inherited || hasOwnProperty.call(value, key)) &&
-            !(skipIndexes && (key == 'length' || isIndex(key, length)))) {
+            !(skipIndexes && (
+               // Safari 9 has enumerable `arguments.length` in strict mode.
+               key == 'length' ||
+               // Node.js 0.10 has enumerable non-index properties on buffers.
+               (isBuff && (key == 'offset' || key == 'parent')) ||
+               // PhantomJS 2 has enumerable non-index properties on typed arrays.
+               (isType && (key == 'buffer' || key == 'byteLength' || key == 'byteOffset')) ||
+               // Skip index properties.
+               isIndex(key, length)
+            ))) {
           result.push(key);
         }
       }
@@ -2557,8 +2416,7 @@ process.umask = function() { return 0; };
     }
 
     /**
-     * A specialized version of `_.sample` for arrays without support for iteratee
-     * shorthands.
+     * A specialized version of `_.sample` for arrays.
      *
      * @private
      * @param {Array} array The array to sample.
@@ -2578,9 +2436,7 @@ process.umask = function() { return 0; };
      * @returns {Array} Returns the random elements.
      */
     function arraySampleSize(array, n) {
-      var result = arrayShuffle(array);
-      result.length = baseClamp(n, 0, result.length);
-      return result;
+      return shuffleSelf(copyArray(array), baseClamp(n, 0, array.length));
     }
 
     /**
@@ -2623,7 +2479,7 @@ process.umask = function() { return 0; };
      */
     function assignMergeValue(object, key, value) {
       if ((value !== undefined && !eq(object[key], value)) ||
-          (typeof key == 'number' && value === undefined && !(key in object))) {
+          (value === undefined && !(key in object))) {
         baseAssignValue(object, key, value);
       }
     }
@@ -2816,9 +2672,7 @@ process.umask = function() { return 0; };
       }
       stack.set(value, result);
 
-      if (!isArr) {
-        var props = isFull ? getAllKeys(value) : keys(value);
-      }
+      var props = isArr ? undefined : (isFull ? getAllKeys : keys)(value);
       arrayEach(props || value, function(subValue, key) {
         if (props) {
           key = subValue;
@@ -2868,18 +2722,6 @@ process.umask = function() { return 0; };
         }
       }
       return true;
-    }
-
-    /**
-     * The base implementation of `_.create` without support for assigning
-     * properties to the created object.
-     *
-     * @private
-     * @param {Object} prototype The object to inherit from.
-     * @returns {Object} Returns the new object.
-     */
-    function baseCreate(proto) {
-      return isObject(proto) ? objectCreate(proto) : {};
     }
 
     /**
@@ -3365,6 +3207,17 @@ process.umask = function() { return 0; };
     }
 
     /**
+     * The base implementation of `_.isArguments`.
+     *
+     * @private
+     * @param {*} value The value to check.
+     * @returns {boolean} Returns `true` if `value` is an `arguments` object,
+     */
+    function baseIsArguments(value) {
+      return isObjectLike(value) && objectToString.call(value) == argsTag;
+    }
+
+    /**
      * The base implementation of `_.isArrayBuffer` without Node.js optimizations.
      *
      * @private
@@ -3444,6 +3297,13 @@ process.umask = function() { return 0; };
           othIsObj = othTag == objectTag,
           isSameTag = objTag == othTag;
 
+      if (isSameTag && isBuffer(object)) {
+        if (!isBuffer(other)) {
+          return false;
+        }
+        objIsArr = true;
+        objIsObj = false;
+      }
       if (isSameTag && !objIsObj) {
         stack || (stack = new Stack);
         return (objIsArr || isTypedArray(object))
@@ -3733,14 +3593,7 @@ process.umask = function() { return 0; };
       if (object === source) {
         return;
       }
-      if (!(isArray(source) || isTypedArray(source))) {
-        var props = baseKeysIn(source);
-      }
-      arrayEach(props || source, function(srcValue, key) {
-        if (props) {
-          key = srcValue;
-          srcValue = source[key];
-        }
+      baseFor(source, function(srcValue, key) {
         if (isObject(srcValue)) {
           stack || (stack = new Stack);
           baseMergeDeep(object, source, key, srcIndex, baseMerge, customizer, stack);
@@ -3755,7 +3608,7 @@ process.umask = function() { return 0; };
           }
           assignMergeValue(object, key, newValue);
         }
-      });
+      }, keysIn);
     }
 
     /**
@@ -3789,29 +3642,37 @@ process.umask = function() { return 0; };
       var isCommon = newValue === undefined;
 
       if (isCommon) {
+        var isArr = isArray(srcValue),
+            isBuff = !isArr && isBuffer(srcValue),
+            isTyped = !isArr && !isBuff && isTypedArray(srcValue);
+
         newValue = srcValue;
-        if (isArray(srcValue) || isTypedArray(srcValue)) {
+        if (isArr || isBuff || isTyped) {
           if (isArray(objValue)) {
             newValue = objValue;
           }
           else if (isArrayLikeObject(objValue)) {
             newValue = copyArray(objValue);
           }
-          else {
+          else if (isBuff) {
             isCommon = false;
-            newValue = baseClone(srcValue, true);
+            newValue = cloneBuffer(srcValue, true);
+          }
+          else if (isTyped) {
+            isCommon = false;
+            newValue = cloneTypedArray(srcValue, true);
+          }
+          else {
+            newValue = [];
           }
         }
         else if (isPlainObject(srcValue) || isArguments(srcValue)) {
+          newValue = objValue;
           if (isArguments(objValue)) {
             newValue = toPlainObject(objValue);
           }
           else if (!isObject(objValue) || (srcIndex && isFunction(objValue))) {
-            isCommon = false;
-            newValue = baseClone(srcValue, true);
-          }
-          else {
-            newValue = objValue;
+            newValue = initCloneObject(srcValue);
           }
         }
         else {
@@ -4074,6 +3935,30 @@ process.umask = function() { return 0; };
     }
 
     /**
+     * The base implementation of `_.sample`.
+     *
+     * @private
+     * @param {Array|Object} collection The collection to sample.
+     * @returns {*} Returns the random element.
+     */
+    function baseSample(collection) {
+      return arraySample(values(collection));
+    }
+
+    /**
+     * The base implementation of `_.sampleSize` without param guards.
+     *
+     * @private
+     * @param {Array|Object} collection The collection to sample.
+     * @param {number} n The number of elements to sample.
+     * @returns {Array} Returns the random elements.
+     */
+    function baseSampleSize(collection, n) {
+      var array = values(collection);
+      return shuffleSelf(array, baseClamp(n, 0, array.length));
+    }
+
+    /**
      * The base implementation of `_.set`.
      *
      * @private
@@ -4134,14 +4019,25 @@ process.umask = function() { return 0; };
      * @param {Function} string The `toString` result.
      * @returns {Function} Returns `func`.
      */
-    var baseSetToString = !nativeDefineProperty ? identity : function(func, string) {
-      return nativeDefineProperty(func, 'toString', {
+    var baseSetToString = !defineProperty ? identity : function(func, string) {
+      return defineProperty(func, 'toString', {
         'configurable': true,
         'enumerable': false,
         'value': constant(string),
         'writable': true
       });
     };
+
+    /**
+     * The base implementation of `_.shuffle`.
+     *
+     * @private
+     * @param {Array|Object} collection The collection to shuffle.
+     * @returns {Array} Returns the new shuffled array.
+     */
+    function baseShuffle(collection) {
+      return shuffleSelf(values(collection));
+    }
 
     /**
      * The base implementation of `_.slice` without an iteratee call guard.
@@ -4335,6 +4231,10 @@ process.umask = function() { return 0; };
       // Exit early for strings to avoid a performance hit in some environments.
       if (typeof value == 'string') {
         return value;
+      }
+      if (isArray(value)) {
+        // Recursively convert values (susceptible to call stack limits).
+        return arrayMap(value, baseToString) + '';
       }
       if (isSymbol(value)) {
         return symbolToString ? symbolToString.call(value) : '';
@@ -4605,7 +4505,9 @@ process.umask = function() { return 0; };
       if (isDeep) {
         return buffer.slice();
       }
-      var result = new buffer.constructor(buffer.length);
+      var length = buffer.length,
+          result = allocUnsafe ? allocUnsafe(length) : new buffer.constructor(length);
+
       buffer.copy(result);
       return result;
     }
@@ -6717,24 +6619,27 @@ process.umask = function() { return 0; };
     }
 
     /**
-     * A specialized version of `arrayShuffle` which mutates `array`.
+     * A specialized version of `_.shuffle` which mutates and sets the size of `array`.
      *
      * @private
      * @param {Array} array The array to shuffle.
+     * @param {number} [size=array.length] The size of `array`.
      * @returns {Array} Returns `array`.
      */
-    function shuffleSelf(array) {
+    function shuffleSelf(array, size) {
       var index = -1,
           length = array.length,
           lastIndex = length - 1;
 
-      while (++index < length) {
+      size = size === undefined ? length : size;
+      while (++index < size) {
         var rand = baseRandom(index, lastIndex),
             value = array[rand];
 
         array[rand] = array[index];
         array[index] = value;
       }
+      array.length = size;
       return array;
     }
 
@@ -9812,7 +9717,8 @@ process.umask = function() { return 0; };
      * // => 2
      */
     function sample(collection) {
-      return arraySample(isArrayLike(collection) ? collection : values(collection));
+      var func = isArray(collection) ? arraySample : baseSample;
+      return func(collection);
     }
 
     /**
@@ -9841,7 +9747,8 @@ process.umask = function() { return 0; };
       } else {
         n = toInteger(n);
       }
-      return arraySampleSize(isArrayLike(collection) ? collection : values(collection), n);
+      var func = isArray(collection) ? arraySampleSize : baseSampleSize;
+      return func(collection, n);
     }
 
     /**
@@ -9860,10 +9767,8 @@ process.umask = function() { return 0; };
      * // => [4, 1, 3, 2]
      */
     function shuffle(collection) {
-      return shuffleSelf(isArrayLike(collection)
-        ? copyArray(collection)
-        : values(collection)
-      );
+      var func = isArray(collection) ? arrayShuffle : baseShuffle;
+      return func(collection);
     }
 
     /**
@@ -11299,11 +11204,10 @@ process.umask = function() { return 0; };
      * _.isArguments([1, 2, 3]);
      * // => false
      */
-    function isArguments(value) {
-      // Safari 8.1 makes `arguments.callee` enumerable in strict mode.
-      return isArrayLikeObject(value) && hasOwnProperty.call(value, 'callee') &&
-        (!propertyIsEnumerable.call(value, 'callee') || objectToString.call(value) == argsTag);
-    }
+    var isArguments = baseIsArguments(function() { return arguments; }()) ? baseIsArguments : function(value) {
+      return isObjectLike(value) && hasOwnProperty.call(value, 'callee') &&
+        !propertyIsEnumerable.call(value, 'callee');
+    };
 
     /**
      * Checks if `value` is classified as an `Array` object.
@@ -11523,8 +11427,8 @@ process.umask = function() { return 0; };
      */
     function isEmpty(value) {
       if (isArrayLike(value) &&
-          (isArray(value) || typeof value == 'string' ||
-            typeof value.splice == 'function' || isBuffer(value) || isArguments(value))) {
+          (isArray(value) || typeof value == 'string' || typeof value.splice == 'function' ||
+            isBuffer(value) || isTypedArray(value) || isArguments(value))) {
         return !value.length;
       }
       var tag = getTag(value);
@@ -11532,7 +11436,7 @@ process.umask = function() { return 0; };
         return !value.size;
       }
       if (isPrototype(value)) {
-        return !nativeKeys(value).length;
+        return !baseKeys(value).length;
       }
       for (var key in value) {
         if (hasOwnProperty.call(value, key)) {
@@ -11687,9 +11591,9 @@ process.umask = function() { return 0; };
      */
     function isFunction(value) {
       // The use of `Object#toString` avoids issues with the `typeof` operator
-      // in Safari 8-9 which returns 'object' for typed array and other constructors.
+      // in Safari 9 which returns 'object' for typed array and other constructors.
       var tag = isObject(value) ? objectToString.call(value) : '';
-      return tag == funcTag || tag == genTag;
+      return tag == funcTag || tag == genTag || tag == proxyTag;
     }
 
     /**
@@ -11962,7 +11866,7 @@ process.umask = function() { return 0; };
      */
     function isNative(value) {
       if (isMaskable(value)) {
-        throw new Error('This method is not supported with core-js. Try https://github.com/es-shims.');
+        throw new Error(CORE_ERROR_TEXT);
       }
       return baseIsNative(value);
     }
@@ -12577,8 +12481,8 @@ process.umask = function() { return 0; };
      * @memberOf _
      * @since 4.0.0
      * @category Lang
-     * @param {*} value The value to process.
-     * @returns {string} Returns the string.
+     * @param {*} value The value to convert.
+     * @returns {string} Returns the converted string.
      * @example
      *
      * _.toString(null);
@@ -13762,22 +13666,23 @@ process.umask = function() { return 0; };
      * // => { '1': ['a', 'c'], '2': ['b'] }
      */
     function transform(object, iteratee, accumulator) {
-      var isArr = isArray(object) || isTypedArray(object);
-      iteratee = getIteratee(iteratee, 4);
+      var isArr = isArray(object),
+          isArrLike = isArr || isBuffer(object) || isTypedArray(object);
 
+      iteratee = getIteratee(iteratee, 4);
       if (accumulator == null) {
-        if (isArr || isObject(object)) {
-          var Ctor = object.constructor;
-          if (isArr) {
-            accumulator = isArray(object) ? new Ctor : [];
-          } else {
-            accumulator = isFunction(Ctor) ? baseCreate(getPrototype(object)) : {};
-          }
-        } else {
+        var Ctor = object && object.constructor;
+        if (isArrLike) {
+          accumulator = isArr ? new Ctor : [];
+        }
+        else if (isObject(object)) {
+          accumulator = isFunction(Ctor) ? baseCreate(getPrototype(object)) : {};
+        }
+        else {
           accumulator = {};
         }
       }
-      (isArr ? arrayEach : baseForOwn)(object, function(value, index, object) {
+      (isArrLike ? arrayEach : baseForOwn)(object, function(value, index, object) {
         return iteratee(accumulator, value, index, object);
       });
       return accumulator;
@@ -14455,7 +14360,7 @@ process.umask = function() { return 0; };
       } else if (radix) {
         radix = +radix;
       }
-      return nativeParseInt(toString(string), radix || 0);
+      return nativeParseInt(toString(string).replace(reTrimStart, ''), radix || 0);
     }
 
     /**
@@ -17044,7 +16949,7 @@ process.umask = function() { return 0; };
       lodash.prototype[iteratorSymbol] = wrapperToIterator;
     }
     return lodash;
-  }
+  });
 
   /*--------------------------------------------------------------------------*/
 
@@ -17079,7 +16984,490 @@ process.umask = function() { return 0; };
 }.call(this));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{}],2:[function(require,module,exports){
+// shim for using process in browser
+var process = module.exports = {};
+
+// cached from whatever global is present so that test runners that stub it
+// don't break things.  But we need to wrap it in a try catch in case it is
+// wrapped in strict mode code which doesn't define any globals.  It's inside a
+// function because try/catches deoptimize in certain engines.
+
+var cachedSetTimeout;
+var cachedClearTimeout;
+
+function defaultSetTimout() {
+    throw new Error('setTimeout has not been defined');
+}
+function defaultClearTimeout () {
+    throw new Error('clearTimeout has not been defined');
+}
+(function () {
+    try {
+        if (typeof setTimeout === 'function') {
+            cachedSetTimeout = setTimeout;
+        } else {
+            cachedSetTimeout = defaultSetTimout;
+        }
+    } catch (e) {
+        cachedSetTimeout = defaultSetTimout;
+    }
+    try {
+        if (typeof clearTimeout === 'function') {
+            cachedClearTimeout = clearTimeout;
+        } else {
+            cachedClearTimeout = defaultClearTimeout;
+        }
+    } catch (e) {
+        cachedClearTimeout = defaultClearTimeout;
+    }
+} ())
+function runTimeout(fun) {
+    if (cachedSetTimeout === setTimeout) {
+        //normal enviroments in sane situations
+        return setTimeout(fun, 0);
+    }
+    // if setTimeout wasn't available but was latter defined
+    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
+        cachedSetTimeout = setTimeout;
+        return setTimeout(fun, 0);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedSetTimeout(fun, 0);
+    } catch(e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
+            return cachedSetTimeout.call(null, fun, 0);
+        } catch(e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
+            return cachedSetTimeout.call(this, fun, 0);
+        }
+    }
+
+
+}
+function runClearTimeout(marker) {
+    if (cachedClearTimeout === clearTimeout) {
+        //normal enviroments in sane situations
+        return clearTimeout(marker);
+    }
+    // if clearTimeout wasn't available but was latter defined
+    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
+        cachedClearTimeout = clearTimeout;
+        return clearTimeout(marker);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedClearTimeout(marker);
+    } catch (e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
+            return cachedClearTimeout.call(null, marker);
+        } catch (e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
+            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
+            return cachedClearTimeout.call(this, marker);
+        }
+    }
+
+
+
+}
+var queue = [];
+var draining = false;
+var currentQueue;
+var queueIndex = -1;
+
+function cleanUpNextTick() {
+    if (!draining || !currentQueue) {
+        return;
+    }
+    draining = false;
+    if (currentQueue.length) {
+        queue = currentQueue.concat(queue);
+    } else {
+        queueIndex = -1;
+    }
+    if (queue.length) {
+        drainQueue();
+    }
+}
+
+function drainQueue() {
+    if (draining) {
+        return;
+    }
+    var timeout = runTimeout(cleanUpNextTick);
+    draining = true;
+
+    var len = queue.length;
+    while(len) {
+        currentQueue = queue;
+        queue = [];
+        while (++queueIndex < len) {
+            if (currentQueue) {
+                currentQueue[queueIndex].run();
+            }
+        }
+        queueIndex = -1;
+        len = queue.length;
+    }
+    currentQueue = null;
+    draining = false;
+    runClearTimeout(timeout);
+}
+
+process.nextTick = function (fun) {
+    var args = new Array(arguments.length - 1);
+    if (arguments.length > 1) {
+        for (var i = 1; i < arguments.length; i++) {
+            args[i - 1] = arguments[i];
+        }
+    }
+    queue.push(new Item(fun, args));
+    if (queue.length === 1 && !draining) {
+        runTimeout(drainQueue);
+    }
+};
+
+// v8 likes predictible objects
+function Item(fun, array) {
+    this.fun = fun;
+    this.array = array;
+}
+Item.prototype.run = function () {
+    this.fun.apply(null, this.array);
+};
+process.title = 'browser';
+process.browser = true;
+process.env = {};
+process.argv = [];
+process.version = ''; // empty string to avoid regexp issues
+process.versions = {};
+
+function noop() {}
+
+process.on = noop;
+process.addListener = noop;
+process.once = noop;
+process.off = noop;
+process.removeListener = noop;
+process.removeAllListeners = noop;
+process.emit = noop;
+
+process.binding = function (name) {
+    throw new Error('process.binding is not supported');
+};
+
+process.cwd = function () { return '/' };
+process.chdir = function (dir) {
+    throw new Error('process.chdir is not supported');
+};
+process.umask = function() { return 0; };
+
 },{}],3:[function(require,module,exports){
+var Vue // late bind
+var map = Object.create(null)
+var shimmed = false
+var isBrowserify = false
+
+/**
+ * Determine compatibility and apply patch.
+ *
+ * @param {Function} vue
+ * @param {Boolean} browserify
+ */
+
+exports.install = function (vue, browserify) {
+  if (shimmed) return
+  shimmed = true
+
+  Vue = vue
+  isBrowserify = browserify
+
+  exports.compatible = !!Vue.internalDirectives
+  if (!exports.compatible) {
+    console.warn(
+      '[HMR] vue-loader hot reload is only compatible with ' +
+      'Vue.js 1.0.0+.'
+    )
+    return
+  }
+
+  // patch view directive
+  patchView(Vue.internalDirectives.component)
+  console.log('[HMR] Vue component hot reload shim applied.')
+  // shim router-view if present
+  var routerView = Vue.elementDirective('router-view')
+  if (routerView) {
+    patchView(routerView)
+    console.log('[HMR] vue-router <router-view> hot reload shim applied.')
+  }
+}
+
+/**
+ * Shim the view directive (component or router-view).
+ *
+ * @param {Object} View
+ */
+
+function patchView (View) {
+  var unbuild = View.unbuild
+  View.unbuild = function (defer) {
+    if (!this.hotUpdating) {
+      var prevComponent = this.childVM && this.childVM.constructor
+      removeView(prevComponent, this)
+      // defer = true means we are transitioning to a new
+      // Component. Register this new component to the list.
+      if (defer) {
+        addView(this.Component, this)
+      }
+    }
+    // call original
+    return unbuild.call(this, defer)
+  }
+}
+
+/**
+ * Add a component view to a Component's hot list
+ *
+ * @param {Function} Component
+ * @param {Directive} view - view directive instance
+ */
+
+function addView (Component, view) {
+  var id = Component && Component.options.hotID
+  if (id) {
+    if (!map[id]) {
+      map[id] = {
+        Component: Component,
+        views: [],
+        instances: []
+      }
+    }
+    map[id].views.push(view)
+  }
+}
+
+/**
+ * Remove a component view from a Component's hot list
+ *
+ * @param {Function} Component
+ * @param {Directive} view - view directive instance
+ */
+
+function removeView (Component, view) {
+  var id = Component && Component.options.hotID
+  if (id) {
+    map[id].views.$remove(view)
+  }
+}
+
+/**
+ * Create a record for a hot module, which keeps track of its construcotr,
+ * instnaces and views (component directives or router-views).
+ *
+ * @param {String} id
+ * @param {Object} options
+ */
+
+exports.createRecord = function (id, options) {
+  if (typeof options === 'function') {
+    options = options.options
+  }
+  if (typeof options.el !== 'string' && typeof options.data !== 'object') {
+    makeOptionsHot(id, options)
+    map[id] = {
+      Component: null,
+      views: [],
+      instances: []
+    }
+  }
+}
+
+/**
+ * Make a Component options object hot.
+ *
+ * @param {String} id
+ * @param {Object} options
+ */
+
+function makeOptionsHot (id, options) {
+  options.hotID = id
+  injectHook(options, 'created', function () {
+    var record = map[id]
+    if (!record.Component) {
+      record.Component = this.constructor
+    }
+    record.instances.push(this)
+  })
+  injectHook(options, 'beforeDestroy', function () {
+    map[id].instances.$remove(this)
+  })
+}
+
+/**
+ * Inject a hook to a hot reloadable component so that
+ * we can keep track of it.
+ *
+ * @param {Object} options
+ * @param {String} name
+ * @param {Function} hook
+ */
+
+function injectHook (options, name, hook) {
+  var existing = options[name]
+  options[name] = existing
+    ? Array.isArray(existing)
+      ? existing.concat(hook)
+      : [existing, hook]
+    : [hook]
+}
+
+/**
+ * Update a hot component.
+ *
+ * @param {String} id
+ * @param {Object|null} newOptions
+ * @param {String|null} newTemplate
+ */
+
+exports.update = function (id, newOptions, newTemplate) {
+  var record = map[id]
+  // force full-reload if an instance of the component is active but is not
+  // managed by a view
+  if (!record || (record.instances.length && !record.views.length)) {
+    console.log('[HMR] Root or manually-mounted instance modified. Full reload may be required.')
+    if (!isBrowserify) {
+      window.location.reload()
+    } else {
+      // browserify-hmr somehow sends incomplete bundle if we reload here
+      return
+    }
+  }
+  if (!isBrowserify) {
+    // browserify-hmr already logs this
+    console.log('[HMR] Updating component: ' + format(id))
+  }
+  var Component = record.Component
+  // update constructor
+  if (newOptions) {
+    // in case the user exports a constructor
+    Component = record.Component = typeof newOptions === 'function'
+      ? newOptions
+      : Vue.extend(newOptions)
+    makeOptionsHot(id, Component.options)
+  }
+  if (newTemplate) {
+    Component.options.template = newTemplate
+  }
+  // handle recursive lookup
+  if (Component.options.name) {
+    Component.options.components[Component.options.name] = Component
+  }
+  // reset constructor cached linker
+  Component.linker = null
+  // reload all views
+  record.views.forEach(function (view) {
+    updateView(view, Component)
+  })
+  // flush devtools
+  if (window.__VUE_DEVTOOLS_GLOBAL_HOOK__) {
+    window.__VUE_DEVTOOLS_GLOBAL_HOOK__.emit('flush')
+  }
+}
+
+/**
+ * Update a component view instance
+ *
+ * @param {Directive} view
+ * @param {Function} Component
+ */
+
+function updateView (view, Component) {
+  if (!view._bound) {
+    return
+  }
+  view.Component = Component
+  view.hotUpdating = true
+  // disable transitions
+  view.vm._isCompiled = false
+  // save state
+  var state = extractState(view.childVM)
+  // remount, make sure to disable keep-alive
+  var keepAlive = view.keepAlive
+  view.keepAlive = false
+  view.mountComponent()
+  view.keepAlive = keepAlive
+  // restore state
+  restoreState(view.childVM, state, true)
+  // re-eanble transitions
+  view.vm._isCompiled = true
+  view.hotUpdating = false
+}
+
+/**
+ * Extract state from a Vue instance.
+ *
+ * @param {Vue} vm
+ * @return {Object}
+ */
+
+function extractState (vm) {
+  return {
+    cid: vm.constructor.cid,
+    data: vm.$data,
+    children: vm.$children.map(extractState)
+  }
+}
+
+/**
+ * Restore state to a reloaded Vue instance.
+ *
+ * @param {Vue} vm
+ * @param {Object} state
+ */
+
+function restoreState (vm, state, isRoot) {
+  var oldAsyncConfig
+  if (isRoot) {
+    // set Vue into sync mode during state rehydration
+    oldAsyncConfig = Vue.config.async
+    Vue.config.async = false
+  }
+  // actual restore
+  if (isRoot || !vm._props) {
+    vm.$data = state.data
+  } else {
+    Object.keys(state.data).forEach(function (key) {
+      if (!vm._props[key]) {
+        // for non-root, only restore non-props fields
+        vm.$data[key] = state.data[key]
+      }
+    })
+  }
+  // verify child consistency
+  var hasSameChildren = vm.$children.every(function (c, i) {
+    return state.children[i] && state.children[i].cid === c.constructor.cid
+  })
+  if (hasSameChildren) {
+    // rehydrate children
+    vm.$children.forEach(function (c, i) {
+      restoreState(c, state.children[i])
+    })
+  }
+  if (isRoot) {
+    Vue.config.async = oldAsyncConfig
+  }
+}
+
+function format (id) {
+  var match = id.match(/[^\/]+\.vue$/)
+  return match ? match[0] : id
+}
+
+},{}],4:[function(require,module,exports){
 /*!
  * vue-resource v0.7.4
  * https://github.com/vuejs/vue-resource
@@ -18456,10 +18844,10 @@ if (typeof window !== 'undefined' && window.Vue) {
 }
 
 module.exports = plugin;
-},{}],4:[function(require,module,exports){
-(function (process,global){
+},{}],5:[function(require,module,exports){
+(function (process){
 /*!
- * Vue.js v1.0.26
+ * Vue.js v1.0.28
  * (c) 2016 Evan You
  * Released under the MIT License.
  */
@@ -18615,7 +19003,7 @@ function stripQuotes(str) {
 }
 
 /**
- * Camelize a hyphen-delmited string.
+ * Camelize a hyphen-delimited string.
  *
  * @param {String} str
  * @return {String}
@@ -18638,10 +19026,10 @@ function toUpper(_, c) {
  * @return {String}
  */
 
-var hyphenateRE = /([a-z\d])([A-Z])/g;
+var hyphenateRE = /([^-])([A-Z])/g;
 
 function hyphenate(str) {
-  return str.replace(hyphenateRE, '$1-$2').toLowerCase();
+  return str.replace(hyphenateRE, '$1-$2').replace(hyphenateRE, '$1-$2').toLowerCase();
 }
 
 /**
@@ -18861,12 +19249,7 @@ var UA = inBrowser && window.navigator.userAgent.toLowerCase();
 var isIE = UA && UA.indexOf('trident') > 0;
 var isIE9 = UA && UA.indexOf('msie 9.0') > 0;
 var isAndroid = UA && UA.indexOf('android') > 0;
-var isIos = UA && /(iphone|ipad|ipod|ios)/i.test(UA);
-var iosVersionMatch = isIos && UA.match(/os ([\d_]+)/);
-var iosVersion = iosVersionMatch && iosVersionMatch[1].split('_');
-
-// detecting iOS UIWebView by indexedDB
-var hasMutationObserverBug = iosVersion && Number(iosVersion[0]) >= 9 && Number(iosVersion[1]) >= 3 && !window.indexedDB;
+var isIOS = UA && /iphone|ipad|ipod|ios/.test(UA);
 
 var transitionProp = undefined;
 var transitionEndEvent = undefined;
@@ -18883,6 +19266,12 @@ if (inBrowser && !isIE9) {
   animationEndEvent = isWebkitAnim ? 'webkitAnimationEnd' : 'animationend';
 }
 
+/* istanbul ignore next */
+function isNative(Ctor) {
+  return (/native code/.test(Ctor.toString())
+  );
+}
+
 /**
  * Defer a task to execute it asynchronously. Ideally this
  * should be executed as a microtask, so we leverage
@@ -18896,35 +19285,55 @@ if (inBrowser && !isIE9) {
 var nextTick = (function () {
   var callbacks = [];
   var pending = false;
-  var timerFunc;
+  var timerFunc = undefined;
+
   function nextTickHandler() {
     pending = false;
     var copies = callbacks.slice(0);
-    callbacks = [];
+    callbacks.length = 0;
     for (var i = 0; i < copies.length; i++) {
       copies[i]();
     }
   }
 
+  // the nextTick behavior leverages the microtask queue, which can be accessed
+  // via either native Promise.then or MutationObserver.
+  // MutationObserver has wider support, however it is seriously bugged in
+  // UIWebView in iOS >= 9.3.3 when triggered in touch event handlers. It
+  // completely stops working after triggering a few times... so, if native
+  // Promise is available, we will use it:
   /* istanbul ignore if */
-  if (typeof MutationObserver !== 'undefined' && !hasMutationObserverBug) {
+  if (typeof Promise !== 'undefined' && isNative(Promise)) {
+    var p = Promise.resolve();
+    var noop = function noop() {};
+    timerFunc = function () {
+      p.then(nextTickHandler);
+      // in problematic UIWebViews, Promise.then doesn't completely break, but
+      // it can get stuck in a weird state where callbacks are pushed into the
+      // microtask queue but the queue isn't being flushed, until the browser
+      // needs to do some other work, e.g. handle a timer. Therefore we can
+      // "force" the microtask queue to be flushed by adding an empty timer.
+      if (isIOS) setTimeout(noop);
+    };
+  } else if (typeof MutationObserver !== 'undefined') {
+    // use MutationObserver where native Promise is not available,
+    // e.g. IE11, iOS7, Android 4.4
     var counter = 1;
     var observer = new MutationObserver(nextTickHandler);
-    var textNode = document.createTextNode(counter);
+    var textNode = document.createTextNode(String(counter));
     observer.observe(textNode, {
       characterData: true
     });
     timerFunc = function () {
       counter = (counter + 1) % 2;
-      textNode.data = counter;
+      textNode.data = String(counter);
     };
   } else {
-    // webpack attempts to inject a shim for setImmediate
-    // if it is used as a global, so we have to work around that to
-    // avoid bundling unnecessary code.
-    var context = inBrowser ? window : typeof global !== 'undefined' ? global : {};
-    timerFunc = context.setImmediate || setTimeout;
+    // fallback to setTimeout
+    /* istanbul ignore next */
+    timerFunc = setTimeout;
   }
+
   return function (cb, ctx) {
     var func = ctx ? function () {
       cb.call(ctx);
@@ -18938,7 +19347,7 @@ var nextTick = (function () {
 
 var _Set = undefined;
 /* istanbul ignore if */
-if (typeof Set !== 'undefined' && Set.toString().match(/native code/)) {
+if (typeof Set !== 'undefined' && isNative(Set)) {
   // use native Set when available.
   _Set = Set;
 } else {
@@ -19059,7 +19468,6 @@ p.get = function (key, returnEntry) {
 };
 
 var cache$1 = new Cache(1000);
-var filterTokenRE = /[^\s'"]+|'[^']*'|"[^"]*"/g;
 var reservedArgRE = /^in$|^-?\d+/;
 
 /**
@@ -19068,35 +19476,167 @@ var reservedArgRE = /^in$|^-?\d+/;
 
 var str;
 var dir;
-var c;
-var prev;
-var i;
-var l;
-var lastFilterIndex;
-var inSingle;
-var inDouble;
-var curly;
-var square;
-var paren;
-/**
- * Push a filter to the current directive object
- */
+var len;
+var index;
+var chr;
+var state;
+var startState = 0;
+var filterState = 1;
+var filterNameState = 2;
+var filterArgState = 3;
 
-function pushFilter() {
-  var exp = str.slice(lastFilterIndex, i).trim();
-  var filter;
-  if (exp) {
-    filter = {};
-    var tokens = exp.match(filterTokenRE);
-    filter.name = tokens[0];
-    if (tokens.length > 1) {
-      filter.args = tokens.slice(1).map(processFilterArg);
+var doubleChr = 0x22;
+var singleChr = 0x27;
+var pipeChr = 0x7C;
+var escapeChr = 0x5C;
+var spaceChr = 0x20;
+
+var expStartChr = { 0x5B: 1, 0x7B: 1, 0x28: 1 };
+var expChrPair = { 0x5B: 0x5D, 0x7B: 0x7D, 0x28: 0x29 };
+
+function peek() {
+  return str.charCodeAt(index + 1);
+}
+
+function next() {
+  return str.charCodeAt(++index);
+}
+
+function eof() {
+  return index >= len;
+}
+
+function eatSpace() {
+  while (peek() === spaceChr) {
+    next();
+  }
+}
+
+function isStringStart(chr) {
+  return chr === doubleChr || chr === singleChr;
+}
+
+function isExpStart(chr) {
+  return expStartChr[chr];
+}
+
+function isExpEnd(start, chr) {
+  return expChrPair[start] === chr;
+}
+
+function parseString() {
+  var stringQuote = next();
+  var chr;
+  while (!eof()) {
+    chr = next();
+    // escape char
+    if (chr === escapeChr) {
+      next();
+    } else if (chr === stringQuote) {
+      break;
     }
   }
-  if (filter) {
-    (dir.filters = dir.filters || []).push(filter);
+}
+
+function parseSpecialExp(chr) {
+  var inExp = 0;
+  var startChr = chr;
+
+  while (!eof()) {
+    chr = peek();
+    if (isStringStart(chr)) {
+      parseString();
+      continue;
+    }
+
+    if (startChr === chr) {
+      inExp++;
+    }
+    if (isExpEnd(startChr, chr)) {
+      inExp--;
+    }
+
+    next();
+
+    if (inExp === 0) {
+      break;
+    }
   }
-  lastFilterIndex = i + 1;
+}
+
+/**
+ * syntax:
+ * expression | filterName  [arg  arg [| filterName arg arg]]
+ */
+
+function parseExpression() {
+  var start = index;
+  while (!eof()) {
+    chr = peek();
+    if (isStringStart(chr)) {
+      parseString();
+    } else if (isExpStart(chr)) {
+      parseSpecialExp(chr);
+    } else if (chr === pipeChr) {
+      next();
+      chr = peek();
+      if (chr === pipeChr) {
+        next();
+      } else {
+        if (state === startState || state === filterArgState) {
+          state = filterState;
+        }
+        break;
+      }
+    } else if (chr === spaceChr && (state === filterNameState || state === filterArgState)) {
+      eatSpace();
+      break;
+    } else {
+      if (state === filterState) {
+        state = filterNameState;
+      }
+      next();
+    }
+  }
+
+  return str.slice(start + 1, index) || null;
+}
+
+function parseFilterList() {
+  var filters = [];
+  while (!eof()) {
+    filters.push(parseFilter());
+  }
+  return filters;
+}
+
+function parseFilter() {
+  var filter = {};
+  var args;
+
+  state = filterState;
+  filter.name = parseExpression().trim();
+
+  state = filterArgState;
+  args = parseFilterArguments();
+
+  if (args.length) {
+    filter.args = args;
+  }
+  return filter;
+}
+
+function parseFilterArguments() {
+  var args = [];
+  while (!eof() && state !== filterState) {
+    var arg = parseExpression();
+    if (!arg) {
+      break;
+    }
+    args.push(processFilterArg(arg));
+  }
+
+  return args;
 }
 
 /**
@@ -19148,56 +19688,22 @@ function parseDirective(s) {
 
   // reset parser state
   str = s;
-  inSingle = inDouble = false;
-  curly = square = paren = 0;
-  lastFilterIndex = 0;
   dir = {};
+  len = str.length;
+  index = -1;
+  chr = '';
+  state = startState;
 
-  for (i = 0, l = str.length; i < l; i++) {
-    prev = c;
-    c = str.charCodeAt(i);
-    if (inSingle) {
-      // check single quote
-      if (c === 0x27 && prev !== 0x5C) inSingle = !inSingle;
-    } else if (inDouble) {
-      // check double quote
-      if (c === 0x22 && prev !== 0x5C) inDouble = !inDouble;
-    } else if (c === 0x7C && // pipe
-    str.charCodeAt(i + 1) !== 0x7C && str.charCodeAt(i - 1) !== 0x7C) {
-      if (dir.expression == null) {
-        // first filter, end of expression
-        lastFilterIndex = i + 1;
-        dir.expression = str.slice(0, i).trim();
-      } else {
-        // already has filter
-        pushFilter();
-      }
-    } else {
-      switch (c) {
-        case 0x22:
-          inDouble = true;break; // "
-        case 0x27:
-          inSingle = true;break; // '
-        case 0x28:
-          paren++;break; // (
-        case 0x29:
-          paren--;break; // )
-        case 0x5B:
-          square++;break; // [
-        case 0x5D:
-          square--;break; // ]
-        case 0x7B:
-          curly++;break; // {
-        case 0x7D:
-          curly--;break; // }
-      }
+  var filters;
+
+  if (str.indexOf('|') < 0) {
+    dir.expression = str.trim();
+  } else {
+    dir.expression = parseExpression().trim();
+    filters = parseFilterList();
+    if (filters.length) {
+      dir.filters = filters;
     }
-  }
-
-  if (dir.expression == null) {
-    dir.expression = str.slice(0, i).trim();
-  } else if (lastFilterIndex !== 0) {
-    pushFilter();
   }
 
   cache$1.put(s, dir);
@@ -20786,10 +21292,7 @@ var util = Object.freeze({
 	isIE: isIE,
 	isIE9: isIE9,
 	isAndroid: isAndroid,
-	isIos: isIos,
-	iosVersionMatch: iosVersionMatch,
-	iosVersion: iosVersion,
-	hasMutationObserverBug: hasMutationObserverBug,
+	isIOS: isIOS,
 	get transitionProp () { return transitionProp; },
 	get transitionEndEvent () { return transitionEndEvent; },
 	get animationProp () { return animationProp; },
@@ -20889,7 +21392,7 @@ function initMixin (Vue) {
 
     // fragment:
     // if this instance is compiled inside a Fragment, it
-    // needs to reigster itself as a child of that fragment
+    // needs to register itself as a child of that fragment
     // for attach/detach to work properly.
     this._frag = options._frag;
     if (this._frag) {
@@ -21194,7 +21697,7 @@ function parsePath(path) {
  */
 
 function getPath(obj, path) {
-  return parseExpression(path).get(obj);
+  return parseExpression$1(path).get(obj);
 }
 
 /**
@@ -21229,7 +21732,7 @@ function setPath(obj, path, val) {
     last = obj;
     key = path[i];
     if (key.charAt(0) === '*') {
-      key = parseExpression(key.slice(1)).get.call(original, original);
+      key = parseExpression$1(key.slice(1)).get.call(original, original);
     }
     if (i < l - 1) {
       obj = obj[key];
@@ -21273,7 +21776,7 @@ var improperKeywordsRE = new RegExp('^(' + improperKeywords.replace(/,/g, '\\b|'
 
 var wsRE = /\s/g;
 var newlineRE = /\n/g;
-var saveRE = /[\{,]\s*[\w\$_]+\s*:|('(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*"|`(?:[^`\\]|\\.)*\$\{|\}(?:[^`\\]|\\.)*`|`(?:[^`\\]|\\.)*`)|new |typeof |void /g;
+var saveRE = /[\{,]\s*[\w\$_]+\s*:|('(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*"|`(?:[^`\\]|\\.)*\$\{|\}(?:[^`\\"']|\\.)*`|`(?:[^`\\]|\\.)*`)|new |typeof |void /g;
 var restoreRE = /"(\d+)"/g;
 var pathTestRE = /^[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*|\['.*?'\]|\[".*?"\]|\[\d+\]|\[[A-Za-z_$][\w$]*\])*$/;
 var identRE = /[^\w$\.](?:[A-Za-z_$][\w$]*)/g;
@@ -21420,7 +21923,7 @@ function compileSetter(exp) {
  * @return {Function}
  */
 
-function parseExpression(exp, needSet) {
+function parseExpression$1(exp, needSet) {
   exp = exp.trim();
   // try cache
   var hit = expressionCache.get(exp);
@@ -21459,7 +21962,7 @@ function isSimplePath(exp) {
 }
 
 var expression = Object.freeze({
-  parseExpression: parseExpression,
+  parseExpression: parseExpression$1,
   isSimplePath: isSimplePath
 });
 
@@ -21611,7 +22114,7 @@ function Watcher(vm, expOrFn, cb, options) {
     this.getter = expOrFn;
     this.setter = undefined;
   } else {
-    var res = parseExpression(expOrFn, this.twoWay);
+    var res = parseExpression$1(expOrFn, this.twoWay);
     this.getter = res.get;
     this.setter = res.set;
   }
@@ -22455,6 +22958,10 @@ var vFor = {
   params: ['track-by', 'stagger', 'enter-stagger', 'leave-stagger'],
 
   bind: function bind() {
+    if (process.env.NODE_ENV !== 'production' && this.el.hasAttribute('v-if')) {
+      warn('<' + this.el.tagName.toLowerCase() + ' v-for="' + this.expression + '" v-if="' + this.el.getAttribute('v-if') + '">: ' + 'Using v-if and v-for on the same element is not recommended - ' + 'consider filtering the source Array instead.', this.vm);
+    }
+
     // support "item in/of items" syntax
     var inMatch = this.expression.match(/(.*) (?:in|of) (.*)/);
     if (inMatch) {
@@ -22565,7 +23072,7 @@ var vFor = {
           });
         }
       } else {
-        // new isntance
+        // new instance
         frag = this.create(value, alias, i, key);
         frag.fresh = !init;
       }
@@ -23000,24 +23507,6 @@ function findPrevFrag(frag, anchor, id) {
 }
 
 /**
- * Find a vm from a fragment.
- *
- * @param {Fragment} frag
- * @return {Vue|undefined}
- */
-
-function findVmFromFrag(frag) {
-  var node = frag.node;
-  // handle multi-node frag
-  if (frag.end) {
-    while (!node.__vue__ && node !== frag.end && node.nextSibling) {
-      node = node.nextSibling;
-    }
-  }
-  return node.__vue__;
-}
-
-/**
  * Create a range array from given number.
  *
  * @param {Number} n
@@ -23050,6 +23539,24 @@ if (process.env.NODE_ENV !== 'production') {
   vFor.warnDuplicate = function (value) {
     warn('Duplicate value found in v-for="' + this.descriptor.raw + '": ' + JSON.stringify(value) + '. Use track-by="$index" if ' + 'you are expecting duplicate values.', this.vm);
   };
+}
+
+/**
+ * Find a vm from a fragment.
+ *
+ * @param {Fragment} frag
+ * @return {Vue|undefined}
+ */
+
+function findVmFromFrag(frag) {
+  var node = frag.node;
+  // handle multi-node frag
+  if (frag.end) {
+    while (!node.__vue__ && node !== frag.end && node.nextSibling) {
+      node = node.nextSibling;
+    }
+  }
+  return node.__vue__;
 }
 
 var vIf = {
@@ -23449,15 +23956,16 @@ var checkbox = {
     }
 
     this.listener = function () {
-      var model = self._watcher.value;
+      var model = self._watcher.get();
       if (isArray(model)) {
         var val = self.getValue();
+        var i = indexOf(model, val);
         if (el.checked) {
-          if (indexOf(model, val) < 0) {
-            model.push(val);
+          if (i < 0) {
+            self.set(model.concat(val));
           }
-        } else {
-          model.$remove(val);
+        } else if (i > -1) {
+          self.set(model.slice(0, i).concat(model.slice(i + 1)));
         }
       } else {
         self.set(getBooleanValue());
@@ -23974,6 +24482,12 @@ var cloak = {
   }
 };
 
+// logic control
+// two-way binding
+// event handling
+// attributes
+// ref & el
+// cloak
 // must export plain object
 var directives = {
   text: text$1,
@@ -24465,6 +24979,7 @@ var settablePathRE = /^[A-Za-z_$][\w$]*(\.[A-Za-z_$][\w$]*|\[[^\[\]]+\])*$/;
 
 function compileProps(el, propOptions, vm) {
   var props = [];
+  var propsData = vm.$options.propsData;
   var names = Object.keys(propOptions);
   var i = names.length;
   var options, name, attr, value, path, parsed, prop;
@@ -24532,13 +25047,16 @@ function compileProps(el, propOptions, vm) {
     } else if ((value = getAttr(el, attr)) !== null) {
       // has literal binding!
       prop.raw = value;
+    } else if (propsData && (value = propsData[name] || propsData[path]) !== null) {
+      // has propsData
+      prop.raw = value;
     } else if (process.env.NODE_ENV !== 'production') {
       // check possible camelCase prop usage
       var lowerCaseName = path.toLowerCase();
       value = /[A-Z\-]/.test(name) && (el.getAttribute(lowerCaseName) || el.getAttribute(':' + lowerCaseName) || el.getAttribute('v-bind:' + lowerCaseName) || el.getAttribute(':' + lowerCaseName + '.once') || el.getAttribute('v-bind:' + lowerCaseName + '.once') || el.getAttribute(':' + lowerCaseName + '.sync') || el.getAttribute('v-bind:' + lowerCaseName + '.sync'));
       if (value) {
         warn('Possible usage error for prop `' + lowerCaseName + '` - ' + 'did you mean `' + attr + '`? HTML is case-insensitive, remember to use ' + 'kebab-case for props in templates.', vm);
-      } else if (options.required) {
+      } else if (options.required && (!propsData || !(name in propsData) && !(path in propsData))) {
         // warn missing required
         warn('Missing required prop: ' + name, vm);
       }
@@ -25383,7 +25901,7 @@ function linkAndCapture(linker, vm) {
   var originalDirCount = vm._directives.length;
   linker();
   var dirs = vm._directives.slice(originalDirCount);
-  dirs.sort(directiveComparator);
+  sortDirectives(dirs);
   for (var i = 0, l = dirs.length; i < l; i++) {
     dirs[i]._bind();
   }
@@ -25391,16 +25909,37 @@ function linkAndCapture(linker, vm) {
 }
 
 /**
- * Directive priority sort comparator
+ * sort directives by priority (stable sort)
  *
- * @param {Object} a
- * @param {Object} b
+ * @param {Array} dirs
  */
+function sortDirectives(dirs) {
+  if (dirs.length === 0) return;
 
-function directiveComparator(a, b) {
-  a = a.descriptor.def.priority || DEFAULT_PRIORITY;
-  b = b.descriptor.def.priority || DEFAULT_PRIORITY;
-  return a > b ? -1 : a === b ? 0 : 1;
+  var groupedMap = {};
+  var i, j, k, l;
+  var index = 0;
+  var priorities = [];
+  for (i = 0, j = dirs.length; i < j; i++) {
+    var dir = dirs[i];
+    var priority = dir.descriptor.def.priority || DEFAULT_PRIORITY;
+    var array = groupedMap[priority];
+    if (!array) {
+      array = groupedMap[priority] = [];
+      priorities.push(priority);
+    }
+    array.push(dir);
+  }
+
+  priorities.sort(function (a, b) {
+    return a > b ? -1 : a === b ? 0 : 1;
+  });
+  for (i = 0, j = priorities.length; i < j; i++) {
+    var group = groupedMap[priorities[i]];
+    for (k = 0, l = group.length; k < l; k++) {
+      dirs[index++] = group[k];
+    }
+  }
 }
 
 /**
@@ -25518,7 +26057,13 @@ function compileRoot(el, options, contextOptions) {
     });
     if (names.length) {
       var plural = names.length > 1;
-      warn('Attribute' + (plural ? 's ' : ' ') + names.join(', ') + (plural ? ' are' : ' is') + ' ignored on component ' + '<' + options.el.tagName.toLowerCase() + '> because ' + 'the component is a fragment instance: ' + 'http://vuejs.org/guide/components.html#Fragment-Instance');
+
+      var componentName = options.el.tagName.toLowerCase();
+      if (componentName === 'component' && options.name) {
+        componentName += ':' + options.name;
+      }
+
+      warn('Attribute' + (plural ? 's ' : ' ') + names.join(', ') + (plural ? ' are' : ' is') + ' ignored on component ' + '<' + componentName + '> because ' + 'the component is a fragment instance: ' + 'http://vuejs.org/guide/components.html#Fragment-Instance');
     }
   }
 
@@ -25577,6 +26122,10 @@ function compileElement(el, options) {
   // textarea treats its text content as the initial value.
   // just bind it as an attr directive for value.
   if (el.tagName === 'TEXTAREA') {
+    // a textarea which has v-pre attr should skip complie.
+    if (getAttr(el, 'v-pre') !== null) {
+      return skip;
+    }
     var tokens = parseText(el.value);
     if (tokens) {
       el.setAttribute(':value', tokensToExp(tokens));
@@ -25903,7 +26452,7 @@ function makeTerminalNodeLinkFn(el, dirName, value, options, def, rawName, arg, 
     modifiers: modifiers,
     def: def
   };
-  // check ref for v-for and router-view
+  // check ref for v-for, v-if and router-view
   if (dirName === 'for' || dirName === 'router-view') {
     descriptor.ref = findRef(el);
   }
@@ -26143,6 +26692,9 @@ function transcludeTemplate(el, options) {
   var frag = parseTemplate(template, true);
   if (frag) {
     var replacer = frag.firstChild;
+    if (!replacer) {
+      return frag;
+    }
     var tag = replacer.tagName && replacer.tagName.toLowerCase();
     if (options.replace) {
       /* istanbul ignore if */
@@ -26895,7 +27447,7 @@ Directive.prototype._setupParamWatcher = function (key, expression) {
 Directive.prototype._checkStatement = function () {
   var expression = this.expression;
   if (expression && this.acceptStatement && !isSimplePath(expression)) {
-    var fn = parseExpression(expression).get;
+    var fn = parseExpression$1(expression).get;
     var scope = this._scope || this.vm;
     var handler = function handler(e) {
       scope.$event = e;
@@ -27343,7 +27895,7 @@ function dataAPI (Vue) {
    */
 
   Vue.prototype.$get = function (exp, asStatement) {
-    var res = parseExpression(exp);
+    var res = parseExpression$1(exp);
     if (res) {
       if (asStatement) {
         var self = this;
@@ -27371,7 +27923,7 @@ function dataAPI (Vue) {
    */
 
   Vue.prototype.$set = function (exp, val) {
-    var res = parseExpression(exp, true);
+    var res = parseExpression$1(exp, true);
     if (res && res.set) {
       res.set.call(this, this, val);
     }
@@ -28134,7 +28686,7 @@ function filterBy(arr, search, delimiter) {
 }
 
 /**
- * Filter filter for arrays
+ * Order filter for arrays
  *
  * @param {String|Array<String>|Function} ...sortKeys
  * @param {Number} [order]
@@ -28517,7 +29069,7 @@ function installGlobalAPI (Vue) {
 
 installGlobalAPI(Vue);
 
-Vue.version = '1.0.26';
+Vue.version = '1.0.28';
 
 // devtools global hook
 /* istanbul ignore next */
@@ -28532,8 +29084,8 @@ setTimeout(function () {
 }, 0);
 
 module.exports = Vue;
-}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":1}],5:[function(require,module,exports){
+}).call(this,require('_process'))
+},{"_process":2}],6:[function(require,module,exports){
 var inserted = exports.cache = {}
 
 exports.insert = function (css) {
@@ -28551,298 +29103,6 @@ exports.insert = function (css) {
 
   document.getElementsByTagName('head')[0].appendChild(elem)
   return elem
-}
-
-},{}],6:[function(require,module,exports){
-var Vue; // late bind
-var map = Object.create(null);
-var shimmed = false;
-var isBrowserify = false;
-
-/**
- * Determine compatibility and apply patch.
- *
- * @param {Function} vue
- * @param {Boolean} browserify
- */
-
-exports.install = function (vue, browserify) {
-  if (shimmed) return;
-  shimmed = true;
-
-  Vue = vue;
-  isBrowserify = browserify;
-
-  exports.compatible = !!Vue.internalDirectives;
-  if (!exports.compatible) {
-    console.warn('[HMR] vue-loader hot reload is only compatible with ' + 'Vue.js 1.0.0+.');
-    return;
-  }
-
-  // patch view directive
-  patchView(Vue.internalDirectives.component);
-  console.log('[HMR] Vue component hot reload shim applied.');
-  // shim router-view if present
-  var routerView = Vue.elementDirective('router-view');
-  if (routerView) {
-    patchView(routerView);
-    console.log('[HMR] vue-router <router-view> hot reload shim applied.');
-  }
-};
-
-/**
- * Shim the view directive (component or router-view).
- *
- * @param {Object} View
- */
-
-function patchView(View) {
-  var unbuild = View.unbuild;
-  View.unbuild = function (defer) {
-    if (!this.hotUpdating) {
-      var prevComponent = this.childVM && this.childVM.constructor;
-      removeView(prevComponent, this);
-      // defer = true means we are transitioning to a new
-      // Component. Register this new component to the list.
-      if (defer) {
-        addView(this.Component, this);
-      }
-    }
-    // call original
-    return unbuild.call(this, defer);
-  };
-}
-
-/**
- * Add a component view to a Component's hot list
- *
- * @param {Function} Component
- * @param {Directive} view - view directive instance
- */
-
-function addView(Component, view) {
-  var id = Component && Component.options.hotID;
-  if (id) {
-    if (!map[id]) {
-      map[id] = {
-        Component: Component,
-        views: [],
-        instances: []
-      };
-    }
-    map[id].views.push(view);
-  }
-}
-
-/**
- * Remove a component view from a Component's hot list
- *
- * @param {Function} Component
- * @param {Directive} view - view directive instance
- */
-
-function removeView(Component, view) {
-  var id = Component && Component.options.hotID;
-  if (id) {
-    map[id].views.$remove(view);
-  }
-}
-
-/**
- * Create a record for a hot module, which keeps track of its construcotr,
- * instnaces and views (component directives or router-views).
- *
- * @param {String} id
- * @param {Object} options
- */
-
-exports.createRecord = function (id, options) {
-  if (typeof options === 'function') {
-    options = options.options;
-  }
-  if (typeof options.el !== 'string' && typeof options.data !== 'object') {
-    makeOptionsHot(id, options);
-    map[id] = {
-      Component: null,
-      views: [],
-      instances: []
-    };
-  }
-};
-
-/**
- * Make a Component options object hot.
- *
- * @param {String} id
- * @param {Object} options
- */
-
-function makeOptionsHot(id, options) {
-  options.hotID = id;
-  injectHook(options, 'created', function () {
-    var record = map[id];
-    if (!record.Component) {
-      record.Component = this.constructor;
-    }
-    record.instances.push(this);
-  });
-  injectHook(options, 'beforeDestroy', function () {
-    map[id].instances.$remove(this);
-  });
-}
-
-/**
- * Inject a hook to a hot reloadable component so that
- * we can keep track of it.
- *
- * @param {Object} options
- * @param {String} name
- * @param {Function} hook
- */
-
-function injectHook(options, name, hook) {
-  var existing = options[name];
-  options[name] = existing ? Array.isArray(existing) ? existing.concat(hook) : [existing, hook] : [hook];
-}
-
-/**
- * Update a hot component.
- *
- * @param {String} id
- * @param {Object|null} newOptions
- * @param {String|null} newTemplate
- */
-
-exports.update = function (id, newOptions, newTemplate) {
-  var record = map[id];
-  // force full-reload if an instance of the component is active but is not
-  // managed by a view
-  if (!record || record.instances.length && !record.views.length) {
-    console.log('[HMR] Root or manually-mounted instance modified. Full reload may be required.');
-    if (!isBrowserify) {
-      window.location.reload();
-    } else {
-      // browserify-hmr somehow sends incomplete bundle if we reload here
-      return;
-    }
-  }
-  if (!isBrowserify) {
-    // browserify-hmr already logs this
-    console.log('[HMR] Updating component: ' + format(id));
-  }
-  var Component = record.Component;
-  // update constructor
-  if (newOptions) {
-    // in case the user exports a constructor
-    Component = record.Component = typeof newOptions === 'function' ? newOptions : Vue.extend(newOptions);
-    makeOptionsHot(id, Component.options);
-  }
-  if (newTemplate) {
-    Component.options.template = newTemplate;
-  }
-  // handle recursive lookup
-  if (Component.options.name) {
-    Component.options.components[Component.options.name] = Component;
-  }
-  // reset constructor cached linker
-  Component.linker = null;
-  // reload all views
-  record.views.forEach(function (view) {
-    updateView(view, Component);
-  });
-  // flush devtools
-  if (window.__VUE_DEVTOOLS_GLOBAL_HOOK__) {
-    window.__VUE_DEVTOOLS_GLOBAL_HOOK__.emit('flush');
-  }
-};
-
-/**
- * Update a component view instance
- *
- * @param {Directive} view
- * @param {Function} Component
- */
-
-function updateView(view, Component) {
-  if (!view._bound) {
-    return;
-  }
-  view.Component = Component;
-  view.hotUpdating = true;
-  // disable transitions
-  view.vm._isCompiled = false;
-  // save state
-  var state = extractState(view.childVM);
-  // remount, make sure to disable keep-alive
-  var keepAlive = view.keepAlive;
-  view.keepAlive = false;
-  view.mountComponent();
-  view.keepAlive = keepAlive;
-  // restore state
-  restoreState(view.childVM, state, true);
-  // re-eanble transitions
-  view.vm._isCompiled = true;
-  view.hotUpdating = false;
-}
-
-/**
- * Extract state from a Vue instance.
- *
- * @param {Vue} vm
- * @return {Object}
- */
-
-function extractState(vm) {
-  return {
-    cid: vm.constructor.cid,
-    data: vm.$data,
-    children: vm.$children.map(extractState)
-  };
-}
-
-/**
- * Restore state to a reloaded Vue instance.
- *
- * @param {Vue} vm
- * @param {Object} state
- */
-
-function restoreState(vm, state, isRoot) {
-  var oldAsyncConfig;
-  if (isRoot) {
-    // set Vue into sync mode during state rehydration
-    oldAsyncConfig = Vue.config.async;
-    Vue.config.async = false;
-  }
-  // actual restore
-  if (isRoot || !vm._props) {
-    vm.$data = state.data;
-  } else {
-    Object.keys(state.data).forEach(function (key) {
-      if (!vm._props[key]) {
-        // for non-root, only restore non-props fields
-        vm.$data[key] = state.data[key];
-      }
-    });
-  }
-  // verify child consistency
-  var hasSameChildren = vm.$children.every(function (c, i) {
-    return state.children[i] && state.children[i].cid === c.constructor.cid;
-  });
-  if (hasSameChildren) {
-    // rehydrate children
-    vm.$children.forEach(function (c, i) {
-      restoreState(c, state.children[i]);
-    });
-  }
-  if (isRoot) {
-    Vue.config.async = oldAsyncConfig;
-  }
-}
-
-function format(id) {
-  var match = id.match(/[^\/]+\.vue$/);
-  return match ? match[0] : id;
 }
 
 },{}],7:[function(require,module,exports){
@@ -28902,19 +29162,18 @@ exports.default = {
     }
 };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\n \n<clients _v-0c1d0f31=\"\"></clients>\n\n<button type=\"clean\" class=\"btn btn-primary\" @click=\"limp\" :disabled=\"!ist.id\" _v-0c1d0f31=\"\">Novo</button>\n<button type=\"button\" class=\"btn btn-primary\" data-toggle=\"modal\" data-target=\".bs-example-modal-lg1\" :disabled=\"!ist.id\" _v-0c1d0f31=\"\">Editar</button>\n <form action=\"/newcartridge\" method=\"POST\" role=\"form\" _v-0c1d0f31=\"\">\n\n\n<!--================================================\n=            MODAL DE EDIÇÃO DO CLIENTE            =\n=================================================-->\n\n \n\n\n\n<div class=\"modal fade bs-example-modal-lg1\" tabindex=\"-1\" role=\"dialog\" aria-labelledby=\"myLargeModalLabel\" _v-0c1d0f31=\"\">\n      <div class=\"modal-dialog modal-lg\" role=\"document\" _v-0c1d0f31=\"\">\n            <div class=\"modal-content\" _v-0c1d0f31=\"\">\n               \n              <h1 _v-0c1d0f31=\"\">Editar Cliente</h1>\n\n              <div id=\"divEdit\" _v-0c1d0f31=\"\"> \n            <!--  <input type=\"hidden\" name=\"id\" id=\"id\" value=\"{{ist.id}}\"> -->\n       \n        <!-- name: <input type=\"text\" class=\"texto\" id=\"valueText\"> -->\n                <div class=\"form-group\" _v-0c1d0f31=\"\">\n                  <label for=\"\" _v-0c1d0f31=\"\">Name</label>\n                  <input type=\"text\" class=\"form-control\" autofocus=\"\" required=\"\" placeholder=\" Name\" id=\"nameEdit\" name=\"name\" v-model=\"ist.name\" _v-0c1d0f31=\"\">\n\n                </div>\n             <div class=\"form-group\" _v-0c1d0f31=\"\">\n                <label for=\"\" _v-0c1d0f31=\"\">Fone</label>\n                <input type=\"text\" class=\"form-control\" required=\"\" placeholder=\"Fone\" id=\"foneEdit\" name=\"fone\" v-model=\"ist.fone\" _v-0c1d0f31=\"\">\n            </div>\n            <div class=\"form-group\" _v-0c1d0f31=\"\">\n                <label for=\"\" _v-0c1d0f31=\"\">Address</label>\n                <input type=\"text\" class=\"form-control\" required=\"\" placeholder=\"Address\" id=\"addressEdit\" name=\"address\" v-model=\"ist.address\" _v-0c1d0f31=\"\">\n            </div>\n          \n        <br _v-0c1d0f31=\"\"><br _v-0c1d0f31=\"\">\n         \n         <button class=\"btn btn-lg btn-primary\" data-dismiss=\"modal\" _v-0c1d0f31=\"\">Editar</button> <br _v-0c1d0f31=\"\">\n\n\n        <br _v-0c1d0f31=\"\">\n        <br _v-0c1d0f31=\"\">\n        <br _v-0c1d0f31=\"\">\n\n        </div>\n\n        \n\n            </div>\n          </div>\n</div>\n\n\n<!--====  End of MODAL DE EDIÇÃO DO CLIENTE  ====-->\n\n     \n \n      <input type=\"hidden\" name=\"client_id\" value=\"{{ist.id}}\" _v-0c1d0f31=\"\">\n      <div class=\"form-group\" _v-0c1d0f31=\"\">\n        <label for=\"\" _v-0c1d0f31=\"\">Name</label>\n        <input type=\"text\" class=\"form-control\" id=\"\" required=\"\" placeholder=\" Name\" name=\"name\" v-model=\"ist.name\" :readonly=\"ist.id\" _v-0c1d0f31=\"\">\n\n      </div>\n      <div class=\"form-group\" _v-0c1d0f31=\"\">\n        <label for=\"\" _v-0c1d0f31=\"\">Fone</label>\n        <input type=\"text\" class=\"form-control\" id=\"\" required=\"\" placeholder=\"Fone\" name=\"fone\" v-model=\"ist.fone\" :readonly=\"ist.id\" _v-0c1d0f31=\"\">\n        <label for=\"\" _v-0c1d0f31=\"\">Address</label>\n      </div>\n      <div class=\"form-group\" _v-0c1d0f31=\"\">\n        <input type=\"text\" class=\"form-control\" id=\"\" required=\"\" placeholder=\"Address\" name=\"address\" v-model=\"ist.address\" :readonly=\"ist.id\" _v-0c1d0f31=\"\">\n      </div>\n \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n \n <input type=\"hidden\" name=\"_token\" value=\"{{message}}\" _v-0c1d0f31=\"\">\n <h1 _v-0c1d0f31=\"\">Cartucho</h1>\n  \n\n <div v-for=\"input in input_index\" _v-0c1d0f31=\"\">\n <div class=\"row\" _v-0c1d0f31=\"\">\n<input type=\"hidden\" name=\"control\" value=\"{{input}}\" _v-0c1d0f31=\"\">\n <div class=\"col-md-2\" _v-0c1d0f31=\"\"> \n    <div class=\"form-group\" _v-0c1d0f31=\"\">\n        <label for=\"\" _v-0c1d0f31=\"\">Marca</label>\n        <input type=\"text\" class=\"form-control\" autocomplete=\"off\" name=\"mark_{{input}}\" style=\"text-transform:uppercase\" _v-0c1d0f31=\"\">\n    </div>\n  </div>\n  <div class=\"col-md-2\" _v-0c1d0f31=\"\">\n<div class=\"form-group\" _v-0c1d0f31=\"\">\n        <label for=\"\" _v-0c1d0f31=\"\">Numero</label>\n        <input type=\"text\" class=\"form-control\" autocomplete=\"off\" name=\"number_{{input}}\" _v-0c1d0f31=\"\">\n    </div>\n  </div>\n  <div class=\"col-md-2\" _v-0c1d0f31=\"\">\n    <div class=\"form-group\" _v-0c1d0f31=\"\">\n        <label for=\"\" _v-0c1d0f31=\"\">Numero de série</label>\n        <input type=\"text\" class=\"form-control\" autocomplete=\"off\" name=\"serialNumber_{{input}}\" _v-0c1d0f31=\"\">\n    </div>\n  </div>\n    <div class=\"col-md-2\" _v-0c1d0f31=\"\">\n    <div class=\"form-group\" _v-0c1d0f31=\"\">\n        <label for=\"\" _v-0c1d0f31=\"\">Valor</label>\n        <input type=\"text\" class=\"form-control\" autocomplete=\"off\" name=\"price_{{input}}\" _v-0c1d0f31=\"\">\n    </div>\n  </div>\n   \n \n </div> <!-- div row -->\n\n </div> <!-- div for -->\n\n\n <div class=\"col-md-2\" _v-0c1d0f31=\"\">\n    <div class=\"form-group\" _v-0c1d0f31=\"\">\n        <label for=\"\" _v-0c1d0f31=\"\">Pago</label>\n        <div class=\"radio\" _v-0c1d0f31=\"\">\n            <label _v-0c1d0f31=\"\"><input type=\"radio\" name=\"pay\" value=\"yes\" _v-0c1d0f31=\"\">Sim</label>\n            <label _v-0c1d0f31=\"\"><input type=\"radio\" name=\"pay\" value=\"no\" _v-0c1d0f31=\"\">Não</label>\n        </div>\n           \n    </div>\n    </div>\n <button type=\"submit\" class=\"btn btn-lg btn-success\" _v-0c1d0f31=\"\">Enviar</button>\n <button @click.stop.prevent=\"addInput()\" class=\"btn btn-lg btn-primary\" _v-0c1d0f31=\"\">Add</button>\n <button @click.stop.prevent=\"removeInput()\" class=\"btn btn-lg btn-danger\" _v-0c1d0f31=\"\">Remove</button> \n \n\n    \n  \n\n  \n \n\n\n\n \n\n \n\n\n</form>"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\n \n<clients _v-3d5a0d6c=\"\"></clients>\n\n<button type=\"clean\" class=\"btn btn-primary\" @click=\"limp\" :disabled=\"!ist.id\" _v-3d5a0d6c=\"\">Novo</button>\n<button type=\"button\" class=\"btn btn-primary\" data-toggle=\"modal\" data-target=\".bs-example-modal-lg1\" :disabled=\"!ist.id\" _v-3d5a0d6c=\"\">Editar</button>\n <form action=\"/newcartridge\" method=\"POST\" role=\"form\" _v-3d5a0d6c=\"\">\n\n\n<!--================================================\n=            MODAL DE EDIÇÃO DO CLIENTE            =\n=================================================-->\n\n \n\n\n\n<div class=\"modal fade bs-example-modal-lg1\" tabindex=\"-1\" role=\"dialog\" aria-labelledby=\"myLargeModalLabel\" _v-3d5a0d6c=\"\">\n      <div class=\"modal-dialog modal-lg\" role=\"document\" _v-3d5a0d6c=\"\">\n            <div class=\"modal-content\" _v-3d5a0d6c=\"\">\n               \n              <h1 _v-3d5a0d6c=\"\">Editar Cliente</h1>\n\n              <div id=\"divEdit\" _v-3d5a0d6c=\"\"> \n            <!--  <input type=\"hidden\" name=\"id\" id=\"id\" value=\"{{ist.id}}\"> -->\n       \n        <!-- name: <input type=\"text\" class=\"texto\" id=\"valueText\"> -->\n                <div class=\"form-group\" _v-3d5a0d6c=\"\">\n                  <label for=\"\" _v-3d5a0d6c=\"\">Name</label>\n                  <input type=\"text\" class=\"form-control\" autofocus=\"\" required=\"\" placeholder=\" Name\" id=\"nameEdit\" name=\"name\" v-model=\"ist.name\" _v-3d5a0d6c=\"\">\n\n                </div>\n             <div class=\"form-group\" _v-3d5a0d6c=\"\">\n                <label for=\"\" _v-3d5a0d6c=\"\">Fone</label>\n                <input type=\"text\" class=\"form-control\" required=\"\" placeholder=\"Fone\" id=\"foneEdit\" name=\"fone\" v-model=\"ist.fone\" _v-3d5a0d6c=\"\">\n            </div>\n            <div class=\"form-group\" _v-3d5a0d6c=\"\">\n                <label for=\"\" _v-3d5a0d6c=\"\">Address</label>\n                <input type=\"text\" class=\"form-control\" required=\"\" placeholder=\"Address\" id=\"addressEdit\" name=\"address\" v-model=\"ist.address\" _v-3d5a0d6c=\"\">\n            </div>\n          \n        <br _v-3d5a0d6c=\"\"><br _v-3d5a0d6c=\"\">\n         \n         <button class=\"btn btn-lg btn-primary\" data-dismiss=\"modal\" _v-3d5a0d6c=\"\">Editar</button> <br _v-3d5a0d6c=\"\">\n\n\n        <br _v-3d5a0d6c=\"\">\n        <br _v-3d5a0d6c=\"\">\n        <br _v-3d5a0d6c=\"\">\n\n        </div>\n\n        \n\n            </div>\n          </div>\n</div>\n\n\n<!--====  End of MODAL DE EDIÇÃO DO CLIENTE  ====-->\n\n     \n \n      <input type=\"hidden\" name=\"client_id\" value=\"{{ist.id}}\" _v-3d5a0d6c=\"\">\n      <div class=\"form-group\" _v-3d5a0d6c=\"\">\n        <label for=\"\" _v-3d5a0d6c=\"\">Name</label>\n        <input type=\"text\" class=\"form-control\" id=\"\" required=\"\" placeholder=\" Name\" name=\"name\" v-model=\"ist.name\" :readonly=\"ist.id\" _v-3d5a0d6c=\"\">\n\n      </div>\n      <div class=\"form-group\" _v-3d5a0d6c=\"\">\n        <label for=\"\" _v-3d5a0d6c=\"\">Fone</label>\n        <input type=\"text\" class=\"form-control\" id=\"\" required=\"\" placeholder=\"Fone\" name=\"fone\" v-model=\"ist.fone\" :readonly=\"ist.id\" _v-3d5a0d6c=\"\">\n        <label for=\"\" _v-3d5a0d6c=\"\">Address</label>\n      </div>\n      <div class=\"form-group\" _v-3d5a0d6c=\"\">\n        <input type=\"text\" class=\"form-control\" id=\"\" required=\"\" placeholder=\"Address\" name=\"address\" v-model=\"ist.address\" :readonly=\"ist.id\" _v-3d5a0d6c=\"\">\n      </div>\n \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n \n <input type=\"hidden\" name=\"_token\" value=\"{{message}}\" _v-3d5a0d6c=\"\">\n <h1 _v-3d5a0d6c=\"\">Cartucho</h1>\n  \n\n <div v-for=\"input in input_index\" _v-3d5a0d6c=\"\">\n <div class=\"row\" _v-3d5a0d6c=\"\">\n<input type=\"hidden\" name=\"control\" value=\"{{input}}\" _v-3d5a0d6c=\"\">\n <div class=\"col-md-2\" _v-3d5a0d6c=\"\"> \n    <div class=\"form-group\" _v-3d5a0d6c=\"\">\n        <label for=\"\" _v-3d5a0d6c=\"\">Marca</label>\n        <input type=\"text\" class=\"form-control\" autocomplete=\"off\" name=\"mark_{{input}}\" style=\"text-transform:uppercase\" _v-3d5a0d6c=\"\">\n    </div>\n  </div>\n  <div class=\"col-md-2\" _v-3d5a0d6c=\"\">\n<div class=\"form-group\" _v-3d5a0d6c=\"\">\n        <label for=\"\" _v-3d5a0d6c=\"\">Numero</label>\n        <input type=\"text\" class=\"form-control\" autocomplete=\"off\" name=\"number_{{input}}\" _v-3d5a0d6c=\"\">\n    </div>\n  </div>\n  <div class=\"col-md-2\" _v-3d5a0d6c=\"\">\n    <div class=\"form-group\" _v-3d5a0d6c=\"\">\n        <label for=\"\" _v-3d5a0d6c=\"\">Numero de série</label>\n        <input type=\"text\" class=\"form-control\" autocomplete=\"off\" name=\"serialNumber_{{input}}\" _v-3d5a0d6c=\"\">\n    </div>\n  </div>\n    <div class=\"col-md-2\" _v-3d5a0d6c=\"\">\n    <div class=\"form-group\" _v-3d5a0d6c=\"\">\n        <label for=\"\" _v-3d5a0d6c=\"\">Valor</label>\n        <input type=\"text\" class=\"form-control\" autocomplete=\"off\" name=\"price_{{input}}\" _v-3d5a0d6c=\"\">\n    </div>\n  </div>\n   \n \n </div> <!-- div row -->\n\n </div> <!-- div for -->\n\n\n <div class=\"col-md-2\" _v-3d5a0d6c=\"\">\n    <div class=\"form-group\" _v-3d5a0d6c=\"\">\n        <label for=\"\" _v-3d5a0d6c=\"\">Pago</label>\n        <div class=\"radio\" _v-3d5a0d6c=\"\">\n            <label _v-3d5a0d6c=\"\"><input type=\"radio\" name=\"pay\" value=\"yes\" _v-3d5a0d6c=\"\">Sim</label>\n            <label _v-3d5a0d6c=\"\"><input type=\"radio\" name=\"pay\" value=\"no\" _v-3d5a0d6c=\"\">Não</label>\n        </div>\n           \n    </div>\n    </div>\n <button type=\"submit\" class=\"btn btn-lg btn-success\" _v-3d5a0d6c=\"\">Enviar</button>\n <button @click.stop.prevent=\"addInput()\" class=\"btn btn-lg btn-primary\" _v-3d5a0d6c=\"\">Add</button>\n <button @click.stop.prevent=\"removeInput()\" class=\"btn btn-lg btn-danger\" _v-3d5a0d6c=\"\">Remove</button> \n \n\n    \n  \n\n  \n \n\n\n\n \n\n \n\n\n</form>"
 if (module.hot) {(function () {  module.hot.accept()
-  var hotAPI = require("C:\\wamp\\www\\newerplte\\node_modules\\vueify\\node_modules\\vue-hot-reload-api\\index.js")
+  var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
-  var id = "C:\\wamp\\www\\newerplte\\resources\\assets\\js\\components\\OsCartridge.vue"
   if (!module.hot.data) {
-    hotAPI.createRecord(id, module.exports)
+    hotAPI.createRecord("_v-3d5a0d6c", module.exports)
   } else {
-    hotAPI.update(id, module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
+    hotAPI.update("_v-3d5a0d6c", module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"./bus":9,"./clients.vue":10,"C:\\wamp\\www\\newerplte\\node_modules\\vueify\\node_modules\\vue-hot-reload-api\\index.js":6,"vue":4}],8:[function(require,module,exports){
+},{"./bus":9,"./clients.vue":10,"vue":5,"vue-hot-reload-api":3}],8:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -28954,17 +29213,16 @@ exports.default = {
 if (module.exports.__esModule) module.exports = module.exports.default
 ;(typeof module.exports === "function"? module.exports.options: module.exports).template = "  \n  <div>\n     \n \n \nName: <input type=\"text\" v-model=\"dtr.name\" name=\"\" id=\"input\" class=\"form-control\" value=\"\" required=\"required\" pattern=\"\" title=\"\">\nEmail: <input type=\"text\" v-model=\"dtr.email\" name=\"\" id=\"input\" class=\"form-control\" value=\"\" required=\"required\" pattern=\"\" title=\"\">\n  </div>\n"
 if (module.hot) {(function () {  module.hot.accept()
-  var hotAPI = require("C:\\wamp\\www\\newerplte\\node_modules\\vueify\\node_modules\\vue-hot-reload-api\\index.js")
+  var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
-  var id = "C:\\wamp\\www\\newerplte\\resources\\assets\\js\\components\\bar.vue"
   if (!module.hot.data) {
-    hotAPI.createRecord(id, module.exports)
+    hotAPI.createRecord("_v-5f81b076", module.exports)
   } else {
-    hotAPI.update(id, module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
+    hotAPI.update("_v-5f81b076", module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"./bus":9,"C:\\wamp\\www\\newerplte\\node_modules\\vueify\\node_modules\\vue-hot-reload-api\\index.js":6,"vue":4}],9:[function(require,module,exports){
+},{"./bus":9,"vue":5,"vue-hot-reload-api":3}],9:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -28982,7 +29240,7 @@ function _interopRequireDefault(obj) {
 var bus = new _vue2.default();
 exports.default = bus;
 
-},{"vue":4}],10:[function(require,module,exports){
+},{"vue":5}],10:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -29045,19 +29303,18 @@ exports.default = {
 	}
 };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\n\t\n \n \n\n\n<button type=\"button\" class=\"btn btn-primary\" data-toggle=\"modal\" data-target=\".bs-example-modal-lg\" _v-278b885c=\"\">Pesquisar</button>\n\n<div class=\"modal fade bs-example-modal-lg shown.bs.modal\" :autofocus=\"\" id=\"myModal\" tabindex=\"-1\" role=\"dialog\" aria-labelledby=\"myLargeModalLabel\" _v-278b885c=\"\">\n  <div class=\"modal-dialog modal-lg\" role=\"document\" _v-278b885c=\"\">\n    <div class=\"modal-content\" _v-278b885c=\"\">\n       \n<h1 _v-278b885c=\"\">Lista de Clientes Cadastrados</h1>\n\n\n<div class=\"well\" _v-278b885c=\"\">\n\t\t<input type=\"text\" class=\"form-control\" id=\"myInput\" placeholder=\"Filtrar C\" v-model=\"filterTerm\" _v-278b885c=\"\">\n\t</div>\n\t<div _v-278b885c=\"\">\n\n\t <table class=\"table table-bordered table-striped table-hover\" _v-278b885c=\"\">\n\t \t\n\t\t<thead _v-278b885c=\"\">\n\t\t\t<tr _v-278b885c=\"\">\n\t\t\t\t<th _v-278b885c=\"\"><a href=\"#\" @click=\"sort($event, 'id')\" _v-278b885c=\"\">ID</a></th>\n\t\t\t\t<th _v-278b885c=\"\"><a href=\"#\" @click=\"sort($event, 'name')\" _v-278b885c=\"\">Nome</a></th>\n\t\t\t\t<th _v-278b885c=\"\"><a href=\"#\" @click=\"sort($event, 'fone')\" _v-278b885c=\"\">Telefone</a></th>\n\t\t\t\t<th _v-278b885c=\"\">Endereço</th>\n\t\t\t\t\n\t\t\t</tr>\n\t\t</thead>\n\t\t<tbody _v-278b885c=\"\">\n\t\n\t\t\t<tr v-for=\"u in users | filterBy filterTerm| orderBy sortProperty sortDirection\" _v-278b885c=\"\">\n\t\t\t\t\n\t\t\t\t<td _v-278b885c=\"\">{{u.id}}</td>\n\t\t\t\t<td _v-278b885c=\"\">{{u.name}}</td>\n\t\t\t\t<td _v-278b885c=\"\">{{u.fone}}</td>\n\t\t\t\t<td _v-278b885c=\"\">{{u.address}}</td>\n\t\t\t\t<td _v-278b885c=\"\"><button class=\"btn btn-success\" @click.stop.prevent=\"inserirDados(u)\" _v-278b885c=\"\">Inserir</button></td>\n\t\t\t\t\n\t\t\t</tr>\n\t\t</tbody>\n\t\t\n\n\t </table> \n\n\t</div>\n\n\n\n\n    </div>\n  </div>\n</div>\n\n<br _v-278b885c=\"\"><hr _v-278b885c=\"\">\n\n\t\n\n\n\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\n\t\n \n \n\n\n<button type=\"button\" class=\"btn btn-primary\" data-toggle=\"modal\" data-target=\".bs-example-modal-lg\" _v-16b9cb2a=\"\">Pesquisar</button>\n\n<div class=\"modal fade bs-example-modal-lg shown.bs.modal\" :autofocus=\"\" id=\"myModal\" tabindex=\"-1\" role=\"dialog\" aria-labelledby=\"myLargeModalLabel\" _v-16b9cb2a=\"\">\n  <div class=\"modal-dialog modal-lg\" role=\"document\" _v-16b9cb2a=\"\">\n    <div class=\"modal-content\" _v-16b9cb2a=\"\">\n       \n<h1 _v-16b9cb2a=\"\">Lista de Clientes Cadastrados</h1>\n\n\n<div class=\"well\" _v-16b9cb2a=\"\">\n\t\t<input type=\"text\" class=\"form-control\" id=\"myInput\" placeholder=\"Filtrar C\" v-model=\"filterTerm\" _v-16b9cb2a=\"\">\n\t</div>\n\t<div _v-16b9cb2a=\"\">\n\n\t <table class=\"table table-bordered table-striped table-hover\" _v-16b9cb2a=\"\">\n\t \t\n\t\t<thead _v-16b9cb2a=\"\">\n\t\t\t<tr _v-16b9cb2a=\"\">\n\t\t\t\t<th _v-16b9cb2a=\"\"><a href=\"#\" @click=\"sort($event, 'id')\" _v-16b9cb2a=\"\">ID</a></th>\n\t\t\t\t<th _v-16b9cb2a=\"\"><a href=\"#\" @click=\"sort($event, 'name')\" _v-16b9cb2a=\"\">Nome</a></th>\n\t\t\t\t<th _v-16b9cb2a=\"\"><a href=\"#\" @click=\"sort($event, 'fone')\" _v-16b9cb2a=\"\">Telefone</a></th>\n\t\t\t\t<th _v-16b9cb2a=\"\">Endereço</th>\n\t\t\t\t\n\t\t\t</tr>\n\t\t</thead>\n\t\t<tbody _v-16b9cb2a=\"\">\n\t\n\t\t\t<tr v-for=\"u in users | filterBy filterTerm| orderBy sortProperty sortDirection\" _v-16b9cb2a=\"\">\n\t\t\t\t\n\t\t\t\t<td _v-16b9cb2a=\"\">{{u.id}}</td>\n\t\t\t\t<td _v-16b9cb2a=\"\">{{u.name}}</td>\n\t\t\t\t<td _v-16b9cb2a=\"\">{{u.fone}}</td>\n\t\t\t\t<td _v-16b9cb2a=\"\">{{u.address}}</td>\n\t\t\t\t<td _v-16b9cb2a=\"\"><button class=\"btn btn-success\" @click.stop.prevent=\"inserirDados(u)\" _v-16b9cb2a=\"\">Inserir</button></td>\n\t\t\t\t\n\t\t\t</tr>\n\t\t</tbody>\n\t\t\n\n\t </table> \n\n\t</div>\n\n\n\n\n    </div>\n  </div>\n</div>\n\n<br _v-16b9cb2a=\"\"><hr _v-16b9cb2a=\"\">\n\n\t\n\n\n\n"
 if (module.hot) {(function () {  module.hot.accept()
-  var hotAPI = require("C:\\wamp\\www\\newerplte\\node_modules\\vueify\\node_modules\\vue-hot-reload-api\\index.js")
+  var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
-  var id = "C:\\wamp\\www\\newerplte\\resources\\assets\\js\\components\\clients.vue"
   if (!module.hot.data) {
-    hotAPI.createRecord(id, module.exports)
+    hotAPI.createRecord("_v-16b9cb2a", module.exports)
   } else {
-    hotAPI.update(id, module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
+    hotAPI.update("_v-16b9cb2a", module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"./bus":9,"C:\\wamp\\www\\newerplte\\node_modules\\vueify\\node_modules\\vue-hot-reload-api\\index.js":6,"vue":4}],11:[function(require,module,exports){
+},{"./bus":9,"vue":5,"vue-hot-reload-api":3}],11:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -29095,17 +29352,16 @@ exports.default = {
 if (module.exports.__esModule) module.exports = module.exports.default
 ;(typeof module.exports === "function"? module.exports.options: module.exports).template = "  \n  <div> \n\t\t\t<a href=\"#\" @click=\"buttonClickHandler\">Botao Foo</a>\n\n\n\n  </div>\n"
 if (module.hot) {(function () {  module.hot.accept()
-  var hotAPI = require("C:\\wamp\\www\\newerplte\\node_modules\\vueify\\node_modules\\vue-hot-reload-api\\index.js")
+  var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
-  var id = "C:\\wamp\\www\\newerplte\\resources\\assets\\js\\components\\foo.vue"
   if (!module.hot.data) {
-    hotAPI.createRecord(id, module.exports)
+    hotAPI.createRecord("_v-4ad42fa9", module.exports)
   } else {
-    hotAPI.update(id, module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
+    hotAPI.update("_v-4ad42fa9", module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"./bus":9,"C:\\wamp\\www\\newerplte\\node_modules\\vueify\\node_modules\\vue-hot-reload-api\\index.js":6,"vue":4}],12:[function(require,module,exports){
+},{"./bus":9,"vue":5,"vue-hot-reload-api":3}],12:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -29156,21 +29412,20 @@ exports.default = {
 
 };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n  <button @click=\"confirm\" _v-46ae7c8a=\"\">Confirmar</button>\n\n<form action=\"#\" method=\"POST\" role=\"form\" _v-46ae7c8a=\"\">\n\t<legend _v-46ae7c8a=\"\">Form title</legend>\n\n\t<div class=\"form-group\" _v-46ae7c8a=\"\">\n\t\t<label for=\"\" _v-46ae7c8a=\"\">Name</label>\n\t\t<input type=\"text\" class=\"form-control\" id=\"\" placeholder=\"{{nameName}}\" v-model=\"nameName\" _v-46ae7c8a=\"\">\n\t</div>\n\t<div class=\"form-group\" _v-46ae7c8a=\"\">\n\t\t<label for=\"\" _v-46ae7c8a=\"\">Email</label>\n\t\t<input type=\"text\" class=\"form-control\" id=\"\" placeholder=\"Input field\" v-model=\"title\" _v-46ae7c8a=\"\">\n\t</div>\n\n\t\n\n\t<button type=\"submit\" class=\"btn btn-primary\" _v-46ae7c8a=\"\">Submit</button>\n</form>\n \n\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n  <button @click=\"confirm\" _v-1835d591=\"\">Confirmar</button>\n\n<form action=\"#\" method=\"POST\" role=\"form\" _v-1835d591=\"\">\n\t<legend _v-1835d591=\"\">Form title</legend>\n\n\t<div class=\"form-group\" _v-1835d591=\"\">\n\t\t<label for=\"\" _v-1835d591=\"\">Name</label>\n\t\t<input type=\"text\" class=\"form-control\" id=\"\" placeholder=\"{{nameName}}\" v-model=\"nameName\" _v-1835d591=\"\">\n\t</div>\n\t<div class=\"form-group\" _v-1835d591=\"\">\n\t\t<label for=\"\" _v-1835d591=\"\">Email</label>\n\t\t<input type=\"text\" class=\"form-control\" id=\"\" placeholder=\"Input field\" v-model=\"title\" _v-1835d591=\"\">\n\t</div>\n\n\t\n\n\t<button type=\"submit\" class=\"btn btn-primary\" _v-1835d591=\"\">Submit</button>\n</form>\n \n\n"
 if (module.hot) {(function () {  module.hot.accept()
-  var hotAPI = require("C:\\wamp\\www\\newerplte\\node_modules\\vueify\\node_modules\\vue-hot-reload-api\\index.js")
+  var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
-  var id = "C:\\wamp\\www\\newerplte\\resources\\assets\\js\\components\\insertClient.vue"
   if (!module.hot.data) {
-    hotAPI.createRecord(id, module.exports)
+    hotAPI.createRecord("_v-1835d591", module.exports)
   } else {
-    hotAPI.update(id, module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
+    hotAPI.update("_v-1835d591", module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"./clients.vue":10,"C:\\wamp\\www\\newerplte\\node_modules\\vueify\\node_modules\\vue-hot-reload-api\\index.js":6,"vue":4}],13:[function(require,module,exports){
+},{"./clients.vue":10,"vue":5,"vue-hot-reload-api":3}],13:[function(require,module,exports){
 var __vueify_insert__ = require("vueify/lib/insert-css")
-var __vueify_style__ = __vueify_insert__.insert("\n\n.estado-PRONTO[_v-4b3739f0]{\n\tbackground-color: #b2e09f;\n}\n.estado-ANALISE[_v-4b3739f0]{\n\tbackground-color: #f2f085;\n}\n.estado-ENTREGUE[_v-4b3739f0]{\n\tbackground-color: #3c8dbc;\n}\n.estado-RECEBIDO[_v-4b3739f0]{\n\tbackground-color: #f85454;\n}\n \n\n\n")
+var __vueify_style__ = __vueify_insert__.insert("\n\n.estado-PRONTO[_v-7e2c51cf]{\n\tbackground-color: #b2e09f;\n}\n.estado-ANALISE[_v-7e2c51cf]{\n\tbackground-color: #f2f085;\n}\n.estado-ENTREGUE[_v-7e2c51cf]{\n\tbackground-color: #3c8dbc;\n}\n.estado-RECEBIDO[_v-7e2c51cf]{\n\tbackground-color: #f85454;\n}\n \n\n\n")
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -29258,25 +29513,24 @@ exports.default = {
 	}
 }; //essa classe bus serve como transporte de dados.
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\n\t\n \n \n\n\n \n       \n<h1 _v-4b3739f0=\"\">Lista de OS</h1>\n \n \n<div class=\"well\" _v-4b3739f0=\"\">\n\t\t<input type=\"text\" class=\"form-control\" id=\"myInput\" placeholder=\"Filtrar C\" v-model=\"filterTerm\" _v-4b3739f0=\"\">\n\t</div>\n\t \n\n\t<div _v-4b3739f0=\"\">\n\n\t <table class=\"table table-bordered table-striped table-hover\" _v-4b3739f0=\"\">\n\t \t\n\t\t<thead _v-4b3739f0=\"\">\n\t\t\t<tr _v-4b3739f0=\"\">\n\t\t\t\t<th _v-4b3739f0=\"\"><a href=\"#\" @click=\"sort($event, 'id')\" _v-4b3739f0=\"\">ID</a></th>\n\t\t\t\t<th _v-4b3739f0=\"\"><a href=\"#\" @click=\"sort($event, 'state')\" _v-4b3739f0=\"\">Estado</a></th>\n\t\t\t\t<th _v-4b3739f0=\"\"><a href=\"#\" @click=\"sort($event, 'created_at')\" _v-4b3739f0=\"\">Data</a></th>\n\t\t\t\t<th _v-4b3739f0=\"\"><a href=\"#\" @click=\"sort($event, 'name')\" _v-4b3739f0=\"\">Nome</a></th>\n\t\t\t\t\n\t\t\t</tr>\n\t\t</thead>\n\t\t<tbody _v-4b3739f0=\"\">\n\t\n\t\t\t<tr v-for=\"u in listOs  | filterBy filterTerm  | orderBy sortProperty sortDirection\" _v-4b3739f0=\"\">\n\t\t\t\t \n\t\t\t\t<td class=\"estado-{{u.state}}\" _v-4b3739f0=\"\">{{u.id}}</td>\n\t\t\t\t<td class=\"estado-{{u.state}}\" _v-4b3739f0=\"\">{{u.state}}</td>\n\t\t\t\t<td class=\"estado-{{u.state}}\" _v-4b3739f0=\"\">{{u.created_at}}</td>\n\t\t\t\t<td class=\"estado-{{u.state}}\" _v-4b3739f0=\"\">{{u.name}}</td>\n\t\t\t\t<td _v-4b3739f0=\"\"> <a href=\"/cartridge/visualizar/{{u.id}}\" _v-4b3739f0=\"\"><button class=\"btn btn-success\" _v-4b3739f0=\"\">Selecionar</button></a> </td> \n\t\t\t\t \n\t\t\t</tr>\n\t\t</tbody>\n\t\t\n\n\t </table> \n\t <div class=\"text-center\" _v-4b3739f0=\"\">\n\t <!-- <pagination :source=\"pagination\" @navigate=\"navigate\"></pagination>  discomment this for habilite pagination-->\n</div>\n\t</div>\n\n\n\n \n\n<br _v-4b3739f0=\"\"><hr _v-4b3739f0=\"\">\n\n\t\n\n \n\n\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\n\t\n \n \n\n\n \n       \n<h1 _v-7e2c51cf=\"\">Lista de OS</h1>\n \n \n<div class=\"well\" _v-7e2c51cf=\"\">\n\t\t<input type=\"text\" class=\"form-control\" id=\"myInput\" placeholder=\"Filtrar C\" v-model=\"filterTerm\" _v-7e2c51cf=\"\">\n\t</div>\n\t \n\n\t<div _v-7e2c51cf=\"\">\n\n\t <table class=\"table table-bordered table-striped table-hover\" _v-7e2c51cf=\"\">\n\t \t\n\t\t<thead _v-7e2c51cf=\"\">\n\t\t\t<tr _v-7e2c51cf=\"\">\n\t\t\t\t<th _v-7e2c51cf=\"\"><a href=\"#\" @click=\"sort($event, 'id')\" _v-7e2c51cf=\"\">ID</a></th>\n\t\t\t\t<th _v-7e2c51cf=\"\"><a href=\"#\" @click=\"sort($event, 'state')\" _v-7e2c51cf=\"\">Estado</a></th>\n\t\t\t\t<th _v-7e2c51cf=\"\"><a href=\"#\" @click=\"sort($event, 'created_at')\" _v-7e2c51cf=\"\">Data</a></th>\n\t\t\t\t<th _v-7e2c51cf=\"\"><a href=\"#\" @click=\"sort($event, 'name')\" _v-7e2c51cf=\"\">Nome</a></th>\n\t\t\t\t\n\t\t\t</tr>\n\t\t</thead>\n\t\t<tbody _v-7e2c51cf=\"\">\n\t\n\t\t\t<tr v-for=\"u in listOs  | filterBy filterTerm  | orderBy sortProperty sortDirection\" _v-7e2c51cf=\"\">\n\t\t\t\t \n\t\t\t\t<td class=\"estado-{{u.state}}\" _v-7e2c51cf=\"\">{{u.id}}</td>\n\t\t\t\t<td class=\"estado-{{u.state}}\" _v-7e2c51cf=\"\">{{u.state}}</td>\n\t\t\t\t<td class=\"estado-{{u.state}}\" _v-7e2c51cf=\"\">{{u.created_at}}</td>\n\t\t\t\t<td class=\"estado-{{u.state}}\" _v-7e2c51cf=\"\">{{u.name}}</td>\n\t\t\t\t<td _v-7e2c51cf=\"\"> <a href=\"/cartridge/visualizar/{{u.id}}\" _v-7e2c51cf=\"\"><button class=\"btn btn-success\" _v-7e2c51cf=\"\"> Selecionar</button></a> </td> \n\t\t\t\t \n\t\t\t</tr>\n\t\t</tbody>\n\t\t\n\n\t </table> \n\t <div class=\"text-center\" _v-7e2c51cf=\"\">\n\t <!-- <pagination :source=\"pagination\" @navigate=\"navigate\"></pagination>  discomment this for habilite pagination-->\n</div>\n\t</div>\n\n\n\n \n\n<br _v-7e2c51cf=\"\"><hr _v-7e2c51cf=\"\">\n\n\t\n\n \n\n\n"
 if (module.hot) {(function () {  module.hot.accept()
-  var hotAPI = require("C:\\wamp\\www\\newerplte\\node_modules\\vueify\\node_modules\\vue-hot-reload-api\\index.js")
+  var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
-  var id = "C:\\wamp\\www\\newerplte\\resources\\assets\\js\\components\\osCartList.vue"
   module.hot.dispose(function () {
-    __vueify_insert__.cache["\n\n.estado-PRONTO[_v-4b3739f0]{\n\tbackground-color: #b2e09f;\n}\n.estado-ANALISE[_v-4b3739f0]{\n\tbackground-color: #f2f085;\n}\n.estado-ENTREGUE[_v-4b3739f0]{\n\tbackground-color: #3c8dbc;\n}\n.estado-RECEBIDO[_v-4b3739f0]{\n\tbackground-color: #f85454;\n}\n \n\n\n"] = false
+    __vueify_insert__.cache["\n\n.estado-PRONTO[_v-7e2c51cf]{\n\tbackground-color: #b2e09f;\n}\n.estado-ANALISE[_v-7e2c51cf]{\n\tbackground-color: #f2f085;\n}\n.estado-ENTREGUE[_v-7e2c51cf]{\n\tbackground-color: #3c8dbc;\n}\n.estado-RECEBIDO[_v-7e2c51cf]{\n\tbackground-color: #f85454;\n}\n \n\n\n"] = false
     document.head.removeChild(__vueify_style__)
   })
   if (!module.hot.data) {
-    hotAPI.createRecord(id, module.exports)
+    hotAPI.createRecord("_v-7e2c51cf", module.exports)
   } else {
-    hotAPI.update(id, module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
+    hotAPI.update("_v-7e2c51cf", module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"./bus":9,"./pagination.vue":15,"C:\\wamp\\www\\newerplte\\node_modules\\vueify\\node_modules\\vue-hot-reload-api\\index.js":6,"vue":4,"vueify/lib/insert-css":5}],14:[function(require,module,exports){
+},{"./bus":9,"./pagination.vue":15,"vue":5,"vue-hot-reload-api":3,"vueify/lib/insert-css":6}],14:[function(require,module,exports){
 var __vueify_insert__ = require("vueify/lib/insert-css")
-var __vueify_style__ = __vueify_insert__.insert("\n\n.estado-PRONTO[_v-4ddb3cc8]{\n\tbackground-color: #b2e09f;\n}\n.estado-ANALISE[_v-4ddb3cc8]{\n\tbackground-color: #f2f085;\n}\n.estado-ENTREGUE[_v-4ddb3cc8]{\n\tbackground-color: #3c8dbc;\n}\n.estado-RECEBIDO[_v-4ddb3cc8]{\n\tbackground-color: #f85454;\n}\n \n\n\n")
+var __vueify_style__ = __vueify_insert__.insert("\n\n.estado-PRONTO[_v-6c00b1e2]{\n\tbackground-color: #b2e09f;\n}\n.estado-ANALISE[_v-6c00b1e2]{\n\tbackground-color: #f2f085;\n}\n.estado-ENTREGUE[_v-6c00b1e2]{\n\tbackground-color: #3c8dbc;\n}\n.estado-RECEBIDO[_v-6c00b1e2]{\n\tbackground-color: #f85454;\n}\n \n\n\n")
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -29364,23 +29618,22 @@ exports.default = {
 	}
 }; //essa classe bus serve como transporte de dados.
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\n\t\n \n \n\n\n \n       \n<h1 _v-4ddb3cc8=\"\">Lista de OS</h1>\n \n \n<div class=\"well\" _v-4ddb3cc8=\"\">\n\t\t<input type=\"text\" class=\"form-control\" id=\"myInput\" placeholder=\"Filtrar C\" v-model=\"filterTerm\" _v-4ddb3cc8=\"\">\n\t</div>\n\t \n\n\t<div _v-4ddb3cc8=\"\">\n\n\t <table class=\"table table-bordered table-striped table-hover\" _v-4ddb3cc8=\"\">\n\t \t\n\t\t<thead _v-4ddb3cc8=\"\">\n\t\t\t<tr _v-4ddb3cc8=\"\">\n\t\t\t\t<th _v-4ddb3cc8=\"\"><a href=\"#\" @click=\"sort($event, 'id')\" _v-4ddb3cc8=\"\">ID</a></th>\n\t\t\t\t<th _v-4ddb3cc8=\"\"><a href=\"#\" @click=\"sort($event, 'state')\" _v-4ddb3cc8=\"\">Estado</a></th>\n\t\t\t\t<th _v-4ddb3cc8=\"\"><a href=\"#\" @click=\"sort($event, 'created_at')\" _v-4ddb3cc8=\"\">Data</a></th>\n\t\t\t\t<th _v-4ddb3cc8=\"\"><a href=\"#\" @click=\"sort($event, 'name')\" _v-4ddb3cc8=\"\">Nome</a></th>\n\t\t\t\t\n\t\t\t</tr>\n\t\t</thead>\n\t\t<tbody _v-4ddb3cc8=\"\">\n\t\n\t\t\t<tr v-for=\"u in listOs  | filterBy filterTerm  | orderBy sortProperty sortDirection\" _v-4ddb3cc8=\"\">\n\t\t\t\t \n\t\t\t\t<td class=\"estado-{{u.state}}\" _v-4ddb3cc8=\"\">{{u.id}}</td>\n\t\t\t\t<td class=\"estado-{{u.state}}\" _v-4ddb3cc8=\"\">{{u.state}}</td>\n\t\t\t\t<td class=\"estado-{{u.state}}\" _v-4ddb3cc8=\"\">{{u.created_at}}</td>\n\t\t\t\t<td class=\"estado-{{u.state}}\" _v-4ddb3cc8=\"\">{{u.name}}</td>\n\t\t\t\t<td _v-4ddb3cc8=\"\"> <a href=\"/listos/visualizar/{{u.id}}\" _v-4ddb3cc8=\"\"><button class=\"btn btn-success\" _v-4ddb3cc8=\"\">Selecionar</button></a> </td> \n\t\t\t\t \n\t\t\t</tr>\n\t\t</tbody>\n\t\t\n\n\t </table> \n\t <div class=\"text-center\" _v-4ddb3cc8=\"\">\n\t <!-- <pagination :source=\"pagination\" @navigate=\"navigate\"></pagination>  discomment this for habilite pagination-->\n</div>\n\t</div>\n\n\n\n \n\n<br _v-4ddb3cc8=\"\"><hr _v-4ddb3cc8=\"\">\n\n\t\n\n \n\n\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\n\t\n \n \n\n\n \n       \n<h1 _v-6c00b1e2=\"\">Lista de OS</h1>\n \n \n<div class=\"well\" _v-6c00b1e2=\"\">\n\t\t<input type=\"text\" class=\"form-control\" id=\"myInput\" placeholder=\"Filtrar C\" v-model=\"filterTerm\" _v-6c00b1e2=\"\">\n\t</div>\n\t \n\n\t<div _v-6c00b1e2=\"\">\n\n\t <table class=\"table table-bordered table-striped table-hover\" _v-6c00b1e2=\"\">\n\t \t\n\t\t<thead _v-6c00b1e2=\"\">\n\t\t\t<tr _v-6c00b1e2=\"\">\n\t\t\t\t<th _v-6c00b1e2=\"\"><a href=\"#\" @click=\"sort($event, 'id')\" _v-6c00b1e2=\"\">ID</a></th>\n\t\t\t\t<th _v-6c00b1e2=\"\"><a href=\"#\" @click=\"sort($event, 'state')\" _v-6c00b1e2=\"\">Estado</a></th>\n\t\t\t\t<th _v-6c00b1e2=\"\"><a href=\"#\" @click=\"sort($event, 'created_at')\" _v-6c00b1e2=\"\">Data</a></th>\n\t\t\t\t<th _v-6c00b1e2=\"\"><a href=\"#\" @click=\"sort($event, 'name')\" _v-6c00b1e2=\"\">Nome</a></th>\n\t\t\t\t\n\t\t\t</tr>\n\t\t</thead>\n\t\t<tbody _v-6c00b1e2=\"\">\n\t\n\t\t\t<tr v-for=\"u in listOs  | filterBy filterTerm  | orderBy sortProperty sortDirection\" _v-6c00b1e2=\"\">\n\t\t\t\t \n\t\t\t\t<td class=\"estado-{{u.state}}\" _v-6c00b1e2=\"\">{{u.id}}</td>\n\t\t\t\t<td class=\"estado-{{u.state}}\" _v-6c00b1e2=\"\">{{u.state}}</td>\n\t\t\t\t<td class=\"estado-{{u.state}}\" _v-6c00b1e2=\"\">{{u.created_at}}</td>\n\t\t\t\t<td class=\"estado-{{u.state}}\" _v-6c00b1e2=\"\">{{u.name}}</td>\n\t\t\t\t<td _v-6c00b1e2=\"\"> <a href=\"/listos/visualizar/{{u.id}}\" _v-6c00b1e2=\"\"><button class=\"btn btn-success\" _v-6c00b1e2=\"\">Selecionar</button></a> </td> \n\t\t\t\t \n\t\t\t</tr>\n\t\t</tbody>\n\t\t\n\n\t </table> \n\t <div class=\"text-center\" _v-6c00b1e2=\"\">\n\t <!-- <pagination :source=\"pagination\" @navigate=\"navigate\"></pagination>  discomment this for habilite pagination-->\n</div>\n\t</div>\n\n\n\n \n\n<br _v-6c00b1e2=\"\"><hr _v-6c00b1e2=\"\">\n\n\t\n\n \n\n\n"
 if (module.hot) {(function () {  module.hot.accept()
-  var hotAPI = require("C:\\wamp\\www\\newerplte\\node_modules\\vueify\\node_modules\\vue-hot-reload-api\\index.js")
+  var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
-  var id = "C:\\wamp\\www\\newerplte\\resources\\assets\\js\\components\\osList.vue"
   module.hot.dispose(function () {
-    __vueify_insert__.cache["\n\n.estado-PRONTO[_v-4ddb3cc8]{\n\tbackground-color: #b2e09f;\n}\n.estado-ANALISE[_v-4ddb3cc8]{\n\tbackground-color: #f2f085;\n}\n.estado-ENTREGUE[_v-4ddb3cc8]{\n\tbackground-color: #3c8dbc;\n}\n.estado-RECEBIDO[_v-4ddb3cc8]{\n\tbackground-color: #f85454;\n}\n \n\n\n"] = false
+    __vueify_insert__.cache["\n\n.estado-PRONTO[_v-6c00b1e2]{\n\tbackground-color: #b2e09f;\n}\n.estado-ANALISE[_v-6c00b1e2]{\n\tbackground-color: #f2f085;\n}\n.estado-ENTREGUE[_v-6c00b1e2]{\n\tbackground-color: #3c8dbc;\n}\n.estado-RECEBIDO[_v-6c00b1e2]{\n\tbackground-color: #f85454;\n}\n \n\n\n"] = false
     document.head.removeChild(__vueify_style__)
   })
   if (!module.hot.data) {
-    hotAPI.createRecord(id, module.exports)
+    hotAPI.createRecord("_v-6c00b1e2", module.exports)
   } else {
-    hotAPI.update(id, module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
+    hotAPI.update("_v-6c00b1e2", module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"./bus":9,"./pagination.vue":15,"C:\\wamp\\www\\newerplte\\node_modules\\vueify\\node_modules\\vue-hot-reload-api\\index.js":6,"vue":4,"vueify/lib/insert-css":5}],15:[function(require,module,exports){
+},{"./bus":9,"./pagination.vue":15,"vue":5,"vue-hot-reload-api":3,"vueify/lib/insert-css":6}],15:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -29423,17 +29676,16 @@ exports.default = {
 if (module.exports.__esModule) module.exports = module.exports.default
 ;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\t\n\n\n<ul class=\"pagination\">\n\t<li :class=\"{disabled: source.current_page == 1}\">\n\t\t<a href=\"#\" @click=\"nextPrev($event, source.current_page-1)\">«</a>\n\t</li>\n\t<li v-for=\"page in pages\" :class=\"{active: source.current_page == page}\">\n\t\t<a href=\"#\" @click=\"navigate($event, page)\">{{page}}</a>\n\t</li>\n\t \n\t<li :class=\"{disabled: source.current_page == source.last_page}\">\n\t\t<a href=\"#\" @click=\"nextPrev($event, source.current_page+1)\">»</a>\n\t</li>\n</ul>\n\n\n\n\n\n\n\n\n\n\n"
 if (module.hot) {(function () {  module.hot.accept()
-  var hotAPI = require("C:\\wamp\\www\\newerplte\\node_modules\\vueify\\node_modules\\vue-hot-reload-api\\index.js")
+  var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
-  var id = "C:\\wamp\\www\\newerplte\\resources\\assets\\js\\components\\pagination.vue"
   if (!module.hot.data) {
-    hotAPI.createRecord(id, module.exports)
+    hotAPI.createRecord("_v-8e7ce0f2", module.exports)
   } else {
-    hotAPI.update(id, module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
+    hotAPI.update("_v-8e7ce0f2", module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"C:\\wamp\\www\\newerplte\\node_modules\\vueify\\node_modules\\vue-hot-reload-api\\index.js":6,"lodash":2,"vue":4}],16:[function(require,module,exports){
+},{"lodash":1,"vue":5,"vue-hot-reload-api":3}],16:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -29506,19 +29758,18 @@ exports.default = {
 	}
 };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\n\t<h1 _v-57c1f9f8=\"\">Usuarios</h1>\n\t \n\t{{title}}\n<input type=\"text\" class=\"form-control\" id=\"\" placeholder=\"Input field\" v-model=\"title\" _v-57c1f9f8=\"\">\n\n\n<button type=\"button\" class=\"btn btn-primary\" data-toggle=\"modal\" data-target=\".bs-example-modal-lg\" _v-57c1f9f8=\"\">Pesquisar</button>\n\n<div class=\"modal fade bs-example-modal-lg\" tabindex=\"-1\" role=\"dialog\" aria-labelledby=\"myLargeModalLabel\" _v-57c1f9f8=\"\">\n  <div class=\"modal-dialog modal-lg\" role=\"document\" _v-57c1f9f8=\"\">\n    <div class=\"modal-content\" _v-57c1f9f8=\"\">\n       \n\n\n\n<div class=\"well\" _v-57c1f9f8=\"\">\n\t\t<input type=\"text\" class=\"form-control\" placeholder=\"Filtrar\" v-model=\"filterTerm\" _v-57c1f9f8=\"\">\n\t</div>\n\t<div _v-57c1f9f8=\"\">\n\n\t <table class=\"table table-bordered table-striped table-hover\" _v-57c1f9f8=\"\">\n\t \t\n\t\t<thead _v-57c1f9f8=\"\">\n\t\t\t<tr _v-57c1f9f8=\"\">\n\t\t\t\t<th _v-57c1f9f8=\"\"><a href=\"#\" @click=\"sort($event, 'id')\" _v-57c1f9f8=\"\">ID</a></th>\n\t\t\t\t<th _v-57c1f9f8=\"\"><a href=\"#\" @click=\"sort($event, 'name')\" _v-57c1f9f8=\"\">Nome</a></th>\n\t\t\t\t<th _v-57c1f9f8=\"\"><a href=\"#\" @click=\"sort($event, 'email')\" _v-57c1f9f8=\"\">Email</a></th>\n\t\t\t\t\n\t\t\t</tr>\n\t\t</thead>\n\t\t<tbody _v-57c1f9f8=\"\">\n\t\n\t\t\t<tr v-for=\"u in users | filterBy filterTerm| orderBy sortProperty sortDirection\" _v-57c1f9f8=\"\">\n\t\t\t\t\n\t\t\t\t<td _v-57c1f9f8=\"\">{{u.id}}</td>\n\t\t\t\t<td _v-57c1f9f8=\"\">{{u.name}}</td>\n\t\t\t\t<td _v-57c1f9f8=\"\">{{u.email}}</td>\n\t\t\t\t<td _v-57c1f9f8=\"\"><button class=\"btn btn-success\" @click=\"showUser(u.id, u.name, u.email)\" _v-57c1f9f8=\"\">Editar</button></td>\n\t\t\t\t\n\t\t\t</tr>\n\t\t</tbody>\n\t\t\n\n\t </table> \n\n\t</div>\n\n\n\n\n    </div>\n  </div>\n</div>\n\n<br _v-57c1f9f8=\"\"><hr _v-57c1f9f8=\"\">\n\n\t\n\n\n\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\n\t<h1 _v-4e5c10ea=\"\">Usuarios</h1>\n\t \n\t{{title}}\n<input type=\"text\" class=\"form-control\" id=\"\" placeholder=\"Input field\" v-model=\"title\" _v-4e5c10ea=\"\">\n\n\n<button type=\"button\" class=\"btn btn-primary\" data-toggle=\"modal\" data-target=\".bs-example-modal-lg\" _v-4e5c10ea=\"\">Pesquisar</button>\n\n<div class=\"modal fade bs-example-modal-lg\" tabindex=\"-1\" role=\"dialog\" aria-labelledby=\"myLargeModalLabel\" _v-4e5c10ea=\"\">\n  <div class=\"modal-dialog modal-lg\" role=\"document\" _v-4e5c10ea=\"\">\n    <div class=\"modal-content\" _v-4e5c10ea=\"\">\n       \n\n\n\n<div class=\"well\" _v-4e5c10ea=\"\">\n\t\t<input type=\"text\" class=\"form-control\" placeholder=\"Filtrar\" v-model=\"filterTerm\" _v-4e5c10ea=\"\">\n\t</div>\n\t<div _v-4e5c10ea=\"\">\n\n\t <table class=\"table table-bordered table-striped table-hover\" _v-4e5c10ea=\"\">\n\t \t\n\t\t<thead _v-4e5c10ea=\"\">\n\t\t\t<tr _v-4e5c10ea=\"\">\n\t\t\t\t<th _v-4e5c10ea=\"\"><a href=\"#\" @click=\"sort($event, 'id')\" _v-4e5c10ea=\"\">ID</a></th>\n\t\t\t\t<th _v-4e5c10ea=\"\"><a href=\"#\" @click=\"sort($event, 'name')\" _v-4e5c10ea=\"\">Nome</a></th>\n\t\t\t\t<th _v-4e5c10ea=\"\"><a href=\"#\" @click=\"sort($event, 'email')\" _v-4e5c10ea=\"\">Email</a></th>\n\t\t\t\t\n\t\t\t</tr>\n\t\t</thead>\n\t\t<tbody _v-4e5c10ea=\"\">\n\t\n\t\t\t<tr v-for=\"u in users | filterBy filterTerm| orderBy sortProperty sortDirection\" _v-4e5c10ea=\"\">\n\t\t\t\t\n\t\t\t\t<td _v-4e5c10ea=\"\">{{u.id}}</td>\n\t\t\t\t<td _v-4e5c10ea=\"\">{{u.name}}</td>\n\t\t\t\t<td _v-4e5c10ea=\"\">{{u.email}}</td>\n\t\t\t\t<td _v-4e5c10ea=\"\"><button class=\"btn btn-success\" @click=\"showUser(u.id, u.name, u.email)\" _v-4e5c10ea=\"\">Editar</button></td>\n\t\t\t\t\n\t\t\t</tr>\n\t\t</tbody>\n\t\t\n\n\t </table> \n\n\t</div>\n\n\n\n\n    </div>\n  </div>\n</div>\n\n<br _v-4e5c10ea=\"\"><hr _v-4e5c10ea=\"\">\n\n\t\n\n\n\n"
 if (module.hot) {(function () {  module.hot.accept()
-  var hotAPI = require("C:\\wamp\\www\\newerplte\\node_modules\\vueify\\node_modules\\vue-hot-reload-api\\index.js")
+  var hotAPI = require("vue-hot-reload-api")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
-  var id = "C:\\wamp\\www\\newerplte\\resources\\assets\\js\\components\\services.vue"
   if (!module.hot.data) {
-    hotAPI.createRecord(id, module.exports)
+    hotAPI.createRecord("_v-4e5c10ea", module.exports)
   } else {
-    hotAPI.update(id, module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
+    hotAPI.update("_v-4e5c10ea", module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"./insertClient.vue":12,"C:\\wamp\\www\\newerplte\\node_modules\\vueify\\node_modules\\vue-hot-reload-api\\index.js":6,"vue":4}],17:[function(require,module,exports){
+},{"./insertClient.vue":12,"vue":5,"vue-hot-reload-api":3}],17:[function(require,module,exports){
 'use strict';
 
 var _vue = require('vue');
@@ -29610,6 +29861,6 @@ new _vue2.default({
 
 });
 
-},{"./components/OsCartridge.vue":7,"./components/bar.vue":8,"./components/bus":9,"./components/clients.vue":10,"./components/foo.vue":11,"./components/insertClient.vue":12,"./components/osCartList.vue":13,"./components/osList.vue":14,"./components/services.vue":16,"vue":4,"vue-resource":3}]},{},[17]);
+},{"./components/OsCartridge.vue":7,"./components/bar.vue":8,"./components/bus":9,"./components/clients.vue":10,"./components/foo.vue":11,"./components/insertClient.vue":12,"./components/osCartList.vue":13,"./components/osList.vue":14,"./components/services.vue":16,"vue":5,"vue-resource":4}]},{},[17]);
 
 //# sourceMappingURL=main.js.map
