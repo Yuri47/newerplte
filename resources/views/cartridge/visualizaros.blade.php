@@ -14,19 +14,47 @@
 {{$totalPrice}}
 
 <h1>Cartucho - {{$osCart->state}} - {{ date('d/m/Y - H:s', strtotime($osCart->created_at)) }}</h1>
- <h2> Valor: R$ <p id="price">{{$totalPrice}}</p></h2>
+ <h2> <div id="price"></div></h2>
   @if ($osCart->pay == 'yes')
 <h2>Pago: Sim</h2>
 @elseif ($osCart->pay == 'no')
 <h2>Pago: Não</h2>
 @endif
 
- 
- 
+ <div class="row">
+  <div class="col-md-6">
 <h3>Cliente</h3>
 <p>Nome: {{$clientData->name}}</p>
 <p>Telefone: {{$clientData->fone}}</p>
 <p>Endereço: {{$clientData->address}}</p>
+
+
+  </div>
+  <div class="col-md-6">
+    @if ($osCart->state == "PRONTO")
+<h3>Saída</h3>
+<p>Total: {{$totalPrice}}</p>
+
+<form action="/changeStateCart" method="POST" role="form">
+<input type="hidden" name="_token" value="{{csrf_token()}}"> 
+<input type="hidden" name="id" value="{{$osCart->id}}">
+
+ <div class="form-group">
+    <label for="">Nome</label>
+    <input type="text" class="form-control" id="" placeholder="Input field">
+  </div>
+<button type="submit" class="btn btn-primary" id="botaoPronto">Entregar</button>
+</form>
+@endif
+
+ 
+
+
+
+  </div>
+</div>
+ 
+ 
  
 
 
@@ -36,25 +64,39 @@
   
 <div class="row">
 @foreach ($cartridge as $cart)
+@if (empty($cart->state))
 <div class="col-md-5   bg-info cart" id="moldura{{$cart->id}}">
+@elseif ($cart->state == "Bom")
+<div class="col-md-5   bg-info cart"  >
+@elseif ($cart->state == "Cheio")
+<div class="col-md-5   bg-success cart"  >
+@elseif ($cart->state == "Entupido")
+<div class="col-md-5   bg-danger cart"  >
+@endif
 <div class="col-md-5  ">
 
 <p style="text-transform:uppercase">Marca: {{$cart->mark}}</p>
 <p>Numero de série: {{$cart->serialNumber}}</p>
 <input type="hidden" name="" id="idCartridge{{$cart->id}}" value="{{$cart->id}}">
 <p id="estado{{$cart->id}}">Estado: <div id="textEstado{{$cart->id}}"></div></p>
+@if (!empty($cart->state))
+<p>Estado: {{$cart->state}} </p>
+@endif
+
 
 </div>
 <div class="col-md-5  ">
 <p>Numero: {{$cart->number}}</p>
-<p>Valor: {{$cart->price}}</p>
+<p id="campoValor{{$cart->id}}">Valor: {{$cart->price}}</p>
 
 </div>
+@if (empty($cart->state))
 <div id="botoes{{$cart->id}}">
 <button type="button" class="btn btn-primary" id="bom{{$cart->id}}">Bom</button>
 <button type="button" class="btn btn-success" id="Cheio{{$cart->id}}">Já Cheio</button>
 <button type="button" class="btn btn-danger" id="Entupido{{$cart->id}}">Entupido</button>
 </div>
+@endif
 </div>
  
 
@@ -62,8 +104,13 @@
 
 </div>
  
-
-<button type="button" class="btn btn-primary" id="botaoPronto">PRONTO</button>
+@if ($osCart->state == "RECEBIDO")
+<form action="/changeStateCart" method="POST" role="form">
+<input type="hidden" name="_token" value="{{csrf_token()}}"> 
+<input type="hidden" name="id" value="{{$osCart->id}}">
+<button type="submit" class="btn btn-primary" id="botaoPronto">PRONTO</button>
+</form>
+@endif
  
 
 <style type="text/css">
@@ -95,36 +142,50 @@
 
  
 
+ 
+
 $("div#editSuccess").hide();
 $("button#botaoPronto").hide();
 var count = 0;
-var clickTeste = 0;
+var countCart = 0;
+var clickTeste = {{$totalPrice}};
+
+$("div#price").text("Valor: R$ " + clickTeste + ",00")
+
+
  
-$("button#botaoPronto").click(function() {
-  
- clickTeste = clickTeste + 1;
- console.log(clickTeste);
-   $("div#clickTeste").text(clickTeste);
-   if (count == clickTeste) {
-  console.log("chegou");
-}
-        }); //fim da função  
+   
 
 
 
 
 
 @foreach ($cartridge as $cart)
-count++
+ 
+if("{{$cart->state}}" == "" || "{{$cart->state}}" == null){
+ 
+  count++
+  console.log( count)
+  console.log(countCart)
+} 
+console.log( count)
+  console.log(countCart)
+
 $("div#count").text(count);
 
 
 $("p#estado{{$cart->id}}").hide();
 
 
+
+
+
+// 
+// FUNÇÃO BOM
+// 
 $("button#bom{{$cart->id}}").click(function() {
             
-  clickTeste = clickTeste + 1;           
+countCart = countCart + 1           
 
 $.ajax({
   method: "GET",
@@ -146,15 +207,37 @@ $("div#textEstado{{$cart->id}}").text(msg["estado"])
 $("p#estado{{$cart->id}}").show("slow")
 
   });
-  if (count == clickTeste) {
+  if (count == countCart) {
     $("button#botaoPronto").show();
   console.log("chegou");
 }
         }); //fim da função do botão bom
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// 
+// FUNÇÃO CHEIO
+// 
 $("button#Cheio{{$cart->id}}").click(function() {
             
- clickTeste = clickTeste + 1;     
+ countCart = countCart + 1 
+
+ clickTeste = clickTeste - {{$cart->price}}
+ $("div#price").text("Valor: R$ " + clickTeste + ",00")  
+ $("p#campoValor{{$cart->id}}").text("Valor: 0")  
+
 
 $.ajax({
   method: "GET",
@@ -177,15 +260,32 @@ $("p#estado{{$cart->id}}").show("slow")
 document.getElementById('moldura{{$cart->id}}').className = 'col-md-5   bg-success cart';
 
   });
-  if (count == clickTeste) {
+  if (count == countCart) {
     $("button#botaoPronto").show();
   console.log("chegou");
 }
         }); //fim da função do botão Cheio
 
+
+
+
+
+
+
+
+
+
+
+
+// 
+// FUNÇÃO ENTUPIDO
+// 
 $("button#Entupido{{$cart->id}}").click(function() {
+  countCart = countCart + 1 
             
- clickTeste = clickTeste + 1;             
+ clickTeste = clickTeste - {{$cart->price}}
+ $("div#price").text("Valor: R$ " + clickTeste + ",00")  
+  $("p#campoValor{{$cart->id}}").text("Valor: 0")            
 
 $.ajax({
   method: "GET",
@@ -208,14 +308,27 @@ $("p#estado{{$cart->id}}").show("slow")
 document.getElementById('moldura{{$cart->id}}').className = 'col-md-5   bg-danger cart';
 
   });
-  if (count == clickTeste) {
+  if (count == countCart) {
     $("button#botaoPronto").show();
   console.log("chegou");
 }
         }); //fim da função do botão Entupido
+
+
+
+
+
+
+
+
+
  
    @endforeach
 
+if (count == countCart) {
+    $("button#botaoPronto").show();
+  console.log("chegou");
+}
 
 
 

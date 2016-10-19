@@ -91,6 +91,7 @@ Route::get('/listcartridge', function () {
  });
 Route::get('/cartridge/visualizar/{id}', 'CartridgeController@visualizar');
 Route::post('/newcartridge', 'CartridgeController@newCartridge');
+Route::post('/changeStateCart', 'CartridgeController@changeStateCart');
 Route::get('editStateCartridge', array('as'=>'editStateCartridge', 'uses'=>'CartridgeController@editStateCartridge'));
 
 

@@ -136,10 +136,51 @@ class CartridgeController extends Controller
         $idCart = $request->input('id');
         $estado =  $request->input('estado');
 
+        if ($estado == "Bom") {
+
+            $cartridge = Cartridge::find($idCart);
+            $cartridge->state = "Bom";
+            $cartridge->save();
+
+        } elseif ($estado == "Cheio") {
+
+            $cartridge = Cartridge::find($idCart);
+            $cartridge->state = "Cheio";
+            $cartridge->price = 0;
+
+            $cartridge->save();
+
+        } elseif ($estado == "Entupido") {
+
+            $cartridge = Cartridge::find($idCart);
+            $cartridge->state = "Entupido";
+            $cartridge->price = 0;
+            $cartridge->save();
+
+        } 
+
+
+
          $msg = ['name' => 'msg vindo da função: '.$idCart, 'estado' => $estado];
 
         return $msg;
 
+    }
+
+    public function changeStateCart(Request $request) {
+
+        $osCart = OsCartridge::find($request->input('id'));
+        if ($osCart->state == "RECEBIDO") {
+
+        $osCart->state = "PRONTO";
+
+        } elseif ($osCart->state == "PRONTO") {
+            $osCart->state = "ENTREGUE";
+        }
+        
+        $osCart->save();
+
+        return Redirect::to('/cartridge/visualizar/'.$request->input('id'));
     }
 
 }
