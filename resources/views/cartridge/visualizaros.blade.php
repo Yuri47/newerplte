@@ -8,10 +8,6 @@
 @section('main-content')
    
  
-{{$osCart}}
-{{$clientData}}
-{{$cartridge}}
-{{$totalPrice}}
 
 <h1>Cartucho - {{$osCart->state}} - {{ date('d/m/Y - H:s', strtotime($osCart->created_at)) }}</h1>
  <h2> <div id="price"></div></h2>
@@ -30,7 +26,11 @@
 
 
   </div>
-  <div class="col-md-6">
+
+ 
+
+  <div class="f">
+  <div class="col-md-3">
     @if ($osCart->state == "PRONTO")
 <h3>Saída</h3>
 <p>Total: {{$totalPrice}}</p>
@@ -38,71 +38,79 @@
 <form action="/changeStateCart" method="POST" role="form">
 <input type="hidden" name="_token" value="{{csrf_token()}}"> 
 <input type="hidden" name="id" value="{{$osCart->id}}">
-
- <div class="form-group">
-    <label for="">Nome</label>
-    <input type="text" class="form-control" id="" placeholder="Input field">
-  </div>
+ 
+    <div class="input-group">
+      <span class="input-group-btn">
+        <button class="btn btn-default" type="button" id="buttonName">Repetir</button>
+      </span>
+      <input type="text" class="form-control" placeholder="Nome de quem retira" id="inputName">
+    </div><!-- /input-group -->
+ <br>
 <button type="submit" class="btn btn-primary" id="botaoPronto">Entregar</button>
 </form>
 @endif
-
  
-
-
-
+  </div>
   </div>
 </div>
  
  
- 
 
 
- 
- 
+
+
   <h3>Cartuchos</h3>
-  
+
+
 <div class="row">
 @foreach ($cartridge as $cart)
+ 
 @if (empty($cart->state))
-<div class="col-md-5   bg-info cart" id="moldura{{$cart->id}}">
+  <div class="col-sm-5 cart bg-info" id="moldura{{$cart->id}}"> <!-- Moldura -->
 @elseif ($cart->state == "Bom")
-<div class="col-md-5   bg-info cart"  >
+  <div class="col-sm-5 cart bg-info"> <!-- Moldura -->
 @elseif ($cart->state == "Cheio")
-<div class="col-md-5   bg-success cart"  >
+  <div class="col-sm-5 cart bg-success"> <!-- Moldura -->
 @elseif ($cart->state == "Entupido")
-<div class="col-md-5   bg-danger cart"  >
-@endif
-<div class="col-md-5  ">
-
-<p style="text-transform:uppercase">Marca: {{$cart->mark}}</p>
-<p>Numero de série: {{$cart->serialNumber}}</p>
-<input type="hidden" name="" id="idCartridge{{$cart->id}}" value="{{$cart->id}}">
-<p id="estado{{$cart->id}}">Estado: <div id="textEstado{{$cart->id}}"></div></p>
-@if (!empty($cart->state))
-<p>Estado: {{$cart->state}} </p>
+  <div class="col-sm-5 cart bg-danger"> <!-- Moldura -->
 @endif
 
 
-</div>
-<div class="col-md-5  ">
-<p>Numero: {{$cart->number}}</p>
-<p id="campoValor{{$cart->id}}">Valor: {{$cart->price}}</p>
-
-</div>
-@if (empty($cart->state))
-<div id="botoes{{$cart->id}}">
-<button type="button" class="btn btn-primary" id="bom{{$cart->id}}">Bom</button>
-<button type="button" class="btn btn-success" id="Cheio{{$cart->id}}">Já Cheio</button>
-<button type="button" class="btn btn-danger" id="Entupido{{$cart->id}}">Entupido</button>
-</div>
-@endif
-</div>
+  
+ 
+    <div class="row">
+      <div class="col-xs-8 col-sm-6">
+        <p style="text-transform:uppercase">Marca: {{$cart->mark}}</p>
+        <p>Numero de série: {{$cart->serialNumber}}</p>
+        <input type="hidden" name="" id="idCartridge{{$cart->id}}" value="{{$cart->id}}">
+        <p id="estado{{$cart->id}}">Estado: <div id="textEstado{{$cart->id}}"></div></p>
+        @if (!empty($cart->state))
+          <p>Estado: {{$cart->state}} </p>
+        @endif
+      </div>
+      <div class="col-xs-4 col-sm-6">
+        <p>Numero: {{$cart->number}}</p>
+        <p id="campoValor{{$cart->id}}">Valor: {{$cart->price}}</p>
+      </div>
+    </div>
+    @if (empty($cart->state))
+    <div id="botoes{{$cart->id}}" style="text-align: center">
+      <button type="button" class="btn btn-primary cart" id="bom{{$cart->id}}">Bom</button>
+      <button type="button" class="btn btn-success cart" id="Cheio{{$cart->id}}">Cheio</button>
+      <button type="button" class="btn btn-danger cart"  id="Entupido{{$cart->id}}">Entupido</button>
+    </div>
+    @endif
  
 
-@endforeach
 
-</div>
+  </div> <!-- fim da Moldura -->
+@endforeach
+ </div> <!-- fim da div ROW -->
+
+
+
+
+
  
 @if ($osCart->state == "RECEBIDO")
 <form action="/changeStateCart" method="POST" role="form">
@@ -150,9 +158,17 @@ var count = 0;
 var countCart = 0;
 var clickTeste = {{$totalPrice}};
 
+
 $("div#price").text("Valor: R$ " + clickTeste + ",00")
 
 
+
+
+$("button#buttonName").click(function() {
+
+  $("input#inputName").val(" {{$clientData->name}}" );
+
+});
  
    
 

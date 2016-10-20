@@ -57,4 +57,10 @@ open other cmd and type for compile files .JS and .VUE when save:
 gulp watch
 
 
-acrescenta na tabela equipament a coluna tipo e na tabela OS modifica a coluna estado para varchar
+
+---
+
+To create localserver type this command from "public" folder:
+
+php -S 0.0.0.0:8000
+

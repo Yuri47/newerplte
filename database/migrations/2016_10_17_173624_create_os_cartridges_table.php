@@ -17,6 +17,8 @@ class CreateOsCartridgesTable extends Migration
             $table->integer('client_id');
             $table->string('state');
             $table->string('pay');
+            $table->decimal('price');
+            $table->string('name');
             $table->timestamps();
         });
     }
