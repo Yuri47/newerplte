@@ -39,17 +39,17 @@
               {!!(string)Session::get('temp')!!}
         <!-- name: <input type="text" class="texto" id="valueText"> -->
                 <div class="form-group">
-                  <label for="">Name</label>
-                  <input type="text" class="form-control"  autofocus required placeholder=" Name" id="nameEdit" name="name" v-model="ist.name" >
+                  <label for="">Nome</label>
+                  <input type="text" class="form-control" autocomplete="off" autofocus required placeholder="Nome" id="nameEdit" name="name" v-model="ist.name" >
 
                 </div>
              <div class="form-group">
-                <label for="">Fone</label>
-                <input type="text" class="form-control"  required placeholder="Fone" id="foneEdit" name="fone"  v-model="ist.fone" >
+                <label for="">Telefone</label>
+                <input type="text" class="form-control phone" autocomplete="off" required placeholder="Telefone" id="foneEdit" name="fone"  v-model="ist.fone" >
             </div>
             <div class="form-group">
-                <label for="">Address</label>
-                <input type="text" class="form-control"  required placeholder="Address" id="addressEdit" name="address"   v-model="ist.address"  >
+                <label for="">Endereço</label>
+                <input type="text" class="form-control" autocomplete="off" required placeholder="Endereço" id="addressEdit" name="address"   v-model="ist.address"  >
             </div>
              <input type="hidden" name="id" id="id" value="@{{ist.id}}">
         <br><br>
@@ -63,13 +63,15 @@
 
         </div>
 
-        <div class="alert alert-success" id="editSuccess">
+        <div  id="editSuccess">
+        <div class="alert alert-success"  >
         <strong>Sucesso!</strong>
         O cliente <strong> @{{ist.name}}</strong>  foi alterado. 
         <br><br>
+         </div>
         <button type="button" class="btn btn-lg btn-danger" data-dismiss="modal" aria-label="Close">Fechar</button>
-        </div>
-
+       
+</div>
             </div>
           </div>
 </div>
@@ -77,33 +79,32 @@
 
 <!--====  End of MODAL DE EDIÇÃO DO CLIENTE  ====-->
 
-
-
  
-
-
+ 
  <!--==========================================
  =            FORM DE NOVO CLIENTE            =
  ===========================================-->
-  
+
+ <div class="row">
+  <div class="col-md-6"> 
   <form action="/newservice" method="POST" role="form">
      
       <input type="hidden" name="_token" value="{{csrf_token()}}">
       <input type="hidden" name="id" value="@{{ist.id}}">
       <div class="form-group">
-        <label for="">Name</label>
-        <input type="text" class="form-control" id="" required placeholder=" Name"  name="name"  v-model="ist.name" :readonly="ist.id">
-
+        <label for="">Nome</label>
+        <input type="text" autocomplete="off" class="form-control" id="" required placeholder="Nome"  name="name"  v-model="ist.name" :readonly="ist.id">
       </div>
       <div class="form-group">
-        <label for="">Fone</label>
-        <input type="text" class="form-control" id="" required placeholder="Fone"  name="fone"   v-model="ist.fone" :readonly="ist.id">
-        <label for="">Address</label>
+        <label for="">Telefone</label>
+        <input type="text" autocomplete="off" class="form-control phone" required placeholder="Telefone" name="fone" v-model="ist.fone" :readonly="ist.id"value="" />
+          </div>
+      <div class="form-group">  
+        <label for="">Endereço</label>
+        <input type="text" autocomplete="off" class="form-control" id="" required placeholder="Endereço" name="address"   v-model="ist.address" :readonly="ist.id" >
+     
       </div>
-      <div class="form-group">
-        <input type="text" class="form-control" id="" required placeholder="Address" name="address"   v-model="ist.address" :readonly="ist.id" >
-      </div>
-
+      
     
 
      <!--  <button type="submit" class="btn btn-primary">Submit</button> -->
@@ -136,32 +137,36 @@
 
   <div class="form-group">
     <label for="">Nº de Série</label>
-    <input type="text" class="form-control" id="" name="serialNumber" placeholder="Input field">
+    <input type="text" autocomplete="off" class="form-control" id="" name="serialNumber" placeholder="Nº de Série">
   </div>
 
   <div class="form-group">
     <label for="">Marca</label>
-    <input type="text" class="form-control" id="" name="mark" placeholder="Input field">
+    <input type="text" autocomplete="off" class="form-control" id="" name="mark" placeholder="Marca">
   </div>
 
   <div class="form-group">
       <label for="">Modelo</label>
-      <input type="text" class="form-control" id="" name="design" placeholder="Input field">
+      <input type="text" autocomplete="off" class="form-control" id="" name="design" placeholder="Modelo">
   </div>
 
   <div class="form-group">
       <label for="">Defeito Reclamado</label>
-      <input type="text" class="form-control" id="" name="problem" placeholder="Input field">
+      <input type="text" autocomplete="off" class="form-control" id="" name="problem" placeholder="Defeito Reclamado">
   </div>
 
   <div class="form-group">
       <label for="">Observações</label>
-      <input type="text" class="form-control" id="" name="observations" placeholder="Input field"> 
+      <input type="text" autocomplete="off" class="form-control" id="" name="observations" placeholder="Observações"> 
   </div>
 
   <button type="submit" class="btn btn-primary">Submit</button>
 </form>
 
+</div>
+   
+</div>
+  
 <!--====  End of FORM DE EQUIPAMENTOS  ====-->
 
 
@@ -202,10 +207,22 @@
 
 
 <script src="/js/main.js"></script>
+ 
   <script src="/js/jquery.min.1.11.3.js"></script>
+  <script src="/js/jquery.mask.min.js"></script>
  
   
 <script type="text/javascript" >
+
+var maskBehavior = function (val) {
+  return val.replace(/\D/g, '').length === 11 ? '(00) 00000-0000' : '(00) 0000-00009';
+},
+options = {onKeyPress: function(val, e, field, options) {
+        field.mask(maskBehavior.apply({}, arguments), options);
+    }
+};
+
+$('.phone').mask(maskBehavior, options);
 
  
 
