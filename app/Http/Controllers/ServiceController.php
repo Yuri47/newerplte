@@ -11,6 +11,7 @@ use App\ServiceOrder;
 use App\Comment;
 use App\CollectEquip;
 use DB;
+use App;
 
 
 class ServiceController extends Controller{
@@ -204,5 +205,30 @@ class ServiceController extends Controller{
 		return redirect('listos/visualizar/'.$request->input('os_id'));
 
 	} 
+
+	public function tst() {
+
+		$pdf = App::make('dompdf.wrapper');
+
+		$OS = ServiceOrder::find(105);
+		 
+
+     	$ServiceOrder = [
+			'client_id' => 'gfdsg',
+			'equipament_id' => 'gfdg',
+			'state' => 'RECEBIDO',
+			'technical' => '',
+			'observations' => '',
+			'finalReport' => '',
+			'game' => 'ass'
+		];	
+		$a = 'hghghghg';
+		//$pdf->loadView('teste', array('client_id' => 'gfdsg', 'equipament_id' => 'gfdg') );
+		$pdf->loadView('teste', ['data' => $OS, 'os' => $ServiceOrder]);
+		 return $pdf->stream();
+		 
+
+
+	}
 
 }

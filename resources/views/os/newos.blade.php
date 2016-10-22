@@ -13,6 +13,7 @@
  
 <h1>Cadastrar Cliente</h1>   
  <vc-clients></vc-clients>
+ 
      <button type="clean" class="btn btn-primary" @click="limp" :disabled="!ist.id">Novo</button>
 
 

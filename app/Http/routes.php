@@ -130,9 +130,7 @@ Route::get('/home', 'HomeController@index');
 Route::get('/teste', 'HomeController@teste');
 
  
-Route::get('/tst', function () {
-     return view('cartridge.teste');
- });
+Route::get('/tst', 'ServiceController@tst');
 
 
 
