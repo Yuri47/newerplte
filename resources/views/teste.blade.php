@@ -22,7 +22,7 @@
  			<input type="text" class="form-control" id="" placeholder="Input field">
  		</div>
  	
- 		
+ 		<div class="alert alert-success" role="alert">...</div>
  	
  		<button type="submit" class="btn btn-primary">Submit</button>
  	</form>

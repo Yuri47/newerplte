@@ -12,7 +12,7 @@ use App\Comment;
 use App\CollectEquip;
 use DB;
 use App;
-
+use Redirect;
 
 class ServiceController extends Controller{
 
@@ -108,8 +108,9 @@ class ServiceController extends Controller{
 			 
 
 
-			return view('os.showos', ['OS' => $OS, 'clientData' => $clientData, 'equipamentData' => $equipamentData, 'terms' => $terms]);
-				
+			//return view('os.showos', ['OS' => $OS, 'clientData' => $clientData, 'equipamentData' => $equipamentData, 'terms' => $terms]);
+			
+			return Redirect::to('/listos/visualizar/'.$idOS);	
 		
 
 

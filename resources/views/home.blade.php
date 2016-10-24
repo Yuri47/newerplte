@@ -7,8 +7,8 @@
 
 @section('main-content')
  <h1>Home</h1>
-maior preço: 
-
+ 
+<a href="/tst" target="_blank"> <button  type="button" class="btn btn-danger">button</button></a> 
 
  <div class="row">
         <div class="col-lg-3 col-xs-6">
