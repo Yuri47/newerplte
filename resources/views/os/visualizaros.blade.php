@@ -17,7 +17,7 @@
 
 
 
-<h1>OS Nº: {{$OS->id}} - {{ date('d/m/Y - H:s', strtotime($OS->created_at)) }}</h1> <a href="/tst" target="_blank"> <button  type="button" class="btn btn-success">Imprimir OS</button></a>
+<h1>OS Nº: {{$OS->id}} - {{ date('d/m/Y - H:s', strtotime($OS->created_at)) }}</h1> <a href="{{$OS->id}}/print" target="_blank"> <button  type="button" class="btn btn-success">Imprimir OS</button></a>
 
  <div class="success">
 <h3 >Estado: {{$OS->state}}</h3>

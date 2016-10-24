@@ -75,6 +75,8 @@ Route::post('createcomment', 'ServiceController@createComment');
 
 Route::post('collectEquip', 'ServiceController@collectEquip');
 
+Route::get('/listos/visualizar/{id}/print', 'ServiceController@print');
+
 
 /*
 |--------------------------------------------------------------------------

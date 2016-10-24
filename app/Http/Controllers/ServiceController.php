@@ -232,4 +232,37 @@ class ServiceController extends Controller{
 
 	}
 
+	public function print($id) {
+
+			$pdf = App::make('dompdf.wrapper');
+
+			$OS = ServiceOrder::find($id);
+			$clientData = Clients::find($OS->client_id);
+			$equipamentData = Equipament::find($OS->equipament_id);
+
+			// if ($type == 'NOTEBOOK') {
+			// 	$terms = ' NOTEBOOK Lorem ipsum dolor sit amet, consectetur adipisicing elit. Minus consectetur laborum alias facilis autem asperiores iure voluptatum doloremque, ipsa consequatur, iusto illo. Porro, harum itaque? Maxime odit distinctio voluptatum porro?';
+
+			// } else if ($type == 'COMPUTADOR') {
+			// 	$terms = ' COMPUTADOR Lorem ipsum dolor sit amet, consectetur adipisicing elit. Minus consectetur laborum alias facilis autem asperiores iure voluptatum doloremque, ipsa consequatur, iusto illo. Porro, harum itaque? Maxime odit distinctio voluptatum porro?';
+
+			// } else if ($type == 'IMPRESSORA') {
+			// 	$terms = ' IMPRESSORA Lorem ipsum dolor sit amet, consectetur adipisicing elit. Minus consectetur laborum alias facilis autem asperiores iure voluptatum doloremque, ipsa consequatur, iusto illo. Porro, harum itaque? Maxime odit distinctio voluptatum porro?';
+
+			// }
+
+			 $terms = ' NOTEBOOK Lorem ipsum dolor sit amet, consectetur adipisicing elit. Minus consectetur laborum alias facilis autem asperiores iure voluptatum doloremque, ipsa consequatur, iusto illo. Porro, harum itaque? Maxime odit distinctio voluptatum porro?';
+
+
+			 
+
+
+			// return view('os.showos', ['OS' => $OS, 'clientData' => $clientData, 'equipamentData' => $equipamentData, 'terms' => $terms]);
+			$pdf->loadView('os.showos', ['OS' => $OS, 'clientData' => $clientData, 'equipamentData' => $equipamentData, 'terms' => $terms]);
+			return $pdf->stream();
+
+		 
+
+	}
+
 }
