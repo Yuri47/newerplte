@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Tempo de geração: 13/10/2016 às 18:50
+-- Tempo de geração: 24/10/2016 às 18:25
 -- Versão do servidor: 5.7.15-0ubuntu0.16.04.1
 -- Versão do PHP: 7.0.8-0ubuntu0.16.04.3
 
@@ -21,6 +21,60 @@ SET time_zone = "+00:00";
 --
 CREATE DATABASE IF NOT EXISTS `newerp` DEFAULT CHARACTER SET latin1 COLLATE latin1_swedish_ci;
 USE `newerp`;
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `cartridges`
+--
+
+DROP TABLE IF EXISTS `cartridges`;
+CREATE TABLE `cartridges` (
+  `id` int(10) UNSIGNED NOT NULL,
+  `osCartridge_id` int(11) NOT NULL,
+  `mark` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `number` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `serialNumber` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `price` decimal(8,2) NOT NULL,
+  `state` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+--
+-- Fazendo dump de dados para tabela `cartridges`
+--
+
+INSERT INTO `cartridges` (`id`, `osCartridge_id`, `mark`, `number`, `serialNumber`, `price`, `state`, `created_at`, `updated_at`) VALUES
+(1, 1, 'hp', '662', '226525', '10.00', 'Bom', '2016-10-18 12:59:54', '2016-10-19 16:26:39'),
+(2, 1, 'hp', '662', '5698985', '15.00', 'Bom', '2016-10-18 12:59:54', '2016-10-19 16:28:28'),
+(3, 2, 'hp', '662', '226525', '0.00', 'Entupido', '2016-10-18 13:15:43', '2016-10-19 20:13:39'),
+(4, 2, 'hp', '662', '5698985', '0.00', 'Entupido', '2016-10-18 13:15:43', '2016-10-19 20:13:41'),
+(5, 3, 'hp', '56', '55115522', '20.00', 'Bom', '2016-10-18 14:00:44', '2016-10-19 19:34:17'),
+(6, 4, 'hp', '56', '55115522', '20.00', '', '2016-10-18 14:01:36', '2016-10-18 14:01:36'),
+(7, 5, 'hp', '21', '212356', '10.00', 'Bom', '2016-10-18 14:13:35', '2016-10-19 16:21:52'),
+(8, 5, 'hp', '22', '326598', '15.00', 'Bom', '2016-10-18 14:13:35', '2016-10-19 16:21:54'),
+(9, 6, 'hp', '60', '6255854', '0.00', 'Entupido', '2016-10-18 18:21:00', '2016-10-19 16:12:33'),
+(10, 6, 'hp', '60b', '226658', '10.00', 'Bom', '2016-10-18 18:21:00', '2016-10-19 16:12:34'),
+(11, 6, 'hp', '122', '124512', '0.00', 'Cheio', '2016-10-18 18:21:00', '2016-10-19 16:12:35'),
+(12, 6, 'hp', '122', '555542', '0.00', 'Cheio', '2016-10-18 18:21:00', '2016-10-19 16:12:37'),
+(13, 6, 'hp', '22', '556584', '15.00', 'Bom', '2016-10-18 18:21:00', '2016-10-19 16:12:39'),
+(14, 7, 'hp', '21', '454545', '10.00', 'Bom', '2016-10-18 22:02:07', '2016-10-19 16:00:45'),
+(15, 7, 'hp', '21', '14545', '10.00', 'Cheio', '2016-10-18 22:02:07', '2016-10-19 16:11:17'),
+(16, 7, 'hp', '22', '156416', '15.00', 'Entupido', '2016-10-18 22:02:07', '2016-10-19 16:11:19'),
+(17, 8, 'hp', '122', '545345345', '10.00', 'Bom', '2016-10-19 16:31:00', '2016-10-19 16:31:08'),
+(18, 8, 'hp', '122', '45457878', '0.00', 'Cheio', '2016-10-19 16:31:00', '2016-10-19 17:32:40'),
+(19, 8, 'hp', '122', '5487544', '0.00', 'Entupido', '2016-10-19 16:31:00', '2016-10-19 17:32:42'),
+(20, 9, 'hp', '662', '124556', '10.00', 'Bom', '2016-10-19 17:38:29', '2016-10-19 17:38:50'),
+(21, 9, 'hp', '662', '124587', '15.00', 'Bom', '2016-10-19 17:38:29', '2016-10-19 17:38:36'),
+(22, 10, 'hp', '622', '235644', '10.00', 'Bom', '2016-10-19 17:43:05', '2016-10-19 17:43:26'),
+(23, 10, 'hp', '662', '121544', '0.00', 'Cheio', '2016-10-19 17:43:05', '2016-10-19 17:43:44'),
+(24, 10, 'hp', '662', '232656', '0.00', 'Entupido', '2016-10-19 17:43:05', '2016-10-19 17:43:52'),
+(25, 10, 'hp', '662', '326547', '0.00', 'Entupido', '2016-10-19 17:43:05', '2016-10-19 17:43:55'),
+(26, 11, 'Hp', '122', '7643456', '15.00', 'Bom', '2016-10-19 22:15:42', '2016-10-19 22:16:30'),
+(27, 11, 'Hp', '122', '6788996', '0.00', 'Cheio', '2016-10-19 22:15:42', '2016-10-19 22:16:36'),
+(28, 12, 'hp ', '662', '225652', '0.00', 'Entupido', '2016-10-20 16:59:57', '2016-10-20 17:00:10'),
+(29, 12, 'hp', '662', '569985', '15.00', 'Bom', '2016-10-20 16:59:57', '2016-10-20 17:07:43');
 
 -- --------------------------------------------------------
 
@@ -57,7 +111,7 @@ INSERT INTO `clients` (`id`, `name`, `address`, `fone`, `created_at`, `updated_a
 (12, 'Buford Swift', 'North Aliabury', '1-365-960-2328 x8807', NULL, NULL),
 (13, 'Carlo Lemke', 'Celestinetown', '+14803592400', NULL, NULL),
 (14, 'Alessandro L', 'rrre', '3334', NULL, '2016-09-14 21:50:45'),
-(15, 'Thelma Stoltenberg DVM', 'West Tess', '+1.878.257.4378', NULL, NULL),
+(15, 'Thelma Stoltenberg DVM', 'West Tess', '6188458897', NULL, '2016-10-14 20:47:38'),
 (16, 'Mittie Spencer', 'Kendrickton', '338-260-3681', NULL, NULL),
 (17, 'Brenda Balistreri', 'North Adrianna', '+1 (848) 271-9279', NULL, NULL),
 (18, 'Mrs. Ashly Howe', 'Emieside', '649.207.0402', NULL, NULL),
@@ -75,7 +129,7 @@ INSERT INTO `clients` (`id`, `name`, `address`, `fone`, `created_at`, `updated_a
 (30, 'Bethel Marks', 'Lake Brionnastad', '586.527.0200', NULL, NULL),
 (31, 'Jayne Muller', 'Diannabury', '(337) 801-8940 x07475', NULL, NULL),
 (32, 'Breanne Heaney', 'South Justynberg', '+1 (637) 861-9302', NULL, NULL),
-(33, 'Bettie Haag2', 'West Destineemouth', '1-223-665-0227 x4020', NULL, '2016-09-28 15:26:50'),
+(33, 'Bettie Haag2', 'West Destineemouth', '(61) 99182-9742', NULL, '2016-10-21 18:09:14'),
 (34, 'Bernita Haley DVM', 'Reichelstad', '531-535-3648 x387', NULL, NULL),
 (35, 'Leonard Bayer', 'Layneville', '(315) 669-9985 x695', NULL, NULL),
 (36, 'Anabelle Miller I', 'East Josiahport', '1-920-735-1478 x5242', NULL, NULL),
@@ -120,7 +174,7 @@ INSERT INTO `clients` (`id`, `name`, `address`, `fone`, `created_at`, `updated_a
 (75, 'Spartacus', 'Roma', '666626', '2016-09-16 14:53:14', '2016-09-16 14:53:14'),
 (76, 'Spartacus', 'Roma', '666626', '2016-09-16 14:57:05', '2016-09-16 14:57:05'),
 (77, 'Spartacus', 'Roma', '666626', '2016-09-16 14:57:16', '2016-09-16 14:57:16'),
-(78, 'Yuri Alexsander Barbosa Caetano', 'QC 01 Conj D Numero 04 Loja 03', '(61) 9-91829742', '2016-09-16 16:31:20', '2016-09-16 16:31:20'),
+(78, 'Yuri Alexsander Barbosa Caetano', 'QC 01 Conj D Numero 04 Loja 03', '(61) 9-91829746', '2016-09-16 16:31:20', '2016-10-18 22:00:33'),
 (79, 'Yuri Alexsander Barbosa Caetano', 'QC 01 Conj D Numero 04 Loja 03', '(61) 9-91829742', '2016-09-16 16:33:14', '2016-09-16 16:33:14'),
 (80, 'Yuri Alexsander Barbosa Caetano', 'QC 01 Conj D Numero 04 Loja 03', '(61) 9-91829742', '2016-09-16 16:42:21', '2016-09-16 16:42:21'),
 (81, 'Yuri Alexsander Barbosa Caetano', 'QC 01 Conj D Numero 04 Loja 03', '(61) 9-91829742', '2016-09-16 16:53:55', '2016-09-16 16:53:55'),
@@ -174,7 +228,28 @@ INSERT INTO `clients` (`id`, `name`, `address`, `fone`, `created_at`, `updated_a
 (129, 'Yuri Alexsander Barbosa Caetano', 'QC 01 Conj D Numero 04 Loja 03', '(61) 9-91829742', '2016-09-16 21:18:46', '2016-09-16 21:18:46'),
 (130, 'Santa Maria', 'Santa Maria', '98959694', '2016-09-19 20:10:08', '2016-09-19 20:10:08'),
 (131, 'gfdg', 'gfdg', 'gfdg', '2016-09-23 15:38:11', '2016-09-23 15:38:11'),
-(132, 'Eminem', 'New York', '5558454548', '2016-10-05 19:09:20', '2016-10-05 19:09:20');
+(132, 'Eminem', 'New York', '5558454548', '2016-10-05 19:09:20', '2016-10-05 19:09:20'),
+(133, 'ClienteCartucho', 'Santa Maria', '6191817161', '2016-10-17 20:48:37', '2016-10-17 20:48:37'),
+(134, 'ClienteCartucho', 'Santa Maria', '6191817161', '2016-10-17 20:48:56', '2016-10-17 20:48:56'),
+(135, 'ClienteCartucho', 'Santa Maria', '6191817161', '2016-10-17 20:49:11', '2016-10-17 20:49:11'),
+(136, 'Cliente Cartucho Editado', 'Santa Maria', '6191817161', '2016-10-17 20:50:40', '2016-10-17 20:50:40'),
+(137, 'Cliente Cartucho Editado 2', 'Santa Maria', '6191817161', '2016-10-17 20:51:29', '2016-10-17 20:51:29'),
+(138, 'Cliente Cartucho Editado 23', 'Santa Maria', '6191817161', '2016-10-17 20:53:34', '2016-10-17 20:53:34'),
+(139, 'Cliente Cartucho Editado 11', 'Santa Maria', '6191817161', '2016-10-17 20:57:18', '2016-10-17 20:57:18'),
+(140, 'Cliente Cartucho Editado ed', 'Santa Maria', '6191817161', '2016-10-17 20:59:03', '2016-10-17 20:59:03'),
+(141, 'Novo t', 'Novo t', 'Novo t', '2016-10-17 20:59:49', '2016-10-17 20:59:49'),
+(142, 'Novo t3', 'Novo t', 'Novo t', '2016-10-17 21:02:24', '2016-10-17 21:02:24'),
+(143, 'new name cartridge', 'new name cartridge', 'new name cartridge', '2016-10-17 21:03:29', '2016-10-17 21:03:29'),
+(144, 'sem t33336', 'Novo t', 'Novo t', '2016-10-17 21:03:58', '2016-10-17 21:05:29'),
+(145, 'Novo t5', 'Novo t', 'Novo t', '2016-10-17 21:08:19', '2016-10-17 21:08:19'),
+(146, '3232', '3232', '(32) 3234-2', '2016-10-17 21:08:57', '2016-10-21 18:10:34'),
+(147, '3333', '33333', '33333', '2016-10-17 21:10:12', '2016-10-17 21:10:12'),
+(148, '333336', '33333', '33333', '2016-10-17 21:11:29', '2016-10-18 19:25:01'),
+(149, '4444', '33333', '33333', '2016-10-17 21:12:07', '2016-10-17 21:15:34'),
+(150, 'Highway', 'Desert', '6655489944', '2016-10-18 12:59:54', '2016-10-18 12:59:54'),
+(151, 'Highway', 'Desert', '6655489944', '2016-10-18 13:15:43', '2016-10-18 13:15:43'),
+(152, 'Teste celular', 'Santa Maria', '996764467', '2016-10-19 22:15:42', '2016-10-19 22:15:42'),
+(153, 'Yuri Alexsander', 'QC C 08', '(61) 99182-9742', '2016-10-21 18:35:25', '2016-10-21 18:35:25');
 
 -- --------------------------------------------------------
 
@@ -199,7 +274,8 @@ CREATE TABLE `collect_equips` (
 INSERT INTO `collect_equips` (`id`, `os_id`, `name`, `doc`, `created_at`, `updated_at`) VALUES
 (3, 100, 'Yuri', '2632574', '2016-10-13 20:33:09', '2016-10-13 20:33:09'),
 (4, 99, 'Buford Swift', '66956695', '2016-10-13 21:21:34', '2016-10-13 21:21:34'),
-(5, 89, 'Anabelle', '55897968541', '2016-10-13 21:49:40', '2016-10-13 21:49:40');
+(5, 89, 'Anabelle', '55897968541', '2016-10-13 21:49:40', '2016-10-13 21:49:40'),
+(6, 103, 'Yuri', '2632574', '2016-10-18 21:59:44', '2016-10-18 21:59:44');
 
 -- --------------------------------------------------------
 
@@ -232,7 +308,8 @@ INSERT INTO `comments` (`id`, `os_id`, `name`, `comment`, `created_at`, `updated
 (8, 99, 'Yuri Alexs', 'terceiro comentario', '2016-10-13 13:16:15', '2016-10-13 13:16:15'),
 (9, 100, 'Yuri Alexs', 'coment', '2016-10-13 14:18:33', '2016-10-13 14:18:33'),
 (10, 100, 'Yuri Alexs', 'um coment', '2016-10-13 14:40:14', '2016-10-13 14:40:14'),
-(11, 89, 'Yuri Alexs', 'Apresentou 08 badblocks', '2016-10-13 21:49:10', '2016-10-13 21:49:10');
+(11, 89, 'Yuri Alexs', 'Apresentou 08 badblocks', '2016-10-13 21:49:10', '2016-10-13 21:49:10'),
+(12, 103, 'Yuri Alexs', 'Apresentou 08 badblocks', '2016-10-18 21:58:44', '2016-10-18 21:58:44');
 
 -- --------------------------------------------------------
 
@@ -361,7 +438,12 @@ INSERT INTO `equipaments` (`id`, `client_id`, `type`, `serialNumber`, `mark`, `d
 (100, 33, 'NOTEBOOK', 'ewqeffdsf', 'Positivo', 'Premium', 'Caiu', 'Não liga', '2016-09-28 15:27:06', '2016-09-28 15:27:06'),
 (101, 132, 'NOTEBOOK', '1A22545444', 'Positivo', 'Premium', 'não deixou fonte', 'Instalação sem bkp', '2016-10-05 19:09:21', '2016-10-05 19:09:21'),
 (102, 54, 'NOTEBOOK', '1A22545444', 'Lenovo', 'Premium', 'não deixou fonte', 'Instalação sem bkp', '2016-10-05 20:38:39', '2016-10-05 20:38:39'),
-(103, 12, 'NOTEBOOK', '66696969', 'Dell', 'Inspiron', 'não deixou fonte', 'Instalação', '2016-10-13 13:39:36', '2016-10-13 13:39:36');
+(103, 12, 'NOTEBOOK', '66696969', 'Dell', 'Inspiron', 'não deixou fonte', 'Instalação', '2016-10-13 13:39:36', '2016-10-13 13:39:36'),
+(104, 13, 'NOTEBOOK', '66696969', 'Dell', 'Inspiron', 'não deixou fonte', 'Instalação', '2016-10-14 19:53:13', '2016-10-14 19:53:13'),
+(105, 15, 'COMPUTADOR', '66696969', 'Dell', 'Inspiron', 'não deixou fonte', 'Instalação', '2016-10-14 20:47:51', '2016-10-14 20:47:51'),
+(106, 55, 'NOTEBOOK', '66696969', 'Dell', 'Inspiron', 'não deixou fonte', 'Instalação', '2016-10-17 15:45:02', '2016-10-17 15:45:02'),
+(107, 78, 'NOTEBOOK', '66696969', 'Dell', 'Inspiron', 'não deixou fonte', 'Instalação', '2016-10-18 22:00:45', '2016-10-18 22:00:45'),
+(108, 153, 'NOTEBOOK', '66225598458', 'Lenovo', 'e430', 'Deixou fonte NS: 5544854522255', 'Instalação com BKP', '2016-10-21 18:35:25', '2016-10-21 18:35:25');
 
 -- --------------------------------------------------------
 
@@ -387,7 +469,45 @@ INSERT INTO `migrations` (`migration`, `batch`) VALUES
 ('2016_09_15_222237_create_service_orders_table', 3),
 ('2016_10_05_164515_create_comments_table', 4),
 ('2016_10_05_170405_comet', 5),
-('2016_10_13_160932_create_collect_equips_table', 6);
+('2016_10_13_160932_create_collect_equips_table', 6),
+('2016_10_17_173624_create_os_cartridges_table', 7),
+('2016_10_17_173637_create_cartridges_table', 7);
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `os_cartridges`
+--
+
+DROP TABLE IF EXISTS `os_cartridges`;
+CREATE TABLE `os_cartridges` (
+  `id` int(10) UNSIGNED NOT NULL,
+  `client_id` int(11) NOT NULL,
+  `state` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `pay` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `price` decimal(10,0) NOT NULL,
+  `name` varchar(128) COLLATE utf8_unicode_ci NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+--
+-- Fazendo dump de dados para tabela `os_cartridges`
+--
+
+INSERT INTO `os_cartridges` (`id`, `client_id`, `state`, `pay`, `price`, `name`, `created_at`, `updated_at`) VALUES
+(1, 150, 'ENTREGUE', 'no', '0', '', '2016-10-18 12:59:54', '2016-10-19 20:13:24'),
+(2, 151, 'ENTREGUE', 'no', '0', '', '2016-10-18 13:15:43', '2016-10-19 20:13:45'),
+(3, 149, 'ENTREGUE', 'yes', '0', '', '2016-10-18 14:00:44', '2016-10-19 19:58:15'),
+(4, 149, 'RECEBIDO', 'yes', '0', '', '2016-10-18 14:01:36', '2016-10-18 14:01:36'),
+(5, 45, 'RECEBIDO', 'no', '0', '', '2016-10-18 14:13:35', '2016-10-18 14:13:35'),
+(6, 78, 'PRONTO', 'no', '0', '', '2016-10-18 18:21:00', '2016-10-19 19:29:49'),
+(7, 78, 'RECEBIDO', 'no', '0', '', '2016-10-18 22:02:07', '2016-10-18 22:02:07'),
+(8, 28, 'ENTREGUE', 'no', '0', '', '2016-10-19 16:31:00', '2016-10-19 22:13:19'),
+(9, 23, 'ENTREGUE', 'yes', '0', '', '2016-10-19 17:38:29', '2016-10-19 20:11:35'),
+(10, 6, 'PRONTO', 'no', '0', '', '2016-10-19 17:43:05', '2016-10-19 19:13:22'),
+(11, 152, 'RECEBIDO', 'no', '0', '', '2016-10-19 22:15:42', '2016-10-19 22:15:42'),
+(12, 32, 'PRONTO', 'no', '0', '', '2016-10-20 16:59:57', '2016-10-20 17:08:40');
 
 -- --------------------------------------------------------
 
@@ -433,14 +553,19 @@ INSERT INTO `service_orders` (`id`, `client_id`, `equipament_id`, `state`, `tech
 (93, 52, 96, 'PRONTO', 'Bob Marley', '', 'Instalação com BKP', '0', '2016-09-23 15:52:48', '2016-09-27 16:36:05'),
 (94, 33, 97, 'PRONTO', 'Yuri Alexsander', '', 'Instal', '0', '2016-09-23 16:34:27', '2016-09-27 20:19:29'),
 (40, 82, 43, 'ANALISE', '', '', '', '0', '2016-09-16 17:00:13', '2016-09-16 17:00:13'),
-(87, 129, 90, 'ANALISE', '', '', '', '0', '2016-09-16 21:18:46', '2016-09-16 21:18:46'),
-(88, 130, 91, 'ANALISE', '', '', '', '0', '2016-09-19 20:10:08', '2016-09-19 20:10:08'),
+(87, 129, 90, 'PRONTO', 'Yuri Alexsander', '', 'Instalação + Upgrade', '250', '2016-09-16 21:18:46', '2016-10-14 21:02:55'),
+(88, 130, 91, 'PRONTO', 'Yuri Alexsander', '', 'Instalação', '70', '2016-09-19 20:10:08', '2016-10-14 20:25:08'),
 (95, 12, 98, 'PRONTO', 'Yuri Alexsander', '', 'Instal', '0', '2016-09-23 20:11:59', '2016-09-27 16:34:06'),
 (96, 1, 99, 'PRONTO', 'Bob Marley', '', 'Instalação com BKP', '0', '2016-09-23 20:31:04', '2016-09-27 20:18:44'),
 (97, 33, 100, 'PRONTO', 'Bob Marley', '', 'Instalação com BKP', '0', '2016-09-28 15:27:06', '2016-09-28 15:45:24'),
 (98, 132, 101, 'PRONTO', 'Yuri Alexsander', '', 'Install', '60', '2016-10-05 19:09:21', '2016-10-13 21:08:52'),
 (99, 54, 102, 'ENTREGUE', 'Yuri Alexsander', '', 'Install', '70', '2016-10-05 20:38:39', '2016-10-13 21:21:35'),
-(100, 12, 103, 'ENTREGUE', 'Yuri Alexsander', '', 'Instal', '0', '2016-10-13 13:39:36', '2016-10-13 20:33:09');
+(100, 12, 103, 'ENTREGUE', 'Yuri Alexsander', '', 'Instal', '0', '2016-10-13 13:39:36', '2016-10-13 20:33:09'),
+(101, 13, 104, 'RECEBIDO', '', '', '', '0', '2016-10-14 19:53:13', '2016-10-14 19:53:13'),
+(102, 15, 105, 'RECEBIDO', '', '', '', '0', '2016-10-14 20:47:51', '2016-10-14 20:47:51'),
+(103, 55, 106, 'ENTREGUE', 'Yuri Alexsander', '', 'Instalação', '80', '2016-10-17 15:45:02', '2016-10-18 21:59:44'),
+(104, 78, 107, 'RECEBIDO', '', '', '', '0', '2016-10-18 22:00:45', '2016-10-18 22:00:45'),
+(105, 153, 108, 'RECEBIDO', '', '', '', '0', '2016-10-21 18:35:25', '2016-10-21 18:35:25');
 
 -- --------------------------------------------------------
 
@@ -564,11 +689,17 @@ INSERT INTO `users` (`id`, `name`, `email`, `password`, `remember_token`, `creat
 (98, 'Alf Lehner', 'pernser@hotmail.com', '$2y$10$VnENTCK9mcarKpTUnHetqOgFLc/yQTDNH8IsznND1zivp8lVM3eTm', 'LvsWgW11XQ', NULL, NULL),
 (99, 'Mrs. Lulu Bode III', 'gleichner.matilda@jacobs.com', '$2y$10$mmbk0fSqnyJPPMBj7vzITebvu4ZUd.nmY/JRVFJg.xhSanBdQSMnC', 'sdfsB1tbHJ', NULL, NULL),
 (100, 'Dr. Princess Quigley Jr.', 'nlang@gmail.com', '$2y$10$BuUU9ymd5K7owuHFfCe8quNYv0EHRlxelRG10D4wLkzUd8wARz6jO', 'prQHQJZpqz', NULL, NULL),
-(101, 'Yuri Alexs', 'yuri.alexs@gmail.com', '$2y$10$c.9w2qjR2nAmMknfaTfdHO6i7UbS/SOnvunaQzT7uXwK98eCrs7qG', 'X5WVg6YSHjVxF8JBJwBeOO6LWZPxYzYRiV3l6MIBtTGfdP6oi9bwP06zbX9O', '2016-09-14 16:23:18', '2016-09-21 15:20:34');
+(101, 'Yuri Alexs', 'yuri.alexs@gmail.com', '$2y$10$c.9w2qjR2nAmMknfaTfdHO6i7UbS/SOnvunaQzT7uXwK98eCrs7qG', 'M1OtngK09NCySo9LTQiLPghJjXYvDZHP16X4UAZkvZqQKVCgByDlDXAW0KzN', '2016-09-14 16:23:18', '2016-10-22 12:35:30');
 
 --
 -- Índices de tabelas apagadas
 --
+
+--
+-- Índices de tabela `cartridges`
+--
+ALTER TABLE `cartridges`
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Índices de tabela `clients`
@@ -592,6 +723,12 @@ ALTER TABLE `comments`
 -- Índices de tabela `equipaments`
 --
 ALTER TABLE `equipaments`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Índices de tabela `os_cartridges`
+--
+ALTER TABLE `os_cartridges`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -619,30 +756,40 @@ ALTER TABLE `users`
 --
 
 --
+-- AUTO_INCREMENT de tabela `cartridges`
+--
+ALTER TABLE `cartridges`
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
+--
 -- AUTO_INCREMENT de tabela `clients`
 --
 ALTER TABLE `clients`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=133;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=154;
 --
 -- AUTO_INCREMENT de tabela `collect_equips`
 --
 ALTER TABLE `collect_equips`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 --
 -- AUTO_INCREMENT de tabela `comments`
 --
 ALTER TABLE `comments`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 --
 -- AUTO_INCREMENT de tabela `equipaments`
 --
 ALTER TABLE `equipaments`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=104;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=109;
+--
+-- AUTO_INCREMENT de tabela `os_cartridges`
+--
+ALTER TABLE `os_cartridges`
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 --
 -- AUTO_INCREMENT de tabela `service_orders`
 --
 ALTER TABLE `service_orders`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=101;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=106;
 --
 -- AUTO_INCREMENT de tabela `users`
 --
