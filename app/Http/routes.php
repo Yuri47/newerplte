@@ -75,7 +75,7 @@ Route::post('createcomment', 'ServiceController@createComment');
 
 Route::post('collectEquip', 'ServiceController@collectEquip');
 
-Route::get('/listos/visualizar/{id}/print', 'ServiceController@print');
+Route::get('/listos/visualizar/{id}/print', 'ServiceController@printOS');
 
 
 /*
@@ -132,7 +132,7 @@ Route::get('/home', 'HomeController@index');
 Route::get('/teste', 'HomeController@teste');
 
  
-Route::get('/tst', 'ServiceController@tst');
+Route::get('/tst', 'MailController@testeMail');
 
 
 

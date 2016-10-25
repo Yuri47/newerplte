@@ -2,7 +2,7 @@
  <html lang="en">
  <head>
   <meta charset="UTF-8">
-  <!-- <link rel="stylesheet" href="{{realpath(base_path())."/public/css/pdf2.css"}}"> -->
+  
   <title>Document</title>
 
  
@@ -83,114 +83,103 @@ th, td {
     text-align: left;
     vertical-align: top;    
 }
+.pro {
+  background-color: #bbffb7;
+}
   
 </style>
  
 
  <div class="pagina">
 
- <table border="1">
+ <table border="0">
 <tr>
-<td>Lorem Lorem ipsum dolor sit amet, consectetur adipisicing elit. Nisi commodi sunt asperiores in eius cum rem dolores laborum dolorem non, consequuntur error quisquam iusto fugiat, fuga a, hic accusamus reiciendis.ipsum dolor sit amet, consect i, ver m quam temporibus. Earum.</td>
-<td>linha 1, célula 2</td>
-<td>linha 1, célula 1</td>
-<td>linha 1, célula 2</td>
+<td  >  <img src="{{realpath(base_path())."/public/image/logo.png"}}" class="logo" alt="Image" width="100px" height="auto"></td>
+<td  ><h2>NEWERP - (61) 3399-3399f</h2> 
+       <p>Endereço: QC 01 Conj D Santa Maria  </p>
+       <p>Endereço: QC 01 Conj D Santa Maria  </p></td>
+       </tr>
+ </table>
+  
+<h2 style="text-align:center">OS Nº: {{$OS->id}} - {{ date('d/m/Y - H:s', strtotime($OS->created_at)) }}</h2>
+<h4 style="text-align:center">Cliente Nº: {{$clientData->id}}</h4>
+
+<table border="0">
+<tr>
+<td   WIDTH=400 >Nome: {{$clientData->name}}  </td>
+<td   >Telefone: {{$clientData->fone}} </td>
 </tr>
 <tr>
-<td colspan="2">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Explicabo, enim iusto odit provident sequi impedit assumenda voluptatem labore. Quos enim saepe et cumque, fuga itaque blanditiis! Sequi possimus tempora, odit.</td>
+<td colspan="2" >Endereço: {{$clientData->address}} </td>
+</tr>
+</table>
+<h2 style="text-align:center">Equipamento</h2>
+
+ 
+ <table border="0" CELLSPACING=0>
+<tr>
+<td WIDTH=190  > <strong>Tipo:</strong>   {{$equipamentData->type}}</td>
+<td WIDTH=170  > <strong>Marca:</strong>  {{$equipamentData->mark}}</td>
+<td WIDTH=170  > <strong>Modelo:</strong>  {{$equipamentData->design}}</td>
  
 </tr>
- <table border="1">
-<tr>
-<td colspan="4">Lorem Lorem ipsum dolor sit amet, consectetur adipisicing elit. Nisi commodi sunt asperiores in eius cum rem dolores laborum dolorem non, consequuntur error quisquam iusto fugiat, fuga a, hic accusamus reiciendis.ipsum dolor sit amet, consect i, ver m quam temporibus. Earum.</td>
- 
-</tr>
-<tr>
-<td colspan="2">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Explicabo, enim iusto odit provident sequi impedit assumenda voluptatem labore. Quos enim saepe et cumque, fuga itaque blanditiis! Sequi possimus tempora, odit.</td>
-<td colspan="2">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Explicabo, enim iusto odit provident sequi impedit assumenda voluptatem labore. Quos enim saepe et cumque, fuga itaque blanditiis! Sequi possimus tempora, odit.</td>
+<tr class="pro" >
+<td colspan="2"> <strong>Problema:</strong>  {{$equipamentData->problem}}</td>
+<td colspan="2">  <strong>Observações:</strong>  {{$equipamentData->observations}}</td>
  
 </tr>
  
 </table>
+<div class="terms" style="text-align:center"><h2>Termos</h2></div>
+<div class="terms">{{$terms}}</div>
+<div class="terms" style="text-align:center"> ________________________________________________________<br> {{$clientData->name}}</div>
 </div>
 
+
+  
+
+
+
+
+
+
+
+
+
+  <div class="pagina">
+ 
+<h2 style="text-align:center">OS Nº: {{$OS->id}} - {{ date('d/m/Y - H:s', strtotime($OS->created_at)) }}</h2>
+<h4 style="text-align:center">Cliente Nº: {{$clientData->id}}</h4>
+
+<table border="0">
+<tr>
+<td   WIDTH=400 >Nome: {{$clientData->name}}  </td>
+<td   >Telefone: {{$clientData->fone}} </td>
+</tr>
+<tr>
+<td colspan="2" >Endereço: {{$clientData->address}} </td>
+</tr>
+</table>
+<h2 style="text-align:center">Equipamento</h2>
 
  
-<!--   <div class="  pagina  ">
-
-    <div class="   ">
-  <div class="conteudo"><div class=" "><img src="{{realpath(base_path())."/public/image/logo.png"}}" class="logo" alt="Image" width="100px" height="auto"></div>
-       </div>
-  <div class="lateral"><h2>NEWERP - (61) 3399-3399f</h2> 
-       <p>Endereço: QC 01 Conj D Santa Maria  </p>
-       <p>Endereço: QC 01 Conj D Santa Maria  </p>
-     </div>
-</div>
-   
-    <div class="row ">
-          <div class="col-sm-8">
-     
-        </div>
-
-  <div class="row ">
-        <div class="col-sm-4"> <h3>OS Nº: {{$OS->id}}</h3> </div>
-        <div class="col-sm-8"><h3>DATA: {{ date('d/m/Y - H:s', strtotime($OS->created_at)) }} </h3> </div>
-      </div>
-      <hr>
-      <div class="row">
-        <div class="col-sm-4"> <h4>Cliente Nº: {{$clientData->id}}</h4></div>
-      </div>
-      <div class="row"> 
-        <div class="col-sm-8"><h4>Nome: {{$clientData->name}}</h4> </div>
-        <div class="col-sm-4"><h4>Telefone: {{$clientData->fone}}</h4> </div>
-      </div>
-       <div class="row">
-       <div class="col-sm-10"><h4>Endereço: {{$clientData->address}}</h4> </div>
-      </div>
-      <hr>
-    <div class="row ">
-        <div class="col-sm-6"> <h3>Equipamento</h3> </div>
-        <div class="col-sm-6"> <h3> Nº de série:  {{$equipamentData->serialNumber}}</h3> </div>
-         
-        </div>
-
-
-      <p>Get three equal-width columns <strong>starting at desktops and scaling to large desktops</strong>. On mobile devices, tablets and below, the columns will automatically stack.</p>
-      <div class="row">
-         
-        <div class="col-sm-4"> <h4><strong>Tipo:</strong>   {{$equipamentData->type}}</h4></div>
-        <div class="col-sm-4"> <h4><strong>Marca:</strong>  {{$equipamentData->mark}}</h4></div>
-        <div class="col-sm-4"> <h4><strong>Modelo:</strong>  {{$equipamentData->design}}</h4></div>
-      </div>
-      <div class="row   relato">
-        <div class="col-sm-6"> <h4><strong>Problema:</strong>  {{$equipamentData->problem}}</h4></div>
-        <div class="col-sm-6"> <h4><strong>Observações:</strong>  {{$equipamentData->observations}}</h4></div>
-      </div>
-
-      <hr>
-    <hr>
-    <div class="row ">
-        <div class="col-sm-4"> <h3>Termos</h3> </div>
-        </div>
-        <div class="row ">
-        <div class="col-sm-12"> {{$terms}} </div>
-        </div>
-        <br>
-        <hr> 
-         <br>
-         
-        <div class="row ass">
-        <div class="col-sm-12"> ________________________________________________________<br> {{$clientData->name}} </div>
-         
-        </div>
-        
-
-<br><br>
+ <table border="0" CELLSPACING=0>
+<tr>
+<td WIDTH=190  > <strong>Tipo:</strong>   {{$equipamentData->type}}</td>
+<td WIDTH=170  > <strong>Marca:</strong>  {{$equipamentData->mark}}</td>
+<td WIDTH=170  > <strong>Modelo:</strong>  {{$equipamentData->design}}</td>
  
-
-</div>
- -->
-
+</tr>
+<tr class="pro" >
+<td colspan="2"> <strong>Problema:</strong>  {{$equipamentData->problem}}</td>
+<td colspan="2">  <strong>Observações:</strong>  {{$equipamentData->observations}}</td>
+ 
+</tr>
+ 
+</table>
+<div class="terms" style="text-align:center"><h2>Termos</h2></div>
+<div class="terms">{{$terms}}</div>
+<div class="terms" style="text-align:center"> ________________________________________________________<br> {{$clientData->name}}</div>
 
  
 
@@ -200,18 +189,44 @@ th, td {
 
 
 
+<br>
 
 
 
+ <h4 style="text-align:center">OS Nº: {{$OS->id}} - {{ date('d/m/Y - H:s', strtotime($OS->created_at)) }}</h4>
+<h4 style="text-align:center">Cliente Nº: {{$clientData->id}}</h4>
+
+<table border="0">
+<tr>
+<td   WIDTH=400 >Nome: {{$clientData->name}}  </td>
+<td   >Telefone: {{$clientData->fone}} </td>
+</tr>
+<tr>
+<td colspan="2" >Endereço: {{$clientData->address}} </td>
+</tr>
+</table>
+<h4 style="text-align:center">Equipamento</h4>
+
+ 
+ <table border="0" CELLSPACING=0>
+<tr>
+<td WIDTH=190  > <strong>Tipo:</strong>   {{$equipamentData->type}}</td>
+<td WIDTH=170  > <strong>Marca:</strong>  {{$equipamentData->mark}}</td>
+<td WIDTH=170  > <strong>Modelo:</strong>  {{$equipamentData->design}}</td>
+ 
+</tr>
+<tr class="pro" >
+<td colspan="2"> <strong>Problema:</strong>  {{$equipamentData->problem}}</td>
+<td colspan="2">  <strong>Observações:</strong>  {{$equipamentData->observations}}</td>
+ 
+</tr>
+ 
+</table>
+ 
 
 
 
-
-
-
-
-
-
+</div>
  
  </body>
  </html>

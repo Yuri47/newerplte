@@ -8,12 +8,7 @@
 
 @section('main-content')
 
-{{$equipamentData}}
-{{$clientData}}
-{{$OS}}
- {{$comments }}
-
-{{$collect}}
+ 
 
 
 
