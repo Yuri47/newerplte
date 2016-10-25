@@ -13,14 +13,14 @@ class CreateCartridgesTable extends Migration
     public function up()
     {
         Schema::create('cartridges', function (Blueprint $table) {
-            $table->increments('id');
-            $table->integer('osCartridge_id');
-            $table->string('mark');
-            $table->string('number');
-            $table->string('serialNumber');
-            $table->decimal('price');
-            $table->string('state');
-            $table->timestamps();
+            // $table->increments('id');
+            // $table->integer('osCartridge_id');
+            // $table->string('mark');
+            // $table->string('number');
+            // $table->string('serialNumber');
+            // $table->decimal('price');
+            // $table->string('state');
+            // $table->timestamps();
         });
     }
 

@@ -13,11 +13,11 @@ class CreateCollectEquipsTable extends Migration
     public function up()
     {
         Schema::create('collect_equips', function (Blueprint $table) {
-            $table->increments('id');
-            $table->integer('os_id');
-            $table->string('name');
-            $table->string('doc');
-            $table->timestamps();
+            // $table->increments('id');
+            // $table->integer('os_id');
+            // $table->string('name');
+            // $table->string('doc');
+            // $table->timestamps();
              
         });
     }

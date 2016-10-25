@@ -10,6 +10,8 @@ use App\Cartridge;
 use App\OsCartridge;
 use DB;
 use Redirect;
+use App\Cash;
+use Carbon\Carbon;
 
 class CartridgeController extends Controller
 {
@@ -66,7 +68,7 @@ class CartridgeController extends Controller
         $osCartridge_lastId = DB::getPdo()->lastInsertId();
          
 
-
+        $precoCartuchos = 0;
 
 
 
@@ -81,17 +83,29 @@ class CartridgeController extends Controller
 
             ];
             Cartridge::create($cartridge);
-
-
-
-            
-
+            $precoCartuchos = $precoCartuchos + $request->input('price_'.$i);
+ 
              
         }
 
-       
+       if ($pay == "yes") {
+            $cash = [
+            'price' => $precoCartuchos,
+            'description' => 'Recarga' 
 
-    	 return Redirect::to('/listcartridge');
+            ];
+            Cash::create($cash);
+            $idCash = DB::getPdo()->lastInsertId();
+
+            $osCart = OsCartridge::find($osCartridge_lastId);
+            $osCart->cash_id = $idCash;
+            $osCart->save();
+             
+
+
+       }
+         
+    	return Redirect::to('/listcartridge');
 
     }
 
@@ -119,13 +133,15 @@ class CartridgeController extends Controller
           //  $comments = Comment::where("os_id", $id)->get();
           //  $collect = CollectEquip::where("os_id", $id)->get();
             $totalPrice = DB::table('cartridges')->where("osCartridge_id", $id)->sum('price');
+            $cash = Cash::find($osCart->cash_id);
                                       
             
 
             return view('cartridge.visualizaros', ['osCart' => $osCart, 
                'clientData' => $clientData, 
                'cartridge' => $cartridge,
-                'totalPrice' => $totalPrice
+                'totalPrice' => $totalPrice,
+                'cash' => $cash
                ]);
               
     }
@@ -175,12 +191,51 @@ class CartridgeController extends Controller
         $osCart->state = "PRONTO";
 
         } elseif ($osCart->state == "PRONTO") {
+
+            if ($request->input('price') != 0.00 && $osCart->pay == "no") {
+              
+                Cash::create($request->except('id'));
+
+            }
+
+             
+             
             $osCart->state = "ENTREGUE";
+            $osCart->pay = "yes";
+
         }
         
-        $osCart->save();
+         $osCart->save();
 
         return Redirect::to('/cartridge/visualizar/'.$request->input('id'));
+    }
+
+    public function testeWh() {
+
+         
+
+
+
+        // $users = DB::table('os_cartridges')
+        //             ->whereBetween('created_at', ['2016-10-18', date('Y-m-d')])->get();
+                     
+
+        $users = Cash::find(17);
+
+
+        //https://github.com/briannesbitt/Carbon
+        //http://carbon.nesbot.com/docs/
+
+                    $dt = Carbon::parse($users->created_at);
+                       
+
+                       echo $dt->year."-".$dt->month."-".$dt->day;
+                       echo $dt->toDateString();
+
+
+
+                  //  return $users->created_at;
+
     }
 
 }

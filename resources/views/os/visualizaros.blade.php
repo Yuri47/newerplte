@@ -101,6 +101,8 @@
 <form action="/collectEquip" method="POST">
 <input type="hidden" name="_token" value="{{csrf_token()}}">
 <input type="hidden" name="os_id" value="{{$OS->id}}">
+<input type="hidden" name="price" value="{{$OS->price}}">
+<input type="hidden" name="description" value="{{$OS->finalReport}}">
 
 
 
@@ -160,7 +162,7 @@
     <h3>Relatório</h3>
 <p>Técnico: {{$OS->technical}}</p>
 <p>Laudo final: {{$OS->finalReport}}</p>
-<p>Preço: R$ 80,00</p>
+<p>Preço: R$ {{$OS->price}},00</p>
 <h3>Retirada</h3>
  @foreach ($collect as $col)
    <p>Quem retirou: {{$col->name}}</p>

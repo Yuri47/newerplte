@@ -13,13 +13,14 @@ class CreateOsCartridgesTable extends Migration
     public function up()
     {
         Schema::create('os_cartridges', function (Blueprint $table) {
-            $table->increments('id');
-            $table->integer('client_id');
-            $table->string('state');
-            $table->string('pay');
-            $table->decimal('price');
-            $table->string('name');
-            $table->timestamps();
+            // $table->increments('id');
+            // $table->integer('client_id');
+            // $table->string('state');
+            // $table->string('pay');
+            // $table->decimal('price');
+            // $table->string('name');
+            // $table->integer('cash_id');
+            // $table->timestamps();
         });
     }
 

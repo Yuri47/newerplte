@@ -13,6 +13,7 @@ use App\CollectEquip;
 use DB;
 use App;
 use Redirect;
+use App\Cash;
 
 class ServiceController extends Controller{
 
@@ -187,6 +188,8 @@ class ServiceController extends Controller{
 			$OS->state = 'ANALISE';
 			$OS->save();
 
+
+
 		}
 
 		return redirect('listos/visualizar/'.$request->input('os_id'));
@@ -197,6 +200,8 @@ class ServiceController extends Controller{
 	public function collectEquip(Request $request) {
 
 		CollectEquip::create($request->all());
+
+		Cash::create($request->all());
 
 		$OS = ServiceOrder::find($request->input('os_id'));
 		$OS->state = 'ENTREGUE';

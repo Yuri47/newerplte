@@ -121,6 +121,29 @@ Route::get('/home', 'HomeController@index');
 
 /*
 |--------------------------------------------------------------------------
+| Rotas de Caixa
+|--------------------------------------------------------------------------
+|
+|  
+|
+*/
+
+Route::get('/cash', 'CashController@cash');
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+|--------------------------------------------------------------------------
 | Rotas de Testes
 |--------------------------------------------------------------------------
 |
@@ -132,7 +155,7 @@ Route::get('/home', 'HomeController@index');
 Route::get('/teste', 'HomeController@teste');
 
  
-Route::get('/tst', 'MailController@testeMail');
+Route::get('/tst', 'CartridgeController@testeWh');
 
 
 

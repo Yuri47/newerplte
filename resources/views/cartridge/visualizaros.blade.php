@@ -8,8 +8,12 @@
 @section('main-content')
    
  
+ 
 
 <h1>Cartucho - {{$osCart->state}} - {{ date('d/m/Y - H:s', strtotime($osCart->created_at)) }}</h1>
+@if(!empty($cash->price))
+preço salvo: {{$cash->price}}
+@endif
  <h2> <div id="price"></div></h2>
   @if ($osCart->pay == 'yes')
 <h2>Pago: Sim</h2>
@@ -38,12 +42,14 @@
 <form action="/changeStateCart" method="POST" role="form">
 <input type="hidden" name="_token" value="{{csrf_token()}}"> 
 <input type="hidden" name="id" value="{{$osCart->id}}">
+<input type="hidden" name="price" value="{{$totalPrice}}">
+<input type="hidden" name="description" value="Recarga">
  
     <div class="input-group">
       <span class="input-group-btn">
         <button class="btn btn-default" type="button" id="buttonName">Repetir</button>
       </span>
-      <input type="text" class="form-control" placeholder="Nome de quem retira" id="inputName">
+      <input type="text" class="form-control" required placeholder="Nome de quem retira" id="inputName">
     </div><!-- /input-group -->
  <br>
 <button type="submit" class="btn btn-primary" id="botaoPronto">Entregar</button>
@@ -116,6 +122,8 @@
 <form action="/changeStateCart" method="POST" role="form">
 <input type="hidden" name="_token" value="{{csrf_token()}}"> 
 <input type="hidden" name="id" value="{{$osCart->id}}">
+
+
 <button type="submit" class="btn btn-primary" id="botaoPronto">PRONTO</button>
 </form>
 @endif

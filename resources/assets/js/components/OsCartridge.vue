@@ -148,25 +148,25 @@
  <div class="col-md-2"> 
     <div class="form-group">
         <label for="">Marca</label>
-        <input type="text" class="form-control"  autocomplete="off" name="mark_{{input}}" style="text-transform:uppercase"   >
+        <input type="text" class="form-control"  required autocomplete="off" name="mark_{{input}}" style="text-transform:uppercase"   >
     </div>
   </div>
   <div class="col-md-2">
 <div class="form-group">
         <label for="">Numero</label>
-        <input type="text" class="form-control"  autocomplete="off" name="number_{{input}}"    >
+        <input type="text" class="form-control"  required autocomplete="off" name="number_{{input}}"    >
     </div>
   </div>
   <div class="col-md-2">
     <div class="form-group">
         <label for="">Numero de série</label>
-        <input type="text" class="form-control" autocomplete="off" name="serialNumber_{{input}}"    >
+        <input type="text" class="form-control" required autocomplete="off" name="serialNumber_{{input}}"    >
     </div>
   </div>
     <div class="col-md-2">
     <div class="form-group">
         <label for="">Valor</label>
-        <input type="text" class="form-control" autocomplete="off" name="price_{{input}}"    >
+        <input type="text" class="form-control" required autocomplete="off" name="price_{{input}}"    >
     </div>
   </div>
    
@@ -180,8 +180,8 @@
     <div class="form-group">
         <label for="">Pago</label>
         <div class="radio">
-            <label><input type="radio" name="pay" value="yes">Sim</label>
-            <label><input type="radio" name="pay" value="no">Não</label>
+            <label><input type="radio" required name="pay" value="yes">Sim</label>
+            <label><input type="radio" required name="pay" value="no">Não</label>
         </div>
            
     </div>
