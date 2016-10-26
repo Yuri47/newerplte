@@ -37,13 +37,27 @@ preço salvo: {{$cash->price}}
   <div class="col-md-3">
     @if ($osCart->state == "PRONTO")
 <h3>Saída</h3>
+@if(!empty($cash->price))
+<p>Valor pago: {{$cash->price}}</p>
+
+@if($cash->price != $totalPrice)
+ 
+<p>Devolver: {{$cash->price - $totalPrice}}</p>
+@endif
+
+@endif
 <p>Total: {{$totalPrice}}</p>
 
+
 <form action="/changeStateCart" method="POST" role="form">
+<!-- <form action="/tstCart" method="POST" role="form"> -->
 <input type="hidden" name="_token" value="{{csrf_token()}}"> 
 <input type="hidden" name="id" value="{{$osCart->id}}">
 <input type="hidden" name="price" value="{{$totalPrice}}">
 <input type="hidden" name="description" value="Recarga">
+@if(!empty($cash->price))
+<input type="hidden" name="retireCash" value="{{$cash->price - $totalPrice}}">
+@endif
  
     <div class="input-group">
       <span class="input-group-btn">

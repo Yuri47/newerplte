@@ -11,6 +11,7 @@ use App\OsCartridge;
 use DB;
 use Redirect;
 use App\Cash;
+use App\RetireCash;
 use Carbon\Carbon;
 
 class CartridgeController extends Controller
@@ -192,14 +193,23 @@ class CartridgeController extends Controller
 
         } elseif ($osCart->state == "PRONTO") {
 
-            if ($request->input('price') != 0.00 && $osCart->pay == "no") {
+            if ($request->input('price') != 0.00 && $osCart->pay == "no") { //verifica se já foi pago
+                //e se o valor é diferente de 0
               
                 Cash::create($request->except('id'));
 
+            } elseif ($osCart->pay == "yes" && !empty($request->input('retireCash'))) {
+
+                $retire = [
+                    'price' => $request->input('retireCash'),
+                    'description' => 'Devoluçao de Recarga'
+                ];
+
+                RetireCash::create($retire);
+
+
             }
 
-             
-             
             $osCart->state = "ENTREGUE";
             $osCart->pay = "yes";
 
@@ -216,23 +226,30 @@ class CartridgeController extends Controller
 
 
 
-        // $users = DB::table('os_cartridges')
-        //             ->whereBetween('created_at', ['2016-10-18', date('Y-m-d')])->get();
+        $users = DB::table('os_cartridges')
+                    ->whereBetween('created_at', ['2016-10-18', Carbon::now()])->get();
                      
 
-        $users = Cash::find(17);
+        //$users = Cash::find(17);
 
 
         //https://github.com/briannesbitt/Carbon
         //http://carbon.nesbot.com/docs/
 
-                    $dt = Carbon::parse($users->created_at);
+                    // $dt = Carbon::parse($users->created_at);
                        
 
-                       echo $dt->year."-".$dt->month."-".$dt->day;
-                       echo $dt->toDateString();
+                    //  //  echo $dt->year."-".$dt->month."-".$dt->day."<br>";
+                    //    //echo $dt->toDateString(); 
+                    //   // echo  Carbon::now()->toDateString();
 
+                    // if ($dt->toDateString() == Carbon::now()->subDay()->toDateString()) {
+                    //     echo "igual";
+                    // } else {
+                    //     echo "n".Carbon::now()->subDay()->toDateString();
+                    // }
 
+                    return $users;
 
                   //  return $users->created_at;
 

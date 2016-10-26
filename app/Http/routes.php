@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Http\Request;
 /*
 |--------------------------------------------------------------------------
 | Application Routes
@@ -156,6 +157,9 @@ Route::get('/teste', 'HomeController@teste');
 
  
 Route::get('/tst', 'CartridgeController@testeWh');
+Route::post('/tstCart', function (Request $request) {
+     return $request->all();
+ });
 
 
 

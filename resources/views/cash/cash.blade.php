@@ -7,21 +7,11 @@
 
 @section('main-content')
    
- 
-tabela cash
-id 
-valor
-descrição
-timestamp
+ {{$totalCashDay}}
 
-
-tabela retireCash
-id
-valor
-descrição
-timestamp
-      
- 
+ @foreach ($allData as $dt)
+ {{$dt->price}}
+ @endforeach
 
 
 
