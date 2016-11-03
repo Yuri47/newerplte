@@ -54,9 +54,13 @@ preço salvo: {{$cash->price}}
 <input type="hidden" name="_token" value="{{csrf_token()}}"> 
 <input type="hidden" name="id" value="{{$osCart->id}}">
 <input type="hidden" name="price" value="{{$totalPrice}}">
-<input type="hidden" name="description" value="Recarga">
+<input type="hidden" name="description" value="Recarga. OS: {{$osCart->id}}">
+@if(empty($cash->price))
+<input type="hidden" name="type" value="place">
+@endif
 @if(!empty($cash->price))
 <input type="hidden" name="retireCash" value="{{$cash->price - $totalPrice}}">
+<input type="hidden" name="type" value="place">
 @endif
  
     <div class="input-group">

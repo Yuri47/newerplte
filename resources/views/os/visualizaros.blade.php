@@ -102,7 +102,8 @@
 <input type="hidden" name="_token" value="{{csrf_token()}}">
 <input type="hidden" name="os_id" value="{{$OS->id}}">
 <input type="hidden" name="price" value="{{$OS->price}}">
-<input type="hidden" name="description" value="{{$OS->finalReport}}">
+<input type="hidden" name="description" value="{{$OS->finalReport}}. OS: {{$OS->id}}">
+<input type="hidden" name="type" value="place">
 
 
 

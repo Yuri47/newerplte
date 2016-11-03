@@ -8,6 +8,6 @@ class RetireCash extends Model
 {
     //
      protected $fillable = [
-       'id', 'price', 'description' 
+       'id', 'price', 'description', 'type' 
     ];
 }

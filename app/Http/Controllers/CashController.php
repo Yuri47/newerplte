@@ -26,25 +26,25 @@ class CashController extends Controller
 		$cash =  DB::table('cashes') 
                     ->whereBetween('created_at', ['2016-10-26', Carbon::now()])->get();
         $totalCash =  DB::table('cashes')
-                    ->whereBetween('created_at', ['2016-10-26', Carbon::now()])->sum('price');
+                    ->whereBetween('created_at', [Carbon::now()->toDateString(), Carbon::now()])->sum('price');
                      
 
 
 
         $retireCash = DB::table('retire_cashes')
-                    ->whereBetween('created_at', ['2016-10-26', Carbon::now()])->get();
+                    ->whereBetween('created_at', [Carbon::now()->toDateString(), Carbon::now()])->get();
         $totalRetireCash = DB::table('retire_cashes')
-                    ->whereBetween('created_at', ['2016-10-26', Carbon::now()])->sum('price');
+                    ->whereBetween('created_at', [Carbon::now()->toDateString(), Carbon::now()])->sum('price');
 
 
 
 
 
           $retire = DB::table('retire_cashes')
-                    ->whereBetween('created_at', ['2016-10-26', Carbon::now()]); 
+                    ->whereBetween('created_at', [Carbon::now()->toDateString(), Carbon::now()]); 
 
           $allData = DB::table('cashes')
-                    ->whereBetween('created_at', ['2016-10-26', Carbon::now()])
+                    ->whereBetween('created_at', [Carbon::now()->toDateString(), Carbon::now()])
                     ->union($retire)
                     ->orderBy('created_at', 'asc')
                     ->get();          

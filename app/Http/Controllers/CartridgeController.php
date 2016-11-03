@@ -92,7 +92,8 @@ class CartridgeController extends Controller
        if ($pay == "yes") {
             $cash = [
             'price' => $precoCartuchos,
-            'description' => 'Recarga' 
+            'description' => 'Recarga. OS: '. $osCartridge_lastId,
+            'type' => 'place' 
 
             ];
             Cash::create($cash);
@@ -195,14 +196,15 @@ class CartridgeController extends Controller
 
             if ($request->input('price') != 0.00 && $osCart->pay == "no") { //verifica se já foi pago
                 //e se o valor é diferente de 0
-              
+                
                 Cash::create($request->except('id'));
 
             } elseif ($osCart->pay == "yes" && !empty($request->input('retireCash'))) {
 
                 $retire = [
                     'price' => $request->input('retireCash'),
-                    'description' => 'Devoluçao de Recarga'
+                    'description' => 'Devoluçao de Recarga. OS: '.$request->input('id'),
+                    'type' => 'retire'
                 ];
 
                 RetireCash::create($retire);

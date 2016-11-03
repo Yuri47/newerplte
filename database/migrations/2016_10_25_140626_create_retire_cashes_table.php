@@ -16,6 +16,7 @@ class CreateRetireCashesTable extends Migration
             $table->increments('id');
             $table->decimal('price');
             $table->string('description');
+            $table->string('type');
             $table->timestamps();
         });
     }
