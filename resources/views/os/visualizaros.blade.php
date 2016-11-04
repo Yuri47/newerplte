@@ -97,13 +97,15 @@
 
 <h3>Retirada</h3>
 
+
+
  
 <form action="/collectEquip" method="POST">
 <input type="hidden" name="_token" value="{{csrf_token()}}">
 <input type="hidden" name="os_id" value="{{$OS->id}}">
 <input type="hidden" name="price" value="{{$OS->price}}">
 <input type="hidden" name="description" value="{{$OS->finalReport}}. OS: {{$OS->id}}">
-<input type="hidden" name="type" value="place">
+ 
 
 
 
@@ -121,6 +123,32 @@
       <input type="text" class="form-control" id="" name="doc" placeholder="Numero do Documento"> 
   </div>
  </div>
+
+  <div class="col-md-3">
+<div class="radio">
+  <label>
+    <input type="radio" name="type" id="optionsRadios1" value="money" required >
+    Dinheiro
+  </label>
+</div>
+<div class="radio">
+  <label>
+    <input type="radio" name="type" id="optionsRadios2" value="debit" required>
+    Débito
+  </label>
+</div>
+<div class="radio disabled">
+  <label>
+    <input type="radio" name="type" id="optionsRadios3" value="credit" required>
+    Crédito
+  </label>
+</div>
+</div>
+
+
+
+
+
   <div class="col-md-3">
  <button class="btn btn-success" type="submit">Retirar</button> </div>
 </form>

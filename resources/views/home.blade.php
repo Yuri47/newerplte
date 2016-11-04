@@ -73,6 +73,35 @@
         <!-- ./col -->
       </div>
 
+@foreach ($errors->all() as $error)
+    {{$error}}<br>  <!-- imprimir os erros de validação caso haja algum, serão enviados pelo Validator -->
+@endforeach
+
+
+  <form action="teste336" method="POST">
+    
+      <input type="hidden" name="_token" value="{{csrf_token()}}">
+       
+      <div class="form-group">
+        <label for="">Nome</label>
+        <input type="text" autocomplete="off" class="form-control" id=""   placeholder="Nome"  name="name"  >
+      </div>
+      <div class="form-group">
+        <label for="">Telefone</label>
+        <input type="text" autocomplete="off" class="form-control phone"   placeholder="Telefone" name="fone"   >
+          </div>
+       
+      <input type="submit" value="Enviar">
+
+
+
+  </form>
+
+
+
+
+
+
 @endsection
 
 

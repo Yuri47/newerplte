@@ -130,6 +130,7 @@ Route::get('/home', 'HomeController@index');
 */
 
 Route::get('/cash', 'CashController@cash');
+Route::post('/retirecash', 'CashController@retireCash');
 
 
 
@@ -153,13 +154,15 @@ Route::get('/cash', 'CashController@cash');
 */
 
 
-Route::get('/teste', 'HomeController@teste');
+// Route::get('/teste', 'HomeController@teste');
 
  
-Route::get('/tst', 'CartridgeController@testeWh');
-Route::post('/tstCart', function (Request $request) {
-     return $request->all();
- });
+// Route::get('/tst', 'CartridgeController@testeWh');
+// Route::post('/tstCart', function (Request $request) {
+//      return $request->all();
+//  });
+
+Route::post('/teste336', 'CashController@teste336');
 
 
 

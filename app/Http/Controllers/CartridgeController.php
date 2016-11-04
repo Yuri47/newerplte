@@ -92,8 +92,8 @@ class CartridgeController extends Controller
        if ($pay == "yes") {
             $cash = [
             'price' => $precoCartuchos,
-            'description' => 'Recarga. OS: '. $osCartridge_lastId,
-            'type' => 'place' 
+            'description' => 'Recarga. OS: '. $osCartridge_lastId
+             
 
             ];
             Cash::create($cash);
