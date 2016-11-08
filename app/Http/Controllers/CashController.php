@@ -67,7 +67,7 @@ class CashController extends Controller
 
 
         //$t = $retireCash->sum('price');            
-        $totalCashDay = $totalCash - $totalRetireCash;          
+        $totalCashDay = $totalCash + 0;          
         $money = $money - $totalRetireCash;
         $debit = $debit + 0;
         $credit = $credit + 0;
@@ -84,10 +84,53 @@ class CashController extends Controller
 
     public function retireCash(Request $request) {
 
+        $description = $request->input('description');
+        $totalCash = $request->input('totalCash');
+        $price = $request->input('price');
 
-        RetireCash::create($request->all());
 
-       return Redirect::to('/cash');    
+        $messages = [
+            'max' => 'Dinheiro indisponivel.',
+        ];
+ 
+                //valida as requisições
+        $validator = Validator::make(
+        [
+        'description' => $description,
+        'price' => $price
+        ],
+        [
+        'description' => 'required', //esse unique é para que o nome do serviço seja unico
+        'price' => "required|numeric|max:$totalCash"
+        ]
+        , $messages);
+
+
+        if ($validator->fails()) {//verifica a validação da requisição, se tiver erros ele envia para a pagina
+            //anterior com os erros.
+
+            return redirect()
+            ->action('CashController@cash')->withErrors($validator);
+            } else {
+
+                RetireCash::create($request->all());
+
+                return Redirect::to('/cash');
+
+
+            }
+
+             
+ 
+
+//{"_token":"5Pwlo29QGHFrne0bQ2hyC4Pon25C1rq10oQzuDSn","type":"sake","totalCash":"0","price":"150","description":"desciricao"}
+
+// return $request->all();
+
+
+       //  RetireCash::create($request->all());
+
+       // return Redirect::to('/cash');    
 
     }
 
@@ -98,7 +141,7 @@ $name = $request->input('name');
 $fone = $request->input('fone');
 
 $messages = [
-    'max' => 'The :Dinheiro indisponivel.',
+    'max' => 'Dinheiro indisponivel.',
 ];
 
         //valida as requisições
@@ -113,9 +156,9 @@ $validator = Validator::make(
 ]
 , $messages);
 
-if ($validator->fails()) //verifica a validação da requisição, se tiver erros ele envia para a pagina
+if ($validator->fails()) {//verifica a validação da requisição, se tiver erros ele envia para a pagina
 //anterior com os erros.
-{
+
 return redirect()
 ->action('HomeController@index')->withErrors($validator);
 }

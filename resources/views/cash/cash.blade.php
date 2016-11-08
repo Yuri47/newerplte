@@ -73,38 +73,43 @@
  
    
 
-<button type="button" class="btn btn-primary" data-toggle="modal" data-target=".bs-example-modal-lg">Retirar</button>
+<!-- <button type="button" class="btn btn-primary" data-toggle="modal" data-target=".bs-example-modal-lg">Retirar</button>
 
 <div class="modal fade bs-example-modal-lg shown.bs.modal" :autofocus id="myModal" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel">
   <div class="modal-dialog modal-lg" role="document">
-    <div class="modal-content">
+    <div class="modal-content"> -->
        
 <h1>Retirar Dinheiro</h1>
 
+@foreach ($errors->all() as $error)
+    {{$error}}<br>  <!-- imprimir os erros de validação caso haja algum, serão enviados pelo Validator -->
+@endforeach
   <form action="/retirecash" method="POST" role="form">
      
       <input type="hidden" name="_token" value="{{csrf_token()}}">
       <input type="hidden" name="type" value="sake">
+      <input type="hidden" name="totalCash" value="{{$money}}">
   
 
 
- <div class=" ">
+ <div class="col-md-2"> 
     <div class="form-group">
         <label for="">Valor</label>
-        <input type="text" class="form-control" required autocomplete="off" name="price"    >
+        <input type="text" class="form-control money" id="money" required autocomplete="off" name="price">
     </div>
   </div>
-    <div class=" ">
-    <div class="form-group">
+  <div class="col-md-2">
+<div class="form-group">
         <label for="">Descrição</label>
-        <input type="text" class="form-control" required autocomplete="off" name="description"    >
+        <input type="text" class="form-control"  required autocomplete="off" name="description">
     </div>
   </div>
-	 
- <input type="submit" value="Retirar" class="btn btn-primary">
 
- 
-      
+   <br>
+         
+         <input type="submit"  value="Retirar" id="buttonRetire" class="btn btn-primary">
+    
+    
  
 
 	 </form>
@@ -112,9 +117,9 @@
 
 
 
-    </div>
+   <!--  </div>
   </div>
-</div>
+</div> -->
  <br>
 
 
@@ -152,9 +157,21 @@
 			@else
 			<tr>
 			@endif	 
-				<td class=" ">{{$dt->created_at}}</td>
-				<td class=" ">R$ {{$dt->price}}</td>
+				<td class=" ">  {{ date('d/m/Y - H:s', strtotime($dt->created_at)) }}   </td>
+
+        @if ($dt->type == "retire")
+        <td class=" ">- R$ {{$dt->price}}</td>
+        @elseif ($dt->type == "sake")
+        <td class=" ">- R$ {{$dt->price}}</td>
+        @else
+        <td class=" ">R$ {{$dt->price}}</td>
+        @endif
+	 
+
+
 				<td class=" ">{{$dt->description}}</td>
+
+
 			 	 
 			</tr>
  @endforeach
@@ -163,11 +180,21 @@
 
 	 </table> 
 
+
+  
+  
+
  
+     <script src="/js/jquery.min.1.11.3.js"></script>
+  <script src="/js/jquery.mask.min.js"></script>
 
+
+    <script type="text/javascript" >
 
  
-
+  $('.money').mask('00000000', {reverse: true});
+ 
+</script>
 
 
 @endsection

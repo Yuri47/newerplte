@@ -180,8 +180,13 @@
     <div class="form-group">
         <label for="">Pago</label>
         <div class="radio">
-            <label><input type="radio" required name="pay" value="yes">Sim</label>
-            <label><input type="radio" required name="pay" value="no">Não</label>
+            <label><input type="radio" required name="pay" value="yes" v-model = "select">Sim</label>
+            <label><input type="radio" required name="pay" value="no" v-model = "select">Não</label>
+        </div>
+        <div v-if = "select === 'yes' ">
+        <label><input type = "radio" name = "type" value = "money">Dinheiro</label>
+        <label><input type = "radio" name = "type" value = "debit">Débito</label>
+        <label><input type = "radio" name = "type" value = "credit">Crédito</label>
         </div>
            
     </div>
@@ -193,7 +198,8 @@
 
     
   
-
+ 
+ 
   
  
 

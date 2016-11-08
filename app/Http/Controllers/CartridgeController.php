@@ -90,9 +90,11 @@ class CartridgeController extends Controller
         }
 
        if ($pay == "yes") {
+            $type = $request->input('type');
             $cash = [
             'price' => $precoCartuchos,
-            'description' => 'Recarga. OS: '. $osCartridge_lastId
+            'description' => 'Recarga. OS: '. $osCartridge_lastId,
+            'type' => $type
              
 
             ];
