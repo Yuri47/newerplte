@@ -7,6 +7,7 @@ use App\User;
 use App\ServiceOrder;
 use DB;
 
+
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -16,9 +17,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        // Configurar o arquivo config com as configurações
-         
-        config(['config.countOs' => $users = DB::table('service_orders')->count()]);
+        //
+          config(['config.countOs' => $users = DB::table('service_orders')->count()]);
         config(['config.osOpen' => $users = ServiceOrder::where("state", "RECEBIDO")->count()]);
         config(['config.osPrice' => $users = DB::table('service_orders')->sum('price')]);
         config(['config.users' => $users = DB::table('users')->count()]);
@@ -33,8 +33,5 @@ class AppServiceProvider extends ServiceProvider
     public function register()
     {
         //
-         $this->app->singleton(FakerGenerator::class, function () {
-            return FakerFactory::create('pt_BR');
-        });
     }
 }

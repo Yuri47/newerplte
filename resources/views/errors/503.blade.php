@@ -1,22 +1,47 @@
-@extends('layouts.app')
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Be right back.</title>
 
-@section('htmlheader_title')
-    {{ trans('adminlte_lang::message.serviceunavailable') }}
-@endsection
+        <link href="https://fonts.googleapis.com/css?family=Lato:100" rel="stylesheet" type="text/css">
 
-@section('contentheader_title')
-    {{ trans('adminlte_lang::message.503error') }}
-@endsection
+        <style>
+            html, body {
+                height: 100%;
+            }
 
-@section('$contentheader_description')
-@endsection
+            body {
+                margin: 0;
+                padding: 0;
+                width: 100%;
+                color: #B0BEC5;
+                display: table;
+                font-weight: 100;
+                font-family: 'Lato', sans-serif;
+            }
 
-@section('main-content')
+            .container {
+                text-align: center;
+                display: table-cell;
+                vertical-align: middle;
+            }
 
-    <div class="error-page">
-        <h2 class="headline text-red">SERVIDOR EM MANUTENÇÃO</h2>
-        <div class="error-content">
-            
+            .content {
+                text-align: center;
+                display: inline-block;
+            }
+
+            .title {
+                font-size: 72px;
+                margin-bottom: 40px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="content">
+                <div class="title">Be right back.</div>
+            </div>
         </div>
-    </div><!-- /.error-page -->
-@endsection
+    </body>
+</html>

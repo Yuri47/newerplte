@@ -2,8 +2,8 @@
 (function (global){
 /**
  * @license
- * lodash <https://lodash.com/>
- * Copyright jQuery Foundation and other contributors <https://jquery.org/>
+ * Lodash <https://lodash.com/>
+ * Copyright JS Foundation and other contributors <https://js.foundation/>
  * Released under MIT license <https://lodash.com/license>
  * Based on Underscore.js 1.8.3 <http://underscorejs.org/LICENSE>
  * Copyright Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
@@ -14,13 +14,13 @@
   var undefined;
 
   /** Used as the semantic version number. */
-  var VERSION = '4.16.4';
+  var VERSION = '4.17.2';
 
   /** Used as the size to enable large array optimizations. */
   var LARGE_ARRAY_SIZE = 200;
 
   /** Error message constants. */
-  var CORE_ERROR_TEXT = 'Unsupported core-js use. Try https://github.com/es-shims.',
+  var CORE_ERROR_TEXT = 'Unsupported core-js use. Try https://npms.io/search?q=ponyfill.',
       FUNC_ERROR_TEXT = 'Expected a function';
 
   /** Used to stand-in for `undefined` hash values. */
@@ -32,28 +32,33 @@
   /** Used as the internal argument placeholder. */
   var PLACEHOLDER = '__lodash_placeholder__';
 
-  /** Used to compose bitmasks for function metadata. */
-  var BIND_FLAG = 1,
-      BIND_KEY_FLAG = 2,
-      CURRY_BOUND_FLAG = 4,
-      CURRY_FLAG = 8,
-      CURRY_RIGHT_FLAG = 16,
-      PARTIAL_FLAG = 32,
-      PARTIAL_RIGHT_FLAG = 64,
-      ARY_FLAG = 128,
-      REARG_FLAG = 256,
-      FLIP_FLAG = 512;
+  /** Used to compose bitmasks for cloning. */
+  var CLONE_DEEP_FLAG = 1,
+      CLONE_FLAT_FLAG = 2,
+      CLONE_SYMBOLS_FLAG = 4;
 
-  /** Used to compose bitmasks for comparison styles. */
-  var UNORDERED_COMPARE_FLAG = 1,
-      PARTIAL_COMPARE_FLAG = 2;
+  /** Used to compose bitmasks for value comparisons. */
+  var COMPARE_PARTIAL_FLAG = 1,
+      COMPARE_UNORDERED_FLAG = 2;
+
+  /** Used to compose bitmasks for function metadata. */
+  var WRAP_BIND_FLAG = 1,
+      WRAP_BIND_KEY_FLAG = 2,
+      WRAP_CURRY_BOUND_FLAG = 4,
+      WRAP_CURRY_FLAG = 8,
+      WRAP_CURRY_RIGHT_FLAG = 16,
+      WRAP_PARTIAL_FLAG = 32,
+      WRAP_PARTIAL_RIGHT_FLAG = 64,
+      WRAP_ARY_FLAG = 128,
+      WRAP_REARG_FLAG = 256,
+      WRAP_FLIP_FLAG = 512;
 
   /** Used as default options for `_.truncate`. */
   var DEFAULT_TRUNC_LENGTH = 30,
       DEFAULT_TRUNC_OMISSION = '...';
 
   /** Used to detect hot functions by number of calls within a span of milliseconds. */
-  var HOT_COUNT = 500,
+  var HOT_COUNT = 800,
       HOT_SPAN = 16;
 
   /** Used to indicate the type of lazy iteratees. */
@@ -74,27 +79,30 @@
 
   /** Used to associate wrap methods with their bit flags. */
   var wrapFlags = [
-    ['ary', ARY_FLAG],
-    ['bind', BIND_FLAG],
-    ['bindKey', BIND_KEY_FLAG],
-    ['curry', CURRY_FLAG],
-    ['curryRight', CURRY_RIGHT_FLAG],
-    ['flip', FLIP_FLAG],
-    ['partial', PARTIAL_FLAG],
-    ['partialRight', PARTIAL_RIGHT_FLAG],
-    ['rearg', REARG_FLAG]
+    ['ary', WRAP_ARY_FLAG],
+    ['bind', WRAP_BIND_FLAG],
+    ['bindKey', WRAP_BIND_KEY_FLAG],
+    ['curry', WRAP_CURRY_FLAG],
+    ['curryRight', WRAP_CURRY_RIGHT_FLAG],
+    ['flip', WRAP_FLIP_FLAG],
+    ['partial', WRAP_PARTIAL_FLAG],
+    ['partialRight', WRAP_PARTIAL_RIGHT_FLAG],
+    ['rearg', WRAP_REARG_FLAG]
   ];
 
   /** `Object#toString` result references. */
   var argsTag = '[object Arguments]',
       arrayTag = '[object Array]',
+      asyncTag = '[object AsyncFunction]',
       boolTag = '[object Boolean]',
       dateTag = '[object Date]',
+      domExcTag = '[object DOMException]',
       errorTag = '[object Error]',
       funcTag = '[object Function]',
       genTag = '[object GeneratorFunction]',
       mapTag = '[object Map]',
       numberTag = '[object Number]',
+      nullTag = '[object Null]',
       objectTag = '[object Object]',
       promiseTag = '[object Promise]',
       proxyTag = '[object Proxy]',
@@ -102,6 +110,7 @@
       setTag = '[object Set]',
       stringTag = '[object String]',
       symbolTag = '[object Symbol]',
+      undefinedTag = '[object Undefined]',
       weakMapTag = '[object WeakMap]',
       weakSetTag = '[object WeakSet]';
 
@@ -197,8 +206,10 @@
 
   /** Used to compose unicode character classes. */
   var rsAstralRange = '\\ud800-\\udfff',
-      rsComboMarksRange = '\\u0300-\\u036f\\ufe20-\\ufe23',
-      rsComboSymbolsRange = '\\u20d0-\\u20f0',
+      rsComboMarksRange = '\\u0300-\\u036f',
+      reComboHalfMarksRange = '\\ufe20-\\ufe2f',
+      rsComboSymbolsRange = '\\u20d0-\\u20ff',
+      rsComboRange = rsComboMarksRange + reComboHalfMarksRange + rsComboSymbolsRange,
       rsDingbatRange = '\\u2700-\\u27bf',
       rsLowerRange = 'a-z\\xdf-\\xf6\\xf8-\\xff',
       rsMathOpRange = '\\xac\\xb1\\xd7\\xf7',
@@ -213,7 +224,7 @@
   var rsApos = "['\u2019]",
       rsAstral = '[' + rsAstralRange + ']',
       rsBreak = '[' + rsBreakRange + ']',
-      rsCombo = '[' + rsComboMarksRange + rsComboSymbolsRange + ']',
+      rsCombo = '[' + rsComboRange + ']',
       rsDigits = '\\d+',
       rsDingbat = '[' + rsDingbatRange + ']',
       rsLower = '[' + rsLowerRange + ']',
@@ -227,13 +238,15 @@
       rsZWJ = '\\u200d';
 
   /** Used to compose unicode regexes. */
-  var rsLowerMisc = '(?:' + rsLower + '|' + rsMisc + ')',
-      rsUpperMisc = '(?:' + rsUpper + '|' + rsMisc + ')',
-      rsOptLowerContr = '(?:' + rsApos + '(?:d|ll|m|re|s|t|ve))?',
-      rsOptUpperContr = '(?:' + rsApos + '(?:D|LL|M|RE|S|T|VE))?',
+  var rsMiscLower = '(?:' + rsLower + '|' + rsMisc + ')',
+      rsMiscUpper = '(?:' + rsUpper + '|' + rsMisc + ')',
+      rsOptContrLower = '(?:' + rsApos + '(?:d|ll|m|re|s|t|ve))?',
+      rsOptContrUpper = '(?:' + rsApos + '(?:D|LL|M|RE|S|T|VE))?',
       reOptMod = rsModifier + '?',
       rsOptVar = '[' + rsVarRange + ']?',
       rsOptJoin = '(?:' + rsZWJ + '(?:' + [rsNonAstral, rsRegional, rsSurrPair].join('|') + ')' + rsOptVar + reOptMod + ')*',
+      rsOrdLower = '\\d*(?:(?:1st|2nd|3rd|(?![123])\\dth)\\b)',
+      rsOrdUpper = '\\d*(?:(?:1ST|2ND|3RD|(?![123])\\dTH)\\b)',
       rsSeq = rsOptVar + reOptMod + rsOptJoin,
       rsEmoji = '(?:' + [rsDingbat, rsRegional, rsSurrPair].join('|') + ')' + rsSeq,
       rsSymbol = '(?:' + [rsNonAstral + rsCombo + '?', rsCombo, rsRegional, rsSurrPair, rsAstral].join('|') + ')';
@@ -252,16 +265,18 @@
 
   /** Used to match complex or compound words. */
   var reUnicodeWord = RegExp([
-    rsUpper + '?' + rsLower + '+' + rsOptLowerContr + '(?=' + [rsBreak, rsUpper, '$'].join('|') + ')',
-    rsUpperMisc + '+' + rsOptUpperContr + '(?=' + [rsBreak, rsUpper + rsLowerMisc, '$'].join('|') + ')',
-    rsUpper + '?' + rsLowerMisc + '+' + rsOptLowerContr,
-    rsUpper + '+' + rsOptUpperContr,
+    rsUpper + '?' + rsLower + '+' + rsOptContrLower + '(?=' + [rsBreak, rsUpper, '$'].join('|') + ')',
+    rsMiscUpper + '+' + rsOptContrUpper + '(?=' + [rsBreak, rsUpper + rsMiscLower, '$'].join('|') + ')',
+    rsUpper + '?' + rsMiscLower + '+' + rsOptContrLower,
+    rsUpper + '+' + rsOptContrUpper,
+    rsOrdUpper,
+    rsOrdLower,
     rsDigits,
     rsEmoji
   ].join('|'), 'g');
 
   /** Used to detect strings with [zero-width joiners or code points from the astral planes](http://eev.ee/blog/2015/09/12/dark-corners-of-unicode/). */
-  var reHasUnicode = RegExp('[' + rsZWJ + rsAstralRange  + rsComboMarksRange + rsComboSymbolsRange + rsVarRange + ']');
+  var reHasUnicode = RegExp('[' + rsZWJ + rsAstralRange  + rsComboRange + rsVarRange + ']');
 
   /** Used to detect strings that need a more robust regexp to match words. */
   var reHasUnicodeWord = /[a-z][A-Z]|[A-Z]{2,}[a-z]|[0-9][a-zA-Z]|[a-zA-Z][0-9]|[^a-zA-Z0-9 ]/;
@@ -424,7 +439,7 @@
   /** Used to access faster Node.js helpers. */
   var nodeUtil = (function() {
     try {
-      return freeProcess && freeProcess.binding('util');
+      return freeProcess && freeProcess.binding && freeProcess.binding('util');
     } catch (e) {}
   }());
 
@@ -498,7 +513,7 @@
    */
   function arrayAggregator(array, setter, iteratee, accumulator) {
     var index = -1,
-        length = array ? array.length : 0;
+        length = array == null ? 0 : array.length;
 
     while (++index < length) {
       var value = array[index];
@@ -518,7 +533,7 @@
    */
   function arrayEach(array, iteratee) {
     var index = -1,
-        length = array ? array.length : 0;
+        length = array == null ? 0 : array.length;
 
     while (++index < length) {
       if (iteratee(array[index], index, array) === false) {
@@ -538,7 +553,7 @@
    * @returns {Array} Returns `array`.
    */
   function arrayEachRight(array, iteratee) {
-    var length = array ? array.length : 0;
+    var length = array == null ? 0 : array.length;
 
     while (length--) {
       if (iteratee(array[length], length, array) === false) {
@@ -560,7 +575,7 @@
    */
   function arrayEvery(array, predicate) {
     var index = -1,
-        length = array ? array.length : 0;
+        length = array == null ? 0 : array.length;
 
     while (++index < length) {
       if (!predicate(array[index], index, array)) {
@@ -581,7 +596,7 @@
    */
   function arrayFilter(array, predicate) {
     var index = -1,
-        length = array ? array.length : 0,
+        length = array == null ? 0 : array.length,
         resIndex = 0,
         result = [];
 
@@ -604,7 +619,7 @@
    * @returns {boolean} Returns `true` if `target` is found, else `false`.
    */
   function arrayIncludes(array, value) {
-    var length = array ? array.length : 0;
+    var length = array == null ? 0 : array.length;
     return !!length && baseIndexOf(array, value, 0) > -1;
   }
 
@@ -619,7 +634,7 @@
    */
   function arrayIncludesWith(array, value, comparator) {
     var index = -1,
-        length = array ? array.length : 0;
+        length = array == null ? 0 : array.length;
 
     while (++index < length) {
       if (comparator(value, array[index])) {
@@ -640,7 +655,7 @@
    */
   function arrayMap(array, iteratee) {
     var index = -1,
-        length = array ? array.length : 0,
+        length = array == null ? 0 : array.length,
         result = Array(length);
 
     while (++index < length) {
@@ -682,7 +697,7 @@
    */
   function arrayReduce(array, iteratee, accumulator, initAccum) {
     var index = -1,
-        length = array ? array.length : 0;
+        length = array == null ? 0 : array.length;
 
     if (initAccum && length) {
       accumulator = array[++index];
@@ -706,7 +721,7 @@
    * @returns {*} Returns the accumulated value.
    */
   function arrayReduceRight(array, iteratee, accumulator, initAccum) {
-    var length = array ? array.length : 0;
+    var length = array == null ? 0 : array.length;
     if (initAccum && length) {
       accumulator = array[--length];
     }
@@ -728,7 +743,7 @@
    */
   function arraySome(array, predicate) {
     var index = -1,
-        length = array ? array.length : 0;
+        length = array == null ? 0 : array.length;
 
     while (++index < length) {
       if (predicate(array[index], index, array)) {
@@ -872,7 +887,7 @@
    * @returns {number} Returns the mean.
    */
   function baseMean(array, iteratee) {
-    var length = array ? array.length : 0;
+    var length = array == null ? 0 : array.length;
     return length ? (baseSum(array, iteratee) / length) : NAN;
   }
 
@@ -1412,7 +1427,7 @@
    * var defer = _.runInContext({ 'setTimeout': setImmediate }).defer;
    */
   var runInContext = (function runInContext(context) {
-    context = context ? _.defaults(root.Object(), context, _.pick(root, contextProps)) : root;
+    context = context == null ? root : _.defaults(root.Object(), context, _.pick(root, contextProps));
 
     /** Built-in constructor references. */
     var Array = context.Array,
@@ -1433,12 +1448,6 @@
     /** Used to detect overreaching core-js shims. */
     var coreJsData = context['__core-js_shared__'];
 
-    /** Used to detect methods masquerading as native. */
-    var maskSrcKey = (function() {
-      var uid = /[^.]+$/.exec(coreJsData && coreJsData.keys && coreJsData.keys.IE_PROTO || '');
-      return uid ? ('Symbol(src)_1.' + uid) : '';
-    }());
-
     /** Used to resolve the decompiled source of functions. */
     var funcToString = funcProto.toString;
 
@@ -1448,15 +1457,21 @@
     /** Used to generate unique IDs. */
     var idCounter = 0;
 
-    /** Used to infer the `Object` constructor. */
-    var objectCtorString = funcToString.call(Object);
+    /** Used to detect methods masquerading as native. */
+    var maskSrcKey = (function() {
+      var uid = /[^.]+$/.exec(coreJsData && coreJsData.keys && coreJsData.keys.IE_PROTO || '');
+      return uid ? ('Symbol(src)_1.' + uid) : '';
+    }());
 
     /**
      * Used to resolve the
      * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
      * of values.
      */
-    var objectToString = objectProto.toString;
+    var nativeObjectToString = objectProto.toString;
+
+    /** Used to infer the `Object` constructor. */
+    var objectCtorString = funcToString.call(Object);
 
     /** Used to restore the original `_` reference in `_.noConflict`. */
     var oldDash = root._;
@@ -1473,11 +1488,12 @@
         Uint8Array = context.Uint8Array,
         allocUnsafe = Buffer ? Buffer.allocUnsafe : undefined,
         getPrototype = overArg(Object.getPrototypeOf, Object),
-        iteratorSymbol = Symbol ? Symbol.iterator : undefined,
         objectCreate = Object.create,
         propertyIsEnumerable = objectProto.propertyIsEnumerable,
         splice = arrayProto.splice,
-        spreadableSymbol = Symbol ? Symbol.isConcatSpreadable : undefined;
+        spreadableSymbol = Symbol ? Symbol.isConcatSpreadable : undefined,
+        symIterator = Symbol ? Symbol.iterator : undefined,
+        symToStringTag = Symbol ? Symbol.toStringTag : undefined;
 
     var defineProperty = (function() {
       try {
@@ -1911,7 +1927,7 @@
      */
     function Hash(entries) {
       var index = -1,
-          length = entries ? entries.length : 0;
+          length = entries == null ? 0 : entries.length;
 
       this.clear();
       while (++index < length) {
@@ -2015,7 +2031,7 @@
      */
     function ListCache(entries) {
       var index = -1,
-          length = entries ? entries.length : 0;
+          length = entries == null ? 0 : entries.length;
 
       this.clear();
       while (++index < length) {
@@ -2132,7 +2148,7 @@
      */
     function MapCache(entries) {
       var index = -1,
-          length = entries ? entries.length : 0;
+          length = entries == null ? 0 : entries.length;
 
       this.clear();
       while (++index < length) {
@@ -2236,7 +2252,7 @@
      */
     function SetCache(values) {
       var index = -1,
-          length = values ? values.length : 0;
+          length = values == null ? 0 : values.length;
 
       this.__data__ = new MapCache;
       while (++index < length) {
@@ -2552,6 +2568,19 @@
     }
 
     /**
+     * The base implementation of `_.assignIn` without support for multiple sources
+     * or `customizer` functions.
+     *
+     * @private
+     * @param {Object} object The destination object.
+     * @param {Object} source The source object.
+     * @returns {Object} Returns `object`.
+     */
+    function baseAssignIn(object, source) {
+      return object && copyObject(source, keysIn(source), object);
+    }
+
+    /**
      * The base implementation of `assignValue` and `assignMergeValue` without
      * value checks.
      *
@@ -2578,17 +2607,17 @@
      *
      * @private
      * @param {Object} object The object to iterate over.
-     * @param {string[]} paths The property paths of elements to pick.
+     * @param {string[]} paths The property paths to pick.
      * @returns {Array} Returns the picked elements.
      */
     function baseAt(object, paths) {
       var index = -1,
-          isNil = object == null,
           length = paths.length,
-          result = Array(length);
+          result = Array(length),
+          skip = object == null;
 
       while (++index < length) {
-        result[index] = isNil ? undefined : get(object, paths[index]);
+        result[index] = skip ? undefined : get(object, paths[index]);
       }
       return result;
     }
@@ -2620,16 +2649,22 @@
      *
      * @private
      * @param {*} value The value to clone.
-     * @param {boolean} [isDeep] Specify a deep clone.
-     * @param {boolean} [isFull] Specify a clone including symbols.
+     * @param {boolean} bitmask The bitmask flags.
+     *  1 - Deep clone
+     *  2 - Flatten inherited properties
+     *  4 - Clone symbols
      * @param {Function} [customizer] The function to customize cloning.
      * @param {string} [key] The key of `value`.
      * @param {Object} [object] The parent object of `value`.
      * @param {Object} [stack] Tracks traversed objects and their clone counterparts.
      * @returns {*} Returns the cloned value.
      */
-    function baseClone(value, isDeep, isFull, customizer, key, object, stack) {
-      var result;
+    function baseClone(value, bitmask, customizer, key, object, stack) {
+      var result,
+          isDeep = bitmask & CLONE_DEEP_FLAG,
+          isFlat = bitmask & CLONE_FLAT_FLAG,
+          isFull = bitmask & CLONE_SYMBOLS_FLAG;
+
       if (customizer) {
         result = object ? customizer(value, key, object, stack) : customizer(value);
       }
@@ -2653,9 +2688,11 @@
           return cloneBuffer(value, isDeep);
         }
         if (tag == objectTag || tag == argsTag || (isFunc && !object)) {
-          result = initCloneObject(isFunc ? {} : value);
+          result = (isFlat || isFunc) ? {} : initCloneObject(value);
           if (!isDeep) {
-            return copySymbols(value, baseAssign(result, value));
+            return isFlat
+              ? copySymbolsIn(value, baseAssignIn(result, value))
+              : copySymbols(value, baseAssign(result, value));
           }
         } else {
           if (!cloneableTags[tag]) {
@@ -2672,14 +2709,18 @@
       }
       stack.set(value, result);
 
-      var props = isArr ? undefined : (isFull ? getAllKeys : keys)(value);
+      var keysFunc = isFull
+        ? (isFlat ? getAllKeysIn : getAllKeys)
+        : (isFlat ? keysIn : keys);
+
+      var props = isArr ? undefined : keysFunc(value);
       arrayEach(props || value, function(subValue, key) {
         if (props) {
           key = subValue;
           subValue = value[key];
         }
         // Recursively populate clone (susceptible to call stack limits).
-        assignValue(result, key, baseClone(subValue, isDeep, isFull, customizer, key, value, stack));
+        assignValue(result, key, baseClone(subValue, bitmask, customizer, key, value, stack));
       });
       return result;
     }
@@ -2778,7 +2819,7 @@
       outer:
       while (++index < length) {
         var value = array[index],
-            computed = iteratee ? iteratee(value) : value;
+            computed = iteratee == null ? value : iteratee(value);
 
         value = (comparator || value !== 0) ? value : 0;
         if (isCommon && computed === computed) {
@@ -3017,7 +3058,7 @@
      * @returns {*} Returns the resolved value.
      */
     function baseGet(object, path) {
-      path = isKey(path, object) ? [path] : castPath(path);
+      path = castPath(path, object);
 
       var index = 0,
           length = path.length;
@@ -3045,14 +3086,20 @@
     }
 
     /**
-     * The base implementation of `getTag`.
+     * The base implementation of `getTag` without fallbacks for buggy environments.
      *
      * @private
      * @param {*} value The value to query.
      * @returns {string} Returns the `toStringTag`.
      */
     function baseGetTag(value) {
-      return objectToString.call(value);
+      if (value == null) {
+        return value === undefined ? undefinedTag : nullTag;
+      }
+      value = Object(value);
+      return (symToStringTag && symToStringTag in value)
+        ? getRawTag(value)
+        : objectToString(value);
     }
 
     /**
@@ -3197,12 +3244,9 @@
      * @returns {*} Returns the result of the invoked method.
      */
     function baseInvoke(object, path, args) {
-      if (!isKey(path, object)) {
-        path = castPath(path);
-        object = parent(object, path);
-        path = last(path);
-      }
-      var func = object == null ? object : object[toKey(path)];
+      path = castPath(path, object);
+      object = parent(object, path);
+      var func = object == null ? object : object[toKey(last(path))];
       return func == null ? undefined : apply(func, object, args);
     }
 
@@ -3214,7 +3258,7 @@
      * @returns {boolean} Returns `true` if `value` is an `arguments` object,
      */
     function baseIsArguments(value) {
-      return isObjectLike(value) && objectToString.call(value) == argsTag;
+      return isObjectLike(value) && baseGetTag(value) == argsTag;
     }
 
     /**
@@ -3225,7 +3269,7 @@
      * @returns {boolean} Returns `true` if `value` is an array buffer, else `false`.
      */
     function baseIsArrayBuffer(value) {
-      return isObjectLike(value) && objectToString.call(value) == arrayBufferTag;
+      return isObjectLike(value) && baseGetTag(value) == arrayBufferTag;
     }
 
     /**
@@ -3236,7 +3280,7 @@
      * @returns {boolean} Returns `true` if `value` is a date object, else `false`.
      */
     function baseIsDate(value) {
-      return isObjectLike(value) && objectToString.call(value) == dateTag;
+      return isObjectLike(value) && baseGetTag(value) == dateTag;
     }
 
     /**
@@ -3246,22 +3290,21 @@
      * @private
      * @param {*} value The value to compare.
      * @param {*} other The other value to compare.
+     * @param {boolean} bitmask The bitmask flags.
+     *  1 - Unordered comparison
+     *  2 - Partial comparison
      * @param {Function} [customizer] The function to customize comparisons.
-     * @param {boolean} [bitmask] The bitmask of comparison flags.
-     *  The bitmask may be composed of the following flags:
-     *     1 - Unordered comparison
-     *     2 - Partial comparison
      * @param {Object} [stack] Tracks traversed `value` and `other` objects.
      * @returns {boolean} Returns `true` if the values are equivalent, else `false`.
      */
-    function baseIsEqual(value, other, customizer, bitmask, stack) {
+    function baseIsEqual(value, other, bitmask, customizer, stack) {
       if (value === other) {
         return true;
       }
       if (value == null || other == null || (!isObject(value) && !isObjectLike(other))) {
         return value !== value && other !== other;
       }
-      return baseIsEqualDeep(value, other, baseIsEqual, customizer, bitmask, stack);
+      return baseIsEqualDeep(value, other, bitmask, customizer, baseIsEqual, stack);
     }
 
     /**
@@ -3272,14 +3315,13 @@
      * @private
      * @param {Object} object The object to compare.
      * @param {Object} other The other object to compare.
+     * @param {number} bitmask The bitmask flags. See `baseIsEqual` for more details.
+     * @param {Function} customizer The function to customize comparisons.
      * @param {Function} equalFunc The function to determine equivalents of values.
-     * @param {Function} [customizer] The function to customize comparisons.
-     * @param {number} [bitmask] The bitmask of comparison flags. See `baseIsEqual`
-     *  for more details.
      * @param {Object} [stack] Tracks traversed `object` and `other` objects.
      * @returns {boolean} Returns `true` if the objects are equivalent, else `false`.
      */
-    function baseIsEqualDeep(object, other, equalFunc, customizer, bitmask, stack) {
+    function baseIsEqualDeep(object, other, bitmask, customizer, equalFunc, stack) {
       var objIsArr = isArray(object),
           othIsArr = isArray(other),
           objTag = arrayTag,
@@ -3307,10 +3349,10 @@
       if (isSameTag && !objIsObj) {
         stack || (stack = new Stack);
         return (objIsArr || isTypedArray(object))
-          ? equalArrays(object, other, equalFunc, customizer, bitmask, stack)
-          : equalByTag(object, other, objTag, equalFunc, customizer, bitmask, stack);
+          ? equalArrays(object, other, bitmask, customizer, equalFunc, stack)
+          : equalByTag(object, other, objTag, bitmask, customizer, equalFunc, stack);
       }
-      if (!(bitmask & PARTIAL_COMPARE_FLAG)) {
+      if (!(bitmask & COMPARE_PARTIAL_FLAG)) {
         var objIsWrapped = objIsObj && hasOwnProperty.call(object, '__wrapped__'),
             othIsWrapped = othIsObj && hasOwnProperty.call(other, '__wrapped__');
 
@@ -3319,14 +3361,14 @@
               othUnwrapped = othIsWrapped ? other.value() : other;
 
           stack || (stack = new Stack);
-          return equalFunc(objUnwrapped, othUnwrapped, customizer, bitmask, stack);
+          return equalFunc(objUnwrapped, othUnwrapped, bitmask, customizer, stack);
         }
       }
       if (!isSameTag) {
         return false;
       }
       stack || (stack = new Stack);
-      return equalObjects(object, other, equalFunc, customizer, bitmask, stack);
+      return equalObjects(object, other, bitmask, customizer, equalFunc, stack);
     }
 
     /**
@@ -3384,7 +3426,7 @@
             var result = customizer(objValue, srcValue, key, object, source, stack);
           }
           if (!(result === undefined
-                ? baseIsEqual(srcValue, objValue, customizer, UNORDERED_COMPARE_FLAG | PARTIAL_COMPARE_FLAG, stack)
+                ? baseIsEqual(srcValue, objValue, COMPARE_PARTIAL_FLAG | COMPARE_UNORDERED_FLAG, customizer, stack)
                 : result
               )) {
             return false;
@@ -3418,7 +3460,7 @@
      * @returns {boolean} Returns `true` if `value` is a regexp, else `false`.
      */
     function baseIsRegExp(value) {
-      return isObject(value) && objectToString.call(value) == regexpTag;
+      return isObjectLike(value) && baseGetTag(value) == regexpTag;
     }
 
     /**
@@ -3441,7 +3483,7 @@
      */
     function baseIsTypedArray(value) {
       return isObjectLike(value) &&
-        isLength(value.length) && !!typedArrayTags[objectToString.call(value)];
+        isLength(value.length) && !!typedArrayTags[baseGetTag(value)];
     }
 
     /**
@@ -3574,7 +3616,7 @@
         var objValue = get(object, path);
         return (objValue === undefined && objValue === srcValue)
           ? hasIn(object, path)
-          : baseIsEqual(srcValue, objValue, undefined, UNORDERED_COMPARE_FLAG | PARTIAL_COMPARE_FLAG);
+          : baseIsEqual(srcValue, objValue, COMPARE_PARTIAL_FLAG | COMPARE_UNORDERED_FLAG);
       };
     }
 
@@ -3736,13 +3778,13 @@
      *
      * @private
      * @param {Object} object The source object.
-     * @param {string[]} props The property identifiers to pick.
+     * @param {string[]} paths The property paths to pick.
      * @returns {Object} Returns the new object.
      */
-    function basePick(object, props) {
+    function basePick(object, paths) {
       object = Object(object);
-      return basePickBy(object, props, function(value, key) {
-        return key in object;
+      return basePickBy(object, paths, function(value, path) {
+        return hasIn(object, path);
       });
     }
 
@@ -3751,21 +3793,21 @@
      *
      * @private
      * @param {Object} object The source object.
-     * @param {string[]} props The property identifiers to pick from.
+     * @param {string[]} paths The property paths to pick.
      * @param {Function} predicate The function invoked per property.
      * @returns {Object} Returns the new object.
      */
-    function basePickBy(object, props, predicate) {
+    function basePickBy(object, paths, predicate) {
       var index = -1,
-          length = props.length,
+          length = paths.length,
           result = {};
 
       while (++index < length) {
-        var key = props[index],
-            value = object[key];
+        var path = paths[index],
+            value = baseGet(object, path);
 
-        if (predicate(value, key)) {
-          baseAssignValue(result, key, value);
+        if (predicate(value, path)) {
+          baseSet(result, castPath(path, object), value);
         }
       }
       return result;
@@ -3841,17 +3883,8 @@
           var previous = index;
           if (isIndex(index)) {
             splice.call(array, index, 1);
-          }
-          else if (!isKey(index, array)) {
-            var path = castPath(index),
-                object = parent(array, path);
-
-            if (object != null) {
-              delete object[toKey(last(path))];
-            }
-          }
-          else {
-            delete array[toKey(index)];
+          } else {
+            baseUnset(array, index);
           }
         }
       }
@@ -3972,7 +4005,7 @@
       if (!isObject(object)) {
         return object;
       }
-      path = isKey(path, object) ? [path] : castPath(path);
+      path = castPath(path, object);
 
       var index = -1,
           length = path.length,
@@ -4102,7 +4135,7 @@
      */
     function baseSortedIndex(array, value, retHighest) {
       var low = 0,
-          high = array ? array.length : low;
+          high = array == null ? low : array.length;
 
       if (typeof value == 'number' && value === value && high <= HALF_MAX_ARRAY_LENGTH) {
         while (low < high) {
@@ -4138,7 +4171,7 @@
       value = iteratee(value);
 
       var low = 0,
-          high = array ? array.length : 0,
+          high = array == null ? 0 : array.length,
           valIsNaN = value !== value,
           valIsNull = value === null,
           valIsSymbol = isSymbol(value),
@@ -4309,15 +4342,13 @@
      *
      * @private
      * @param {Object} object The object to modify.
-     * @param {Array|string} path The path of the property to unset.
+     * @param {Array|string} path The property path to unset.
      * @returns {boolean} Returns `true` if the property is deleted, else `false`.
      */
     function baseUnset(object, path) {
-      path = isKey(path, object) ? [path] : castPath(path);
+      path = castPath(path, object);
       object = parent(object, path);
-
-      var key = toKey(last(path));
-      return !(object != null && hasOwnProperty.call(object, key)) || delete object[key];
+      return object == null || delete object[toKey(last(path))];
     }
 
     /**
@@ -4388,18 +4419,24 @@
      * @returns {Array} Returns the new array of values.
      */
     function baseXor(arrays, iteratee, comparator) {
+      var length = arrays.length;
+      if (length < 2) {
+        return length ? baseUniq(arrays[0]) : [];
+      }
       var index = -1,
-          length = arrays.length;
+          result = Array(length);
 
       while (++index < length) {
-        var result = result
-          ? arrayPush(
-              baseDifference(result, arrays[index], iteratee, comparator),
-              baseDifference(arrays[index], result, iteratee, comparator)
-            )
-          : arrays[index];
+        var array = arrays[index],
+            othIndex = -1;
+
+        while (++othIndex < length) {
+          if (othIndex != index) {
+            result[index] = baseDifference(result[index] || array, arrays[othIndex], iteratee, comparator);
+          }
+        }
       }
-      return (result && result.length) ? baseUniq(result, iteratee, comparator) : [];
+      return baseUniq(baseFlatten(result, 1), iteratee, comparator);
     }
 
     /**
@@ -4451,10 +4488,14 @@
      *
      * @private
      * @param {*} value The value to inspect.
+     * @param {Object} [object] The object to query keys on.
      * @returns {Array} Returns the cast property path array.
      */
-    function castPath(value) {
-      return isArray(value) ? value : stringToPath(value);
+    function castPath(value, object) {
+      if (isArray(value)) {
+        return value;
+      }
+      return isKey(value, object) ? [value] : stringToPath(toString(value));
     }
 
     /**
@@ -4548,7 +4589,7 @@
      * @returns {Object} Returns the cloned map.
      */
     function cloneMap(map, isDeep, cloneFunc) {
-      var array = isDeep ? cloneFunc(mapToArray(map), true) : mapToArray(map);
+      var array = isDeep ? cloneFunc(mapToArray(map), CLONE_DEEP_FLAG) : mapToArray(map);
       return arrayReduce(array, addMapEntry, new map.constructor);
     }
 
@@ -4575,7 +4616,7 @@
      * @returns {Object} Returns the cloned set.
      */
     function cloneSet(set, isDeep, cloneFunc) {
-      var array = isDeep ? cloneFunc(setToArray(set), true) : setToArray(set);
+      var array = isDeep ? cloneFunc(setToArray(set), CLONE_DEEP_FLAG) : setToArray(set);
       return arrayReduce(array, addSetEntry, new set.constructor);
     }
 
@@ -4810,7 +4851,7 @@
     }
 
     /**
-     * Copies own symbol properties of `source` to `object`.
+     * Copies own symbols of `source` to `object`.
      *
      * @private
      * @param {Object} source The object to copy symbols from.
@@ -4819,6 +4860,18 @@
      */
     function copySymbols(source, object) {
       return copyObject(source, getSymbols(source), object);
+    }
+
+    /**
+     * Copies own and inherited symbols of `source` to `object`.
+     *
+     * @private
+     * @param {Object} source The object to copy symbols from.
+     * @param {Object} [object={}] The object to copy symbols to.
+     * @returns {Object} Returns `object`.
+     */
+    function copySymbolsIn(source, object) {
+      return copyObject(source, getSymbolsIn(source), object);
     }
 
     /**
@@ -4935,7 +4988,7 @@
      * @returns {Function} Returns the new wrapped function.
      */
     function createBind(func, bitmask, thisArg) {
-      var isBind = bitmask & BIND_FLAG,
+      var isBind = bitmask & WRAP_BIND_FLAG,
           Ctor = createCtor(func);
 
       function wrapper() {
@@ -5108,7 +5161,7 @@
               data = funcName == 'wrapper' ? getData(func) : undefined;
 
           if (data && isLaziable(data[0]) &&
-                data[1] == (ARY_FLAG | CURRY_FLAG | PARTIAL_FLAG | REARG_FLAG) &&
+                data[1] == (WRAP_ARY_FLAG | WRAP_CURRY_FLAG | WRAP_PARTIAL_FLAG | WRAP_REARG_FLAG) &&
                 !data[4].length && data[9] == 1
               ) {
             wrapper = wrapper[getFuncName(data[0])].apply(wrapper, data[3]);
@@ -5157,11 +5210,11 @@
      * @returns {Function} Returns the new wrapped function.
      */
     function createHybrid(func, bitmask, thisArg, partials, holders, partialsRight, holdersRight, argPos, ary, arity) {
-      var isAry = bitmask & ARY_FLAG,
-          isBind = bitmask & BIND_FLAG,
-          isBindKey = bitmask & BIND_KEY_FLAG,
-          isCurried = bitmask & (CURRY_FLAG | CURRY_RIGHT_FLAG),
-          isFlip = bitmask & FLIP_FLAG,
+      var isAry = bitmask & WRAP_ARY_FLAG,
+          isBind = bitmask & WRAP_BIND_FLAG,
+          isBindKey = bitmask & WRAP_BIND_KEY_FLAG,
+          isCurried = bitmask & (WRAP_CURRY_FLAG | WRAP_CURRY_RIGHT_FLAG),
+          isFlip = bitmask & WRAP_FLIP_FLAG,
           Ctor = isBindKey ? undefined : createCtor(func);
 
       function wrapper() {
@@ -5312,7 +5365,7 @@
      * @returns {Function} Returns the new wrapped function.
      */
     function createPartial(func, bitmask, thisArg, partials) {
-      var isBind = bitmask & BIND_FLAG,
+      var isBind = bitmask & WRAP_BIND_FLAG,
           Ctor = createCtor(func);
 
       function wrapper() {
@@ -5394,17 +5447,17 @@
      * @returns {Function} Returns the new wrapped function.
      */
     function createRecurry(func, bitmask, wrapFunc, placeholder, thisArg, partials, holders, argPos, ary, arity) {
-      var isCurry = bitmask & CURRY_FLAG,
+      var isCurry = bitmask & WRAP_CURRY_FLAG,
           newHolders = isCurry ? holders : undefined,
           newHoldersRight = isCurry ? undefined : holders,
           newPartials = isCurry ? partials : undefined,
           newPartialsRight = isCurry ? undefined : partials;
 
-      bitmask |= (isCurry ? PARTIAL_FLAG : PARTIAL_RIGHT_FLAG);
-      bitmask &= ~(isCurry ? PARTIAL_RIGHT_FLAG : PARTIAL_FLAG);
+      bitmask |= (isCurry ? WRAP_PARTIAL_FLAG : WRAP_PARTIAL_RIGHT_FLAG);
+      bitmask &= ~(isCurry ? WRAP_PARTIAL_RIGHT_FLAG : WRAP_PARTIAL_FLAG);
 
-      if (!(bitmask & CURRY_BOUND_FLAG)) {
-        bitmask &= ~(BIND_FLAG | BIND_KEY_FLAG);
+      if (!(bitmask & WRAP_CURRY_BOUND_FLAG)) {
+        bitmask &= ~(WRAP_BIND_FLAG | WRAP_BIND_KEY_FLAG);
       }
       var newData = [
         func, bitmask, thisArg, newPartials, newHolders, newPartialsRight,
@@ -5482,17 +5535,16 @@
      * @private
      * @param {Function|string} func The function or method name to wrap.
      * @param {number} bitmask The bitmask flags.
-     *  The bitmask may be composed of the following flags:
-     *     1 - `_.bind`
-     *     2 - `_.bindKey`
-     *     4 - `_.curry` or `_.curryRight` of a bound function
-     *     8 - `_.curry`
-     *    16 - `_.curryRight`
-     *    32 - `_.partial`
-     *    64 - `_.partialRight`
-     *   128 - `_.rearg`
-     *   256 - `_.ary`
-     *   512 - `_.flip`
+     *    1 - `_.bind`
+     *    2 - `_.bindKey`
+     *    4 - `_.curry` or `_.curryRight` of a bound function
+     *    8 - `_.curry`
+     *   16 - `_.curryRight`
+     *   32 - `_.partial`
+     *   64 - `_.partialRight`
+     *  128 - `_.rearg`
+     *  256 - `_.ary`
+     *  512 - `_.flip`
      * @param {*} [thisArg] The `this` binding of `func`.
      * @param {Array} [partials] The arguments to be partially applied.
      * @param {Array} [holders] The `partials` placeholder indexes.
@@ -5502,20 +5554,20 @@
      * @returns {Function} Returns the new wrapped function.
      */
     function createWrap(func, bitmask, thisArg, partials, holders, argPos, ary, arity) {
-      var isBindKey = bitmask & BIND_KEY_FLAG;
+      var isBindKey = bitmask & WRAP_BIND_KEY_FLAG;
       if (!isBindKey && typeof func != 'function') {
         throw new TypeError(FUNC_ERROR_TEXT);
       }
       var length = partials ? partials.length : 0;
       if (!length) {
-        bitmask &= ~(PARTIAL_FLAG | PARTIAL_RIGHT_FLAG);
+        bitmask &= ~(WRAP_PARTIAL_FLAG | WRAP_PARTIAL_RIGHT_FLAG);
         partials = holders = undefined;
       }
       ary = ary === undefined ? ary : nativeMax(toInteger(ary), 0);
       arity = arity === undefined ? arity : toInteger(arity);
       length -= holders ? holders.length : 0;
 
-      if (bitmask & PARTIAL_RIGHT_FLAG) {
+      if (bitmask & WRAP_PARTIAL_RIGHT_FLAG) {
         var partialsRight = partials,
             holdersRight = holders;
 
@@ -5540,14 +5592,14 @@
         ? (isBindKey ? 0 : func.length)
         : nativeMax(newData[9] - length, 0);
 
-      if (!arity && bitmask & (CURRY_FLAG | CURRY_RIGHT_FLAG)) {
-        bitmask &= ~(CURRY_FLAG | CURRY_RIGHT_FLAG);
+      if (!arity && bitmask & (WRAP_CURRY_FLAG | WRAP_CURRY_RIGHT_FLAG)) {
+        bitmask &= ~(WRAP_CURRY_FLAG | WRAP_CURRY_RIGHT_FLAG);
       }
-      if (!bitmask || bitmask == BIND_FLAG) {
+      if (!bitmask || bitmask == WRAP_BIND_FLAG) {
         var result = createBind(func, bitmask, thisArg);
-      } else if (bitmask == CURRY_FLAG || bitmask == CURRY_RIGHT_FLAG) {
+      } else if (bitmask == WRAP_CURRY_FLAG || bitmask == WRAP_CURRY_RIGHT_FLAG) {
         result = createCurry(func, bitmask, arity);
-      } else if ((bitmask == PARTIAL_FLAG || bitmask == (BIND_FLAG | PARTIAL_FLAG)) && !holders.length) {
+      } else if ((bitmask == WRAP_PARTIAL_FLAG || bitmask == (WRAP_BIND_FLAG | WRAP_PARTIAL_FLAG)) && !holders.length) {
         result = createPartial(func, bitmask, thisArg, partials);
       } else {
         result = createHybrid.apply(undefined, newData);
@@ -5563,15 +5615,14 @@
      * @private
      * @param {Array} array The array to compare.
      * @param {Array} other The other array to compare.
-     * @param {Function} equalFunc The function to determine equivalents of values.
+     * @param {number} bitmask The bitmask flags. See `baseIsEqual` for more details.
      * @param {Function} customizer The function to customize comparisons.
-     * @param {number} bitmask The bitmask of comparison flags. See `baseIsEqual`
-     *  for more details.
+     * @param {Function} equalFunc The function to determine equivalents of values.
      * @param {Object} stack Tracks traversed `array` and `other` objects.
      * @returns {boolean} Returns `true` if the arrays are equivalent, else `false`.
      */
-    function equalArrays(array, other, equalFunc, customizer, bitmask, stack) {
-      var isPartial = bitmask & PARTIAL_COMPARE_FLAG,
+    function equalArrays(array, other, bitmask, customizer, equalFunc, stack) {
+      var isPartial = bitmask & COMPARE_PARTIAL_FLAG,
           arrLength = array.length,
           othLength = other.length;
 
@@ -5585,7 +5636,7 @@
       }
       var index = -1,
           result = true,
-          seen = (bitmask & UNORDERED_COMPARE_FLAG) ? new SetCache : undefined;
+          seen = (bitmask & COMPARE_UNORDERED_FLAG) ? new SetCache : undefined;
 
       stack.set(array, other);
       stack.set(other, array);
@@ -5611,7 +5662,7 @@
         if (seen) {
           if (!arraySome(other, function(othValue, othIndex) {
                 if (!cacheHas(seen, othIndex) &&
-                    (arrValue === othValue || equalFunc(arrValue, othValue, customizer, bitmask, stack))) {
+                    (arrValue === othValue || equalFunc(arrValue, othValue, bitmask, customizer, stack))) {
                   return seen.push(othIndex);
                 }
               })) {
@@ -5620,7 +5671,7 @@
           }
         } else if (!(
               arrValue === othValue ||
-                equalFunc(arrValue, othValue, customizer, bitmask, stack)
+                equalFunc(arrValue, othValue, bitmask, customizer, stack)
             )) {
           result = false;
           break;
@@ -5642,14 +5693,13 @@
      * @param {Object} object The object to compare.
      * @param {Object} other The other object to compare.
      * @param {string} tag The `toStringTag` of the objects to compare.
-     * @param {Function} equalFunc The function to determine equivalents of values.
+     * @param {number} bitmask The bitmask flags. See `baseIsEqual` for more details.
      * @param {Function} customizer The function to customize comparisons.
-     * @param {number} bitmask The bitmask of comparison flags. See `baseIsEqual`
-     *  for more details.
+     * @param {Function} equalFunc The function to determine equivalents of values.
      * @param {Object} stack Tracks traversed `object` and `other` objects.
      * @returns {boolean} Returns `true` if the objects are equivalent, else `false`.
      */
-    function equalByTag(object, other, tag, equalFunc, customizer, bitmask, stack) {
+    function equalByTag(object, other, tag, bitmask, customizer, equalFunc, stack) {
       switch (tag) {
         case dataViewTag:
           if ((object.byteLength != other.byteLength) ||
@@ -5687,7 +5737,7 @@
           var convert = mapToArray;
 
         case setTag:
-          var isPartial = bitmask & PARTIAL_COMPARE_FLAG;
+          var isPartial = bitmask & COMPARE_PARTIAL_FLAG;
           convert || (convert = setToArray);
 
           if (object.size != other.size && !isPartial) {
@@ -5698,11 +5748,11 @@
           if (stacked) {
             return stacked == other;
           }
-          bitmask |= UNORDERED_COMPARE_FLAG;
+          bitmask |= COMPARE_UNORDERED_FLAG;
 
           // Recursively compare objects (susceptible to call stack limits).
           stack.set(object, other);
-          var result = equalArrays(convert(object), convert(other), equalFunc, customizer, bitmask, stack);
+          var result = equalArrays(convert(object), convert(other), bitmask, customizer, equalFunc, stack);
           stack['delete'](object);
           return result;
 
@@ -5721,15 +5771,14 @@
      * @private
      * @param {Object} object The object to compare.
      * @param {Object} other The other object to compare.
-     * @param {Function} equalFunc The function to determine equivalents of values.
+     * @param {number} bitmask The bitmask flags. See `baseIsEqual` for more details.
      * @param {Function} customizer The function to customize comparisons.
-     * @param {number} bitmask The bitmask of comparison flags. See `baseIsEqual`
-     *  for more details.
+     * @param {Function} equalFunc The function to determine equivalents of values.
      * @param {Object} stack Tracks traversed `object` and `other` objects.
      * @returns {boolean} Returns `true` if the objects are equivalent, else `false`.
      */
-    function equalObjects(object, other, equalFunc, customizer, bitmask, stack) {
-      var isPartial = bitmask & PARTIAL_COMPARE_FLAG,
+    function equalObjects(object, other, bitmask, customizer, equalFunc, stack) {
+      var isPartial = bitmask & COMPARE_PARTIAL_FLAG,
           objProps = keys(object),
           objLength = objProps.length,
           othProps = keys(other),
@@ -5767,7 +5816,7 @@
         }
         // Recursively compare objects (susceptible to call stack limits).
         if (!(compared === undefined
-              ? (objValue === othValue || equalFunc(objValue, othValue, customizer, bitmask, stack))
+              ? (objValue === othValue || equalFunc(objValue, othValue, bitmask, customizer, stack))
               : compared
             )) {
           result = false;
@@ -5937,7 +5986,34 @@
     }
 
     /**
-     * Creates an array of the own enumerable symbol properties of `object`.
+     * A specialized version of `baseGetTag` which ignores `Symbol.toStringTag` values.
+     *
+     * @private
+     * @param {*} value The value to query.
+     * @returns {string} Returns the raw `toStringTag`.
+     */
+    function getRawTag(value) {
+      var isOwn = hasOwnProperty.call(value, symToStringTag),
+          tag = value[symToStringTag];
+
+      try {
+        value[symToStringTag] = undefined;
+        var unmasked = true;
+      } catch (e) {}
+
+      var result = nativeObjectToString.call(value);
+      if (unmasked) {
+        if (isOwn) {
+          value[symToStringTag] = tag;
+        } else {
+          delete value[symToStringTag];
+        }
+      }
+      return result;
+    }
+
+    /**
+     * Creates an array of the own enumerable symbols of `object`.
      *
      * @private
      * @param {Object} object The object to query.
@@ -5946,8 +6022,7 @@
     var getSymbols = nativeGetSymbols ? overArg(nativeGetSymbols, Object) : stubArray;
 
     /**
-     * Creates an array of the own and inherited enumerable symbol properties
-     * of `object`.
+     * Creates an array of the own and inherited enumerable symbols of `object`.
      *
      * @private
      * @param {Object} object The object to query.
@@ -5978,9 +6053,9 @@
         (Set && getTag(new Set) != setTag) ||
         (WeakMap && getTag(new WeakMap) != weakMapTag)) {
       getTag = function(value) {
-        var result = objectToString.call(value),
+        var result = baseGetTag(value),
             Ctor = result == objectTag ? value.constructor : undefined,
-            ctorString = Ctor ? toSource(Ctor) : undefined;
+            ctorString = Ctor ? toSource(Ctor) : '';
 
         if (ctorString) {
           switch (ctorString) {
@@ -6045,7 +6120,7 @@
      * @returns {boolean} Returns `true` if `path` exists, else `false`.
      */
     function hasPath(object, path, hasFunc) {
-      path = isKey(path, object) ? [path] : castPath(path);
+      path = castPath(path, object);
 
       var index = -1,
           length = path.length,
@@ -6061,7 +6136,7 @@
       if (result || ++index != length) {
         return result;
       }
-      length = object ? object.length : 0;
+      length = object == null ? 0 : object.length;
       return !!length && isLength(length) && isIndex(key, length) &&
         (isArray(object) || isArguments(object));
     }
@@ -6379,22 +6454,22 @@
       var bitmask = data[1],
           srcBitmask = source[1],
           newBitmask = bitmask | srcBitmask,
-          isCommon = newBitmask < (BIND_FLAG | BIND_KEY_FLAG | ARY_FLAG);
+          isCommon = newBitmask < (WRAP_BIND_FLAG | WRAP_BIND_KEY_FLAG | WRAP_ARY_FLAG);
 
       var isCombo =
-        ((srcBitmask == ARY_FLAG) && (bitmask == CURRY_FLAG)) ||
-        ((srcBitmask == ARY_FLAG) && (bitmask == REARG_FLAG) && (data[7].length <= source[8])) ||
-        ((srcBitmask == (ARY_FLAG | REARG_FLAG)) && (source[7].length <= source[8]) && (bitmask == CURRY_FLAG));
+        ((srcBitmask == WRAP_ARY_FLAG) && (bitmask == WRAP_CURRY_FLAG)) ||
+        ((srcBitmask == WRAP_ARY_FLAG) && (bitmask == WRAP_REARG_FLAG) && (data[7].length <= source[8])) ||
+        ((srcBitmask == (WRAP_ARY_FLAG | WRAP_REARG_FLAG)) && (source[7].length <= source[8]) && (bitmask == WRAP_CURRY_FLAG));
 
       // Exit early if metadata can't be merged.
       if (!(isCommon || isCombo)) {
         return data;
       }
       // Use source `thisArg` if available.
-      if (srcBitmask & BIND_FLAG) {
+      if (srcBitmask & WRAP_BIND_FLAG) {
         data[2] = source[2];
         // Set when currying a bound function.
-        newBitmask |= bitmask & BIND_FLAG ? 0 : CURRY_BOUND_FLAG;
+        newBitmask |= bitmask & WRAP_BIND_FLAG ? 0 : WRAP_CURRY_BOUND_FLAG;
       }
       // Compose partial arguments.
       var value = source[3];
@@ -6416,7 +6491,7 @@
         data[7] = value;
       }
       // Use source `ary` if it's smaller.
-      if (srcBitmask & ARY_FLAG) {
+      if (srcBitmask & WRAP_ARY_FLAG) {
         data[8] = data[8] == null ? source[8] : nativeMin(data[8], source[8]);
       }
       // Use source `arity` if one is not provided.
@@ -6473,6 +6548,17 @@
     }
 
     /**
+     * Converts `value` to a string using `Object.prototype.toString`.
+     *
+     * @private
+     * @param {*} value The value to convert.
+     * @returns {string} Returns the converted string.
+     */
+    function objectToString(value) {
+      return nativeObjectToString.call(value);
+    }
+
+    /**
      * A specialized version of `baseRest` which transforms the rest array.
      *
      * @private
@@ -6511,7 +6597,7 @@
      * @returns {*} Returns the parent value.
      */
     function parent(object, path) {
-      return path.length == 1 ? object : baseGet(object, baseSlice(path, 0, -1));
+      return path.length < 2 ? object : baseGet(object, baseSlice(path, 0, -1));
     }
 
     /**
@@ -6651,8 +6737,6 @@
      * @returns {Array} Returns the property path array.
      */
     var stringToPath = memoizeCapped(function(string) {
-      string = toString(string);
-
       var result = [];
       if (reLeadingDot.test(string)) {
         result.push('');
@@ -6682,7 +6766,7 @@
      * Converts `func` to its source code.
      *
      * @private
-     * @param {Function} func The function to process.
+     * @param {Function} func The function to convert.
      * @returns {string} Returns the source code.
      */
     function toSource(func) {
@@ -6762,7 +6846,7 @@
       } else {
         size = nativeMax(toInteger(size), 0);
       }
-      var length = array ? array.length : 0;
+      var length = array == null ? 0 : array.length;
       if (!length || size < 1) {
         return [];
       }
@@ -6793,7 +6877,7 @@
      */
     function compact(array) {
       var index = -1,
-          length = array ? array.length : 0,
+          length = array == null ? 0 : array.length,
           resIndex = 0,
           result = [];
 
@@ -6965,7 +7049,7 @@
      * // => [1, 2, 3]
      */
     function drop(array, n, guard) {
-      var length = array ? array.length : 0;
+      var length = array == null ? 0 : array.length;
       if (!length) {
         return [];
       }
@@ -6999,7 +7083,7 @@
      * // => [1, 2, 3]
      */
     function dropRight(array, n, guard) {
-      var length = array ? array.length : 0;
+      var length = array == null ? 0 : array.length;
       if (!length) {
         return [];
       }
@@ -7059,8 +7143,7 @@
      * @since 3.0.0
      * @category Array
      * @param {Array} array The array to query.
-     * @param {Function} [predicate=_.identity]
-     *  The function invoked per iteration.
+     * @param {Function} [predicate=_.identity] The function invoked per iteration.
      * @returns {Array} Returns the slice of `array`.
      * @example
      *
@@ -7121,7 +7204,7 @@
      * // => [4, '*', '*', 10]
      */
     function fill(array, value, start, end) {
-      var length = array ? array.length : 0;
+      var length = array == null ? 0 : array.length;
       if (!length) {
         return [];
       }
@@ -7141,8 +7224,7 @@
      * @since 1.1.0
      * @category Array
      * @param {Array} array The array to inspect.
-     * @param {Function} [predicate=_.identity]
-     *  The function invoked per iteration.
+     * @param {Function} [predicate=_.identity] The function invoked per iteration.
      * @param {number} [fromIndex=0] The index to search from.
      * @returns {number} Returns the index of the found element, else `-1`.
      * @example
@@ -7169,7 +7251,7 @@
      * // => 2
      */
     function findIndex(array, predicate, fromIndex) {
-      var length = array ? array.length : 0;
+      var length = array == null ? 0 : array.length;
       if (!length) {
         return -1;
       }
@@ -7189,8 +7271,7 @@
      * @since 2.0.0
      * @category Array
      * @param {Array} array The array to inspect.
-     * @param {Function} [predicate=_.identity]
-     *  The function invoked per iteration.
+     * @param {Function} [predicate=_.identity] The function invoked per iteration.
      * @param {number} [fromIndex=array.length-1] The index to search from.
      * @returns {number} Returns the index of the found element, else `-1`.
      * @example
@@ -7217,7 +7298,7 @@
      * // => 0
      */
     function findLastIndex(array, predicate, fromIndex) {
-      var length = array ? array.length : 0;
+      var length = array == null ? 0 : array.length;
       if (!length) {
         return -1;
       }
@@ -7246,7 +7327,7 @@
      * // => [1, 2, [3, [4]], 5]
      */
     function flatten(array) {
-      var length = array ? array.length : 0;
+      var length = array == null ? 0 : array.length;
       return length ? baseFlatten(array, 1) : [];
     }
 
@@ -7265,7 +7346,7 @@
      * // => [1, 2, 3, 4, 5]
      */
     function flattenDeep(array) {
-      var length = array ? array.length : 0;
+      var length = array == null ? 0 : array.length;
       return length ? baseFlatten(array, INFINITY) : [];
     }
 
@@ -7290,7 +7371,7 @@
      * // => [1, 2, 3, [4], 5]
      */
     function flattenDepth(array, depth) {
-      var length = array ? array.length : 0;
+      var length = array == null ? 0 : array.length;
       if (!length) {
         return [];
       }
@@ -7315,7 +7396,7 @@
      */
     function fromPairs(pairs) {
       var index = -1,
-          length = pairs ? pairs.length : 0,
+          length = pairs == null ? 0 : pairs.length,
           result = {};
 
       while (++index < length) {
@@ -7371,7 +7452,7 @@
      * // => 3
      */
     function indexOf(array, value, fromIndex) {
-      var length = array ? array.length : 0;
+      var length = array == null ? 0 : array.length;
       if (!length) {
         return -1;
       }
@@ -7397,7 +7478,7 @@
      * // => [1, 2]
      */
     function initial(array) {
-      var length = array ? array.length : 0;
+      var length = array == null ? 0 : array.length;
       return length ? baseSlice(array, 0, -1) : [];
     }
 
@@ -7487,9 +7568,8 @@
       var comparator = last(arrays),
           mapped = arrayMap(arrays, castArrayLikeObject);
 
-      if (comparator === last(mapped)) {
-        comparator = undefined;
-      } else {
+      comparator = typeof comparator == 'function' ? comparator : undefined;
+      if (comparator) {
         mapped.pop();
       }
       return (mapped.length && mapped[0] === arrays[0])
@@ -7513,7 +7593,7 @@
      * // => 'a~b~c'
      */
     function join(array, separator) {
-      return array ? nativeJoin.call(array, separator) : '';
+      return array == null ? '' : nativeJoin.call(array, separator);
     }
 
     /**
@@ -7531,7 +7611,7 @@
      * // => 3
      */
     function last(array) {
-      var length = array ? array.length : 0;
+      var length = array == null ? 0 : array.length;
       return length ? array[length - 1] : undefined;
     }
 
@@ -7557,7 +7637,7 @@
      * // => 1
      */
     function lastIndexOf(array, value, fromIndex) {
-      var length = array ? array.length : 0;
+      var length = array == null ? 0 : array.length;
       if (!length) {
         return -1;
       }
@@ -7660,8 +7740,7 @@
      * @category Array
      * @param {Array} array The array to modify.
      * @param {Array} values The values to remove.
-     * @param {Function} [iteratee=_.identity]
-     *  The iteratee invoked per element.
+     * @param {Function} [iteratee=_.identity] The iteratee invoked per element.
      * @returns {Array} Returns `array`.
      * @example
      *
@@ -7731,7 +7810,7 @@
      * // => ['b', 'd']
      */
     var pullAt = flatRest(function(array, indexes) {
-      var length = array ? array.length : 0,
+      var length = array == null ? 0 : array.length,
           result = baseAt(array, indexes);
 
       basePullAt(array, arrayMap(indexes, function(index) {
@@ -7754,8 +7833,7 @@
      * @since 2.0.0
      * @category Array
      * @param {Array} array The array to modify.
-     * @param {Function} [predicate=_.identity]
-     *  The function invoked per iteration.
+     * @param {Function} [predicate=_.identity] The function invoked per iteration.
      * @returns {Array} Returns the new array of removed elements.
      * @example
      *
@@ -7815,7 +7893,7 @@
      * // => [3, 2, 1]
      */
     function reverse(array) {
-      return array ? nativeReverse.call(array) : array;
+      return array == null ? array : nativeReverse.call(array);
     }
 
     /**
@@ -7835,7 +7913,7 @@
      * @returns {Array} Returns the slice of `array`.
      */
     function slice(array, start, end) {
-      var length = array ? array.length : 0;
+      var length = array == null ? 0 : array.length;
       if (!length) {
         return [];
       }
@@ -7882,8 +7960,7 @@
      * @category Array
      * @param {Array} array The sorted array to inspect.
      * @param {*} value The value to evaluate.
-     * @param {Function} [iteratee=_.identity]
-     *  The iteratee invoked per element.
+     * @param {Function} [iteratee=_.identity] The iteratee invoked per element.
      * @returns {number} Returns the index at which `value` should be inserted
      *  into `array`.
      * @example
@@ -7918,7 +7995,7 @@
      * // => 1
      */
     function sortedIndexOf(array, value) {
-      var length = array ? array.length : 0;
+      var length = array == null ? 0 : array.length;
       if (length) {
         var index = baseSortedIndex(array, value);
         if (index < length && eq(array[index], value)) {
@@ -7961,8 +8038,7 @@
      * @category Array
      * @param {Array} array The sorted array to inspect.
      * @param {*} value The value to evaluate.
-     * @param {Function} [iteratee=_.identity]
-     *  The iteratee invoked per element.
+     * @param {Function} [iteratee=_.identity] The iteratee invoked per element.
      * @returns {number} Returns the index at which `value` should be inserted
      *  into `array`.
      * @example
@@ -7997,7 +8073,7 @@
      * // => 3
      */
     function sortedLastIndexOf(array, value) {
-      var length = array ? array.length : 0;
+      var length = array == null ? 0 : array.length;
       if (length) {
         var index = baseSortedIndex(array, value, true) - 1;
         if (eq(array[index], value)) {
@@ -8065,7 +8141,7 @@
      * // => [2, 3]
      */
     function tail(array) {
-      var length = array ? array.length : 0;
+      var length = array == null ? 0 : array.length;
       return length ? baseSlice(array, 1, length) : [];
     }
 
@@ -8128,7 +8204,7 @@
      * // => []
      */
     function takeRight(array, n, guard) {
-      var length = array ? array.length : 0;
+      var length = array == null ? 0 : array.length;
       if (!length) {
         return [];
       }
@@ -8147,8 +8223,7 @@
      * @since 3.0.0
      * @category Array
      * @param {Array} array The array to query.
-     * @param {Function} [predicate=_.identity]
-     *  The function invoked per iteration.
+     * @param {Function} [predicate=_.identity] The function invoked per iteration.
      * @returns {Array} Returns the slice of `array`.
      * @example
      *
@@ -8189,8 +8264,7 @@
      * @since 3.0.0
      * @category Array
      * @param {Array} array The array to query.
-     * @param {Function} [predicate=_.identity]
-     *  The function invoked per iteration.
+     * @param {Function} [predicate=_.identity] The function invoked per iteration.
      * @returns {Array} Returns the slice of `array`.
      * @example
      *
@@ -8253,8 +8327,7 @@
      * @since 4.0.0
      * @category Array
      * @param {...Array} [arrays] The arrays to inspect.
-     * @param {Function} [iteratee=_.identity]
-     *  The iteratee invoked per element.
+     * @param {Function} [iteratee=_.identity] The iteratee invoked per element.
      * @returns {Array} Returns the new array of combined values.
      * @example
      *
@@ -8296,9 +8369,7 @@
      */
     var unionWith = baseRest(function(arrays) {
       var comparator = last(arrays);
-      if (isArrayLikeObject(comparator)) {
-        comparator = undefined;
-      }
+      comparator = typeof comparator == 'function' ? comparator : undefined;
       return baseUniq(baseFlatten(arrays, 1, isArrayLikeObject, true), undefined, comparator);
     });
 
@@ -8321,9 +8392,7 @@
      * // => [2, 1]
      */
     function uniq(array) {
-      return (array && array.length)
-        ? baseUniq(array)
-        : [];
+      return (array && array.length) ? baseUniq(array) : [];
     }
 
     /**
@@ -8338,8 +8407,7 @@
      * @since 4.0.0
      * @category Array
      * @param {Array} array The array to inspect.
-     * @param {Function} [iteratee=_.identity]
-     *  The iteratee invoked per element.
+     * @param {Function} [iteratee=_.identity] The iteratee invoked per element.
      * @returns {Array} Returns the new duplicate free array.
      * @example
      *
@@ -8351,9 +8419,7 @@
      * // => [{ 'x': 1 }, { 'x': 2 }]
      */
     function uniqBy(array, iteratee) {
-      return (array && array.length)
-        ? baseUniq(array, getIteratee(iteratee, 2))
-        : [];
+      return (array && array.length) ? baseUniq(array, getIteratee(iteratee, 2)) : [];
     }
 
     /**
@@ -8377,9 +8443,8 @@
      * // => [{ 'x': 1, 'y': 2 }, { 'x': 2, 'y': 1 }]
      */
     function uniqWith(array, comparator) {
-      return (array && array.length)
-        ? baseUniq(array, undefined, comparator)
-        : [];
+      comparator = typeof comparator == 'function' ? comparator : undefined;
+      return (array && array.length) ? baseUniq(array, undefined, comparator) : [];
     }
 
     /**
@@ -8511,8 +8576,7 @@
      * @since 4.0.0
      * @category Array
      * @param {...Array} [arrays] The arrays to inspect.
-     * @param {Function} [iteratee=_.identity]
-     *  The iteratee invoked per element.
+     * @param {Function} [iteratee=_.identity] The iteratee invoked per element.
      * @returns {Array} Returns the new array of filtered values.
      * @example
      *
@@ -8554,9 +8618,7 @@
      */
     var xorWith = baseRest(function(arrays) {
       var comparator = last(arrays);
-      if (isArrayLikeObject(comparator)) {
-        comparator = undefined;
-      }
+      comparator = typeof comparator == 'function' ? comparator : undefined;
       return baseXor(arrayFilter(arrays, isArrayLikeObject), undefined, comparator);
     });
 
@@ -8627,7 +8689,8 @@
      * @since 3.8.0
      * @category Array
      * @param {...Array} [arrays] The arrays to process.
-     * @param {Function} [iteratee=_.identity] The function to combine grouped values.
+     * @param {Function} [iteratee=_.identity] The function to combine
+     *  grouped values.
      * @returns {Array} Returns the new array of grouped elements.
      * @example
      *
@@ -8743,7 +8806,7 @@
      * @memberOf _
      * @since 1.0.0
      * @category Seq
-     * @param {...(string|string[])} [paths] The property paths of elements to pick.
+     * @param {...(string|string[])} [paths] The property paths to pick.
      * @returns {Object} Returns the new `lodash` wrapper instance.
      * @example
      *
@@ -9004,8 +9067,7 @@
      * @since 0.5.0
      * @category Collection
      * @param {Array|Object} collection The collection to iterate over.
-     * @param {Function} [iteratee=_.identity]
-     *  The iteratee to transform keys.
+     * @param {Function} [iteratee=_.identity] The iteratee to transform keys.
      * @returns {Object} Returns the composed aggregate object.
      * @example
      *
@@ -9039,8 +9101,7 @@
      * @since 0.1.0
      * @category Collection
      * @param {Array|Object} collection The collection to iterate over.
-     * @param {Function} [predicate=_.identity]
-     *  The function invoked per iteration.
+     * @param {Function} [predicate=_.identity] The function invoked per iteration.
      * @param- {Object} [guard] Enables use as an iteratee for methods like `_.map`.
      * @returns {boolean} Returns `true` if all elements pass the predicate check,
      *  else `false`.
@@ -9086,8 +9147,7 @@
      * @since 0.1.0
      * @category Collection
      * @param {Array|Object} collection The collection to iterate over.
-     * @param {Function} [predicate=_.identity]
-     *  The function invoked per iteration.
+     * @param {Function} [predicate=_.identity] The function invoked per iteration.
      * @returns {Array} Returns the new filtered array.
      * @see _.reject
      * @example
@@ -9127,8 +9187,7 @@
      * @since 0.1.0
      * @category Collection
      * @param {Array|Object} collection The collection to inspect.
-     * @param {Function} [predicate=_.identity]
-     *  The function invoked per iteration.
+     * @param {Function} [predicate=_.identity] The function invoked per iteration.
      * @param {number} [fromIndex=0] The index to search from.
      * @returns {*} Returns the matched element, else `undefined`.
      * @example
@@ -9165,8 +9224,7 @@
      * @since 2.0.0
      * @category Collection
      * @param {Array|Object} collection The collection to inspect.
-     * @param {Function} [predicate=_.identity]
-     *  The function invoked per iteration.
+     * @param {Function} [predicate=_.identity] The function invoked per iteration.
      * @param {number} [fromIndex=collection.length-1] The index to search from.
      * @returns {*} Returns the matched element, else `undefined`.
      * @example
@@ -9188,8 +9246,7 @@
      * @since 4.0.0
      * @category Collection
      * @param {Array|Object} collection The collection to iterate over.
-     * @param {Function} [iteratee=_.identity]
-     *  The function invoked per iteration.
+     * @param {Function} [iteratee=_.identity] The function invoked per iteration.
      * @returns {Array} Returns the new flattened array.
      * @example
      *
@@ -9213,8 +9270,7 @@
      * @since 4.7.0
      * @category Collection
      * @param {Array|Object} collection The collection to iterate over.
-     * @param {Function} [iteratee=_.identity]
-     *  The function invoked per iteration.
+     * @param {Function} [iteratee=_.identity] The function invoked per iteration.
      * @returns {Array} Returns the new flattened array.
      * @example
      *
@@ -9238,8 +9294,7 @@
      * @since 4.7.0
      * @category Collection
      * @param {Array|Object} collection The collection to iterate over.
-     * @param {Function} [iteratee=_.identity]
-     *  The function invoked per iteration.
+     * @param {Function} [iteratee=_.identity] The function invoked per iteration.
      * @param {number} [depth=1] The maximum recursion depth.
      * @returns {Array} Returns the new flattened array.
      * @example
@@ -9328,8 +9383,7 @@
      * @since 0.1.0
      * @category Collection
      * @param {Array|Object} collection The collection to iterate over.
-     * @param {Function} [iteratee=_.identity]
-     *  The iteratee to transform keys.
+     * @param {Function} [iteratee=_.identity] The iteratee to transform keys.
      * @returns {Object} Returns the composed aggregate object.
      * @example
      *
@@ -9417,12 +9471,10 @@
     var invokeMap = baseRest(function(collection, path, args) {
       var index = -1,
           isFunc = typeof path == 'function',
-          isProp = isKey(path),
           result = isArrayLike(collection) ? Array(collection.length) : [];
 
       baseEach(collection, function(value) {
-        var func = isFunc ? path : ((isProp && value != null) ? value[path] : undefined);
-        result[++index] = func ? apply(func, value, args) : baseInvoke(value, path, args);
+        result[++index] = isFunc ? apply(path, value, args) : baseInvoke(value, path, args);
       });
       return result;
     });
@@ -9438,8 +9490,7 @@
      * @since 4.0.0
      * @category Collection
      * @param {Array|Object} collection The collection to iterate over.
-     * @param {Function} [iteratee=_.identity]
-     *  The iteratee to transform keys.
+     * @param {Function} [iteratee=_.identity] The iteratee to transform keys.
      * @returns {Object} Returns the composed aggregate object.
      * @example
      *
@@ -9972,7 +10023,7 @@
     function ary(func, n, guard) {
       n = guard ? undefined : n;
       n = (func && n == null) ? func.length : n;
-      return createWrap(func, ARY_FLAG, undefined, undefined, undefined, undefined, n);
+      return createWrap(func, WRAP_ARY_FLAG, undefined, undefined, undefined, undefined, n);
     }
 
     /**
@@ -10045,10 +10096,10 @@
      * // => 'hi fred!'
      */
     var bind = baseRest(function(func, thisArg, partials) {
-      var bitmask = BIND_FLAG;
+      var bitmask = WRAP_BIND_FLAG;
       if (partials.length) {
         var holders = replaceHolders(partials, getHolder(bind));
-        bitmask |= PARTIAL_FLAG;
+        bitmask |= WRAP_PARTIAL_FLAG;
       }
       return createWrap(func, bitmask, thisArg, partials, holders);
     });
@@ -10099,10 +10150,10 @@
      * // => 'hiya fred!'
      */
     var bindKey = baseRest(function(object, key, partials) {
-      var bitmask = BIND_FLAG | BIND_KEY_FLAG;
+      var bitmask = WRAP_BIND_FLAG | WRAP_BIND_KEY_FLAG;
       if (partials.length) {
         var holders = replaceHolders(partials, getHolder(bindKey));
-        bitmask |= PARTIAL_FLAG;
+        bitmask |= WRAP_PARTIAL_FLAG;
       }
       return createWrap(key, bitmask, object, partials, holders);
     });
@@ -10150,7 +10201,7 @@
      */
     function curry(func, arity, guard) {
       arity = guard ? undefined : arity;
-      var result = createWrap(func, CURRY_FLAG, undefined, undefined, undefined, undefined, undefined, arity);
+      var result = createWrap(func, WRAP_CURRY_FLAG, undefined, undefined, undefined, undefined, undefined, arity);
       result.placeholder = curry.placeholder;
       return result;
     }
@@ -10195,7 +10246,7 @@
      */
     function curryRight(func, arity, guard) {
       arity = guard ? undefined : arity;
-      var result = createWrap(func, CURRY_RIGHT_FLAG, undefined, undefined, undefined, undefined, undefined, arity);
+      var result = createWrap(func, WRAP_CURRY_RIGHT_FLAG, undefined, undefined, undefined, undefined, undefined, arity);
       result.placeholder = curryRight.placeholder;
       return result;
     }
@@ -10440,7 +10491,7 @@
      * // => ['d', 'c', 'b', 'a']
      */
     function flip(func) {
-      return createWrap(func, FLIP_FLAG);
+      return createWrap(func, WRAP_FLIP_FLAG);
     }
 
     /**
@@ -10454,7 +10505,7 @@
      * function. Its creation may be customized by replacing the `_.memoize.Cache`
      * constructor with one whose instances implement the
      * [`Map`](http://ecma-international.org/ecma-262/7.0/#sec-properties-of-the-map-prototype-object)
-     * method interface of `delete`, `get`, `has`, and `set`.
+     * method interface of `clear`, `delete`, `get`, `has`, and `set`.
      *
      * @static
      * @memberOf _
@@ -10488,7 +10539,7 @@
      * _.memoize.Cache = WeakMap;
      */
     function memoize(func, resolver) {
-      if (typeof func != 'function' || (resolver && typeof resolver != 'function')) {
+      if (typeof func != 'function' || (resolver != null && typeof resolver != 'function')) {
         throw new TypeError(FUNC_ERROR_TEXT);
       }
       var memoized = function() {
@@ -10651,7 +10702,7 @@
      */
     var partial = baseRest(function(func, partials) {
       var holders = replaceHolders(partials, getHolder(partial));
-      return createWrap(func, PARTIAL_FLAG, undefined, partials, holders);
+      return createWrap(func, WRAP_PARTIAL_FLAG, undefined, partials, holders);
     });
 
     /**
@@ -10688,7 +10739,7 @@
      */
     var partialRight = baseRest(function(func, partials) {
       var holders = replaceHolders(partials, getHolder(partialRight));
-      return createWrap(func, PARTIAL_RIGHT_FLAG, undefined, partials, holders);
+      return createWrap(func, WRAP_PARTIAL_RIGHT_FLAG, undefined, partials, holders);
     });
 
     /**
@@ -10714,7 +10765,7 @@
      * // => ['a', 'b', 'c']
      */
     var rearg = flatRest(function(func, indexes) {
-      return createWrap(func, REARG_FLAG, undefined, undefined, undefined, indexes);
+      return createWrap(func, WRAP_REARG_FLAG, undefined, undefined, undefined, indexes);
     });
 
     /**
@@ -10904,8 +10955,7 @@
      * // => '<p>fred, barney, &amp; pebbles</p>'
      */
     function wrap(value, wrapper) {
-      wrapper = wrapper == null ? identity : wrapper;
-      return partial(wrapper, value);
+      return partial(castFunction(wrapper), value);
     }
 
     /*------------------------------------------------------------------------*/
@@ -10978,7 +11028,7 @@
      * // => true
      */
     function clone(value) {
-      return baseClone(value, false, true);
+      return baseClone(value, CLONE_SYMBOLS_FLAG);
     }
 
     /**
@@ -11013,7 +11063,8 @@
      * // => 0
      */
     function cloneWith(value, customizer) {
-      return baseClone(value, false, true, customizer);
+      customizer = typeof customizer == 'function' ? customizer : undefined;
+      return baseClone(value, CLONE_SYMBOLS_FLAG, customizer);
     }
 
     /**
@@ -11035,7 +11086,7 @@
      * // => false
      */
     function cloneDeep(value) {
-      return baseClone(value, true, true);
+      return baseClone(value, CLONE_DEEP_FLAG | CLONE_SYMBOLS_FLAG);
     }
 
     /**
@@ -11067,7 +11118,8 @@
      * // => 20
      */
     function cloneDeepWith(value, customizer) {
-      return baseClone(value, true, true, customizer);
+      customizer = typeof customizer == 'function' ? customizer : undefined;
+      return baseClone(value, CLONE_DEEP_FLAG | CLONE_SYMBOLS_FLAG, customizer);
     }
 
     /**
@@ -11330,7 +11382,7 @@
      */
     function isBoolean(value) {
       return value === true || value === false ||
-        (isObjectLike(value) && objectToString.call(value) == boolTag);
+        (isObjectLike(value) && baseGetTag(value) == boolTag);
     }
 
     /**
@@ -11389,7 +11441,7 @@
      * // => false
      */
     function isElement(value) {
-      return value != null && value.nodeType === 1 && isObjectLike(value) && !isPlainObject(value);
+      return isObjectLike(value) && value.nodeType === 1 && !isPlainObject(value);
     }
 
     /**
@@ -11426,6 +11478,9 @@
      * // => false
      */
     function isEmpty(value) {
+      if (value == null) {
+        return true;
+      }
       if (isArrayLike(value) &&
           (isArray(value) || typeof value == 'string' || typeof value.splice == 'function' ||
             isBuffer(value) || isTypedArray(value) || isArguments(value))) {
@@ -11513,7 +11568,7 @@
     function isEqualWith(value, other, customizer) {
       customizer = typeof customizer == 'function' ? customizer : undefined;
       var result = customizer ? customizer(value, other) : undefined;
-      return result === undefined ? baseIsEqual(value, other, customizer) : !!result;
+      return result === undefined ? baseIsEqual(value, other, undefined, customizer) : !!result;
     }
 
     /**
@@ -11538,8 +11593,9 @@
       if (!isObjectLike(value)) {
         return false;
       }
-      return (objectToString.call(value) == errorTag) ||
-        (typeof value.message == 'string' && typeof value.name == 'string');
+      var tag = baseGetTag(value);
+      return tag == errorTag || tag == domExcTag ||
+        (typeof value.message == 'string' && typeof value.name == 'string' && !isPlainObject(value));
     }
 
     /**
@@ -11590,10 +11646,13 @@
      * // => false
      */
     function isFunction(value) {
+      if (!isObject(value)) {
+        return false;
+      }
       // The use of `Object#toString` avoids issues with the `typeof` operator
-      // in Safari 9 which returns 'object' for typed array and other constructors.
-      var tag = isObject(value) ? objectToString.call(value) : '';
-      return tag == funcTag || tag == genTag || tag == proxyTag;
+      // in Safari 9 which returns 'object' for typed arrays and other constructors.
+      var tag = baseGetTag(value);
+      return tag == funcTag || tag == genTag || tag == asyncTag || tag == proxyTag;
     }
 
     /**
@@ -11944,7 +12003,7 @@
      */
     function isNumber(value) {
       return typeof value == 'number' ||
-        (isObjectLike(value) && objectToString.call(value) == numberTag);
+        (isObjectLike(value) && baseGetTag(value) == numberTag);
     }
 
     /**
@@ -11976,7 +12035,7 @@
      * // => true
      */
     function isPlainObject(value) {
-      if (!isObjectLike(value) || objectToString.call(value) != objectTag) {
+      if (!isObjectLike(value) || baseGetTag(value) != objectTag) {
         return false;
       }
       var proto = getPrototype(value);
@@ -11984,8 +12043,8 @@
         return true;
       }
       var Ctor = hasOwnProperty.call(proto, 'constructor') && proto.constructor;
-      return (typeof Ctor == 'function' &&
-        Ctor instanceof Ctor && funcToString.call(Ctor) == objectCtorString);
+      return typeof Ctor == 'function' && Ctor instanceof Ctor &&
+        funcToString.call(Ctor) == objectCtorString;
     }
 
     /**
@@ -12076,7 +12135,7 @@
      */
     function isString(value) {
       return typeof value == 'string' ||
-        (!isArray(value) && isObjectLike(value) && objectToString.call(value) == stringTag);
+        (!isArray(value) && isObjectLike(value) && baseGetTag(value) == stringTag);
     }
 
     /**
@@ -12098,7 +12157,7 @@
      */
     function isSymbol(value) {
       return typeof value == 'symbol' ||
-        (isObjectLike(value) && objectToString.call(value) == symbolTag);
+        (isObjectLike(value) && baseGetTag(value) == symbolTag);
     }
 
     /**
@@ -12180,7 +12239,7 @@
      * // => false
      */
     function isWeakSet(value) {
-      return isObjectLike(value) && objectToString.call(value) == weakSetTag;
+      return isObjectLike(value) && baseGetTag(value) == weakSetTag;
     }
 
     /**
@@ -12265,8 +12324,8 @@
       if (isArrayLike(value)) {
         return isString(value) ? stringToArray(value) : copyArray(value);
       }
-      if (iteratorSymbol && value[iteratorSymbol]) {
-        return iteratorToArray(value[iteratorSymbol]());
+      if (symIterator && value[symIterator]) {
+        return iteratorToArray(value[symIterator]());
       }
       var tag = getTag(value),
           func = tag == mapTag ? mapToArray : (tag == setTag ? setToArray : values);
@@ -12652,7 +12711,7 @@
      * @since 1.0.0
      * @category Object
      * @param {Object} object The object to iterate over.
-     * @param {...(string|string[])} [paths] The property paths of elements to pick.
+     * @param {...(string|string[])} [paths] The property paths to pick.
      * @returns {Array} Returns the picked values.
      * @example
      *
@@ -12699,7 +12758,7 @@
      */
     function create(prototype, properties) {
       var result = baseCreate(prototype);
-      return properties ? baseAssign(result, properties) : result;
+      return properties == null ? result : baseAssign(result, properties);
     }
 
     /**
@@ -13379,15 +13438,16 @@
 
     /**
      * The opposite of `_.pick`; this method creates an object composed of the
-     * own and inherited enumerable string keyed properties of `object` that are
-     * not omitted.
+     * own and inherited enumerable property paths of `object` that are not omitted.
+     *
+     * **Note:** This method is considerably slower than `_.pick`.
      *
      * @static
      * @since 0.1.0
      * @memberOf _
      * @category Object
      * @param {Object} object The source object.
-     * @param {...(string|string[])} [props] The property identifiers to omit.
+     * @param {...(string|string[])} [paths] The property paths to omit.
      * @returns {Object} Returns the new object.
      * @example
      *
@@ -13396,12 +13456,26 @@
      * _.omit(object, ['a', 'c']);
      * // => { 'b': '2' }
      */
-    var omit = flatRest(function(object, props) {
+    var omit = flatRest(function(object, paths) {
+      var result = {};
       if (object == null) {
-        return {};
+        return result;
       }
-      props = arrayMap(props, toKey);
-      return basePick(object, baseDifference(getAllKeysIn(object), props));
+      var isDeep = false;
+      paths = arrayMap(paths, function(path) {
+        path = castPath(path, object);
+        isDeep || (isDeep = path.length > 1);
+        return path;
+      });
+      copyObject(object, getAllKeysIn(object), result);
+      if (isDeep) {
+        result = baseClone(result, CLONE_DEEP_FLAG | CLONE_FLAT_FLAG | CLONE_SYMBOLS_FLAG);
+      }
+      var length = paths.length;
+      while (length--) {
+        baseUnset(result, paths[length]);
+      }
+      return result;
     });
 
     /**
@@ -13436,7 +13510,7 @@
      * @memberOf _
      * @category Object
      * @param {Object} object The source object.
-     * @param {...(string|string[])} [props] The property identifiers to pick.
+     * @param {...(string|string[])} [paths] The property paths to pick.
      * @returns {Object} Returns the new object.
      * @example
      *
@@ -13445,8 +13519,8 @@
      * _.pick(object, ['a', 'c']);
      * // => { 'a': 1, 'c': 3 }
      */
-    var pick = flatRest(function(object, props) {
-      return object == null ? {} : basePick(object, arrayMap(props, toKey));
+    var pick = flatRest(function(object, paths) {
+      return object == null ? {} : basePick(object, paths);
     });
 
     /**
@@ -13468,7 +13542,16 @@
      * // => { 'a': 1, 'c': 3 }
      */
     function pickBy(object, predicate) {
-      return object == null ? {} : basePickBy(object, getAllKeysIn(object), getIteratee(predicate));
+      if (object == null) {
+        return {};
+      }
+      var props = arrayMap(getAllKeysIn(object), function(prop) {
+        return [prop];
+      });
+      predicate = getIteratee(predicate);
+      return basePickBy(object, props, function(value, path) {
+        return predicate(value, path[0]);
+      });
     }
 
     /**
@@ -13501,15 +13584,15 @@
      * // => 'default'
      */
     function result(object, path, defaultValue) {
-      path = isKey(path, object) ? [path] : castPath(path);
+      path = castPath(path, object);
 
       var index = -1,
           length = path.length;
 
       // Ensure the loop is entered when path is empty.
       if (!length) {
-        object = undefined;
         length = 1;
+        object = undefined;
       }
       while (++index < length) {
         var value = object == null ? undefined : object[toKey(path[index])];
@@ -13806,7 +13889,7 @@
      * // => ['h', 'i']
      */
     function values(object) {
-      return object ? baseValues(object, keys(object)) : [];
+      return object == null ? [] : baseValues(object, keys(object));
     }
 
     /**
@@ -15193,7 +15276,7 @@
      * // => 'no match'
      */
     function cond(pairs) {
-      var length = pairs ? pairs.length : 0,
+      var length = pairs == null ? 0 : pairs.length,
           toIteratee = getIteratee();
 
       pairs = !length ? [] : arrayMap(pairs, function(pair) {
@@ -15239,7 +15322,7 @@
      * // => [{ 'a': 1, 'b': 2 }]
      */
     function conforms(source) {
-      return baseConforms(baseClone(source, true));
+      return baseConforms(baseClone(source, CLONE_DEEP_FLAG));
     }
 
     /**
@@ -15401,7 +15484,7 @@
      * // => ['def']
      */
     function iteratee(func) {
-      return baseIteratee(typeof func == 'function' ? func : baseClone(func, true));
+      return baseIteratee(typeof func == 'function' ? func : baseClone(func, CLONE_DEEP_FLAG));
     }
 
     /**
@@ -15433,7 +15516,7 @@
      * // => [{ 'a': 4, 'b': 5, 'c': 6 }]
      */
     function matches(source) {
-      return baseMatches(baseClone(source, true));
+      return baseMatches(baseClone(source, CLONE_DEEP_FLAG));
     }
 
     /**
@@ -15463,7 +15546,7 @@
      * // => { 'a': 4, 'b': 5, 'c': 6 }
      */
     function matchesProperty(path, srcValue) {
-      return baseMatchesProperty(path, baseClone(srcValue, true));
+      return baseMatchesProperty(path, baseClone(srcValue, CLONE_DEEP_FLAG));
     }
 
     /**
@@ -16019,7 +16102,7 @@
       if (isArray(value)) {
         return arrayMap(value, toKey);
       }
-      return isSymbol(value) ? [value] : copyArray(stringToPath(value));
+      return isSymbol(value) ? [value] : copyArray(stringToPath(toString(value)));
     }
 
     /**
@@ -16923,7 +17006,7 @@
       }
     });
 
-    realNames[createHybrid(undefined, BIND_KEY_FLAG).name] = [{
+    realNames[createHybrid(undefined, WRAP_BIND_KEY_FLAG).name] = [{
       'name': 'wrapper',
       'func': undefined
     }];
@@ -16945,8 +17028,8 @@
     // Add lazy aliases.
     lodash.prototype.first = lodash.prototype.head;
 
-    if (iteratorSymbol) {
-      lodash.prototype[iteratorSymbol] = wrapperToIterator;
+    if (symIterator) {
+      lodash.prototype[symIterator] = wrapperToIterator;
     }
     return lodash;
   });
@@ -17167,10 +17250,10 @@ process.chdir = function (dir) {
 process.umask = function() { return 0; };
 
 },{}],3:[function(require,module,exports){
-var Vue // late bind
-var map = Object.create(null)
-var shimmed = false
-var isBrowserify = false
+var Vue; // late bind
+var map = Object.create(null);
+var shimmed = false;
+var isBrowserify = false;
 
 /**
  * Determine compatibility and apply patch.
@@ -17180,31 +17263,28 @@ var isBrowserify = false
  */
 
 exports.install = function (vue, browserify) {
-  if (shimmed) return
-  shimmed = true
+  if (shimmed) return;
+  shimmed = true;
 
-  Vue = vue
-  isBrowserify = browserify
+  Vue = vue;
+  isBrowserify = browserify;
 
-  exports.compatible = !!Vue.internalDirectives
+  exports.compatible = !!Vue.internalDirectives;
   if (!exports.compatible) {
-    console.warn(
-      '[HMR] vue-loader hot reload is only compatible with ' +
-      'Vue.js 1.0.0+.'
-    )
-    return
+    console.warn('[HMR] vue-loader hot reload is only compatible with ' + 'Vue.js 1.0.0+.');
+    return;
   }
 
   // patch view directive
-  patchView(Vue.internalDirectives.component)
-  console.log('[HMR] Vue component hot reload shim applied.')
+  patchView(Vue.internalDirectives.component);
+  console.log('[HMR] Vue component hot reload shim applied.');
   // shim router-view if present
-  var routerView = Vue.elementDirective('router-view')
+  var routerView = Vue.elementDirective('router-view');
   if (routerView) {
-    patchView(routerView)
-    console.log('[HMR] vue-router <router-view> hot reload shim applied.')
+    patchView(routerView);
+    console.log('[HMR] vue-router <router-view> hot reload shim applied.');
   }
-}
+};
 
 /**
  * Shim the view directive (component or router-view).
@@ -17212,21 +17292,21 @@ exports.install = function (vue, browserify) {
  * @param {Object} View
  */
 
-function patchView (View) {
-  var unbuild = View.unbuild
+function patchView(View) {
+  var unbuild = View.unbuild;
   View.unbuild = function (defer) {
     if (!this.hotUpdating) {
-      var prevComponent = this.childVM && this.childVM.constructor
-      removeView(prevComponent, this)
+      var prevComponent = this.childVM && this.childVM.constructor;
+      removeView(prevComponent, this);
       // defer = true means we are transitioning to a new
       // Component. Register this new component to the list.
       if (defer) {
-        addView(this.Component, this)
+        addView(this.Component, this);
       }
     }
     // call original
-    return unbuild.call(this, defer)
-  }
+    return unbuild.call(this, defer);
+  };
 }
 
 /**
@@ -17236,17 +17316,17 @@ function patchView (View) {
  * @param {Directive} view - view directive instance
  */
 
-function addView (Component, view) {
-  var id = Component && Component.options.hotID
+function addView(Component, view) {
+  var id = Component && Component.options.hotID;
   if (id) {
     if (!map[id]) {
       map[id] = {
         Component: Component,
         views: [],
         instances: []
-      }
+      };
     }
-    map[id].views.push(view)
+    map[id].views.push(view);
   }
 }
 
@@ -17257,10 +17337,10 @@ function addView (Component, view) {
  * @param {Directive} view - view directive instance
  */
 
-function removeView (Component, view) {
-  var id = Component && Component.options.hotID
+function removeView(Component, view) {
+  var id = Component && Component.options.hotID;
   if (id) {
-    map[id].views.$remove(view)
+    map[id].views.$remove(view);
   }
 }
 
@@ -17274,17 +17354,17 @@ function removeView (Component, view) {
 
 exports.createRecord = function (id, options) {
   if (typeof options === 'function') {
-    options = options.options
+    options = options.options;
   }
   if (typeof options.el !== 'string' && typeof options.data !== 'object') {
-    makeOptionsHot(id, options)
+    makeOptionsHot(id, options);
     map[id] = {
       Component: null,
       views: [],
       instances: []
-    }
+    };
   }
-}
+};
 
 /**
  * Make a Component options object hot.
@@ -17293,18 +17373,18 @@ exports.createRecord = function (id, options) {
  * @param {Object} options
  */
 
-function makeOptionsHot (id, options) {
-  options.hotID = id
+function makeOptionsHot(id, options) {
+  options.hotID = id;
   injectHook(options, 'created', function () {
-    var record = map[id]
+    var record = map[id];
     if (!record.Component) {
-      record.Component = this.constructor
+      record.Component = this.constructor;
     }
-    record.instances.push(this)
-  })
+    record.instances.push(this);
+  });
   injectHook(options, 'beforeDestroy', function () {
-    map[id].instances.$remove(this)
-  })
+    map[id].instances.$remove(this);
+  });
 }
 
 /**
@@ -17316,13 +17396,9 @@ function makeOptionsHot (id, options) {
  * @param {Function} hook
  */
 
-function injectHook (options, name, hook) {
-  var existing = options[name]
-  options[name] = existing
-    ? Array.isArray(existing)
-      ? existing.concat(hook)
-      : [existing, hook]
-    : [hook]
+function injectHook(options, name, hook) {
+  var existing = options[name];
+  options[name] = existing ? Array.isArray(existing) ? existing.concat(hook) : [existing, hook] : [hook];
 }
 
 /**
@@ -17334,49 +17410,47 @@ function injectHook (options, name, hook) {
  */
 
 exports.update = function (id, newOptions, newTemplate) {
-  var record = map[id]
+  var record = map[id];
   // force full-reload if an instance of the component is active but is not
   // managed by a view
-  if (!record || (record.instances.length && !record.views.length)) {
-    console.log('[HMR] Root or manually-mounted instance modified. Full reload may be required.')
+  if (!record || record.instances.length && !record.views.length) {
+    console.log('[HMR] Root or manually-mounted instance modified. Full reload may be required.');
     if (!isBrowserify) {
-      window.location.reload()
+      window.location.reload();
     } else {
       // browserify-hmr somehow sends incomplete bundle if we reload here
-      return
+      return;
     }
   }
   if (!isBrowserify) {
     // browserify-hmr already logs this
-    console.log('[HMR] Updating component: ' + format(id))
+    console.log('[HMR] Updating component: ' + format(id));
   }
-  var Component = record.Component
+  var Component = record.Component;
   // update constructor
   if (newOptions) {
     // in case the user exports a constructor
-    Component = record.Component = typeof newOptions === 'function'
-      ? newOptions
-      : Vue.extend(newOptions)
-    makeOptionsHot(id, Component.options)
+    Component = record.Component = typeof newOptions === 'function' ? newOptions : Vue.extend(newOptions);
+    makeOptionsHot(id, Component.options);
   }
   if (newTemplate) {
-    Component.options.template = newTemplate
+    Component.options.template = newTemplate;
   }
   // handle recursive lookup
   if (Component.options.name) {
-    Component.options.components[Component.options.name] = Component
+    Component.options.components[Component.options.name] = Component;
   }
   // reset constructor cached linker
-  Component.linker = null
+  Component.linker = null;
   // reload all views
   record.views.forEach(function (view) {
-    updateView(view, Component)
-  })
+    updateView(view, Component);
+  });
   // flush devtools
   if (window.__VUE_DEVTOOLS_GLOBAL_HOOK__) {
-    window.__VUE_DEVTOOLS_GLOBAL_HOOK__.emit('flush')
+    window.__VUE_DEVTOOLS_GLOBAL_HOOK__.emit('flush');
   }
-}
+};
 
 /**
  * Update a component view instance
@@ -17385,26 +17459,26 @@ exports.update = function (id, newOptions, newTemplate) {
  * @param {Function} Component
  */
 
-function updateView (view, Component) {
+function updateView(view, Component) {
   if (!view._bound) {
-    return
+    return;
   }
-  view.Component = Component
-  view.hotUpdating = true
+  view.Component = Component;
+  view.hotUpdating = true;
   // disable transitions
-  view.vm._isCompiled = false
+  view.vm._isCompiled = false;
   // save state
-  var state = extractState(view.childVM)
+  var state = extractState(view.childVM);
   // remount, make sure to disable keep-alive
-  var keepAlive = view.keepAlive
-  view.keepAlive = false
-  view.mountComponent()
-  view.keepAlive = keepAlive
+  var keepAlive = view.keepAlive;
+  view.keepAlive = false;
+  view.mountComponent();
+  view.keepAlive = keepAlive;
   // restore state
-  restoreState(view.childVM, state, true)
+  restoreState(view.childVM, state, true);
   // re-eanble transitions
-  view.vm._isCompiled = true
-  view.hotUpdating = false
+  view.vm._isCompiled = true;
+  view.hotUpdating = false;
 }
 
 /**
@@ -17414,12 +17488,12 @@ function updateView (view, Component) {
  * @return {Object}
  */
 
-function extractState (vm) {
+function extractState(vm) {
   return {
     cid: vm.constructor.cid,
     data: vm.$data,
     children: vm.$children.map(extractState)
-  }
+  };
 }
 
 /**
@@ -17429,42 +17503,42 @@ function extractState (vm) {
  * @param {Object} state
  */
 
-function restoreState (vm, state, isRoot) {
-  var oldAsyncConfig
+function restoreState(vm, state, isRoot) {
+  var oldAsyncConfig;
   if (isRoot) {
     // set Vue into sync mode during state rehydration
-    oldAsyncConfig = Vue.config.async
-    Vue.config.async = false
+    oldAsyncConfig = Vue.config.async;
+    Vue.config.async = false;
   }
   // actual restore
   if (isRoot || !vm._props) {
-    vm.$data = state.data
+    vm.$data = state.data;
   } else {
     Object.keys(state.data).forEach(function (key) {
       if (!vm._props[key]) {
         // for non-root, only restore non-props fields
-        vm.$data[key] = state.data[key]
+        vm.$data[key] = state.data[key];
       }
-    })
+    });
   }
   // verify child consistency
   var hasSameChildren = vm.$children.every(function (c, i) {
-    return state.children[i] && state.children[i].cid === c.constructor.cid
-  })
+    return state.children[i] && state.children[i].cid === c.constructor.cid;
+  });
   if (hasSameChildren) {
     // rehydrate children
     vm.$children.forEach(function (c, i) {
-      restoreState(c, state.children[i])
-    })
+      restoreState(c, state.children[i]);
+    });
   }
   if (isRoot) {
-    Vue.config.async = oldAsyncConfig
+    Vue.config.async = oldAsyncConfig;
   }
 }
 
-function format (id) {
-  var match = id.match(/[^\/]+\.vue$/)
-  return match ? match[0] : id
+function format(id) {
+  var match = id.match(/[^\/]+\.vue$/);
+  return match ? match[0] : id;
 }
 
 },{}],4:[function(require,module,exports){
@@ -29162,18 +29236,19 @@ exports.default = {
     }
 };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\n \n<clients _v-3d5a0d6c=\"\"></clients>\n\n<button type=\"clean\" class=\"btn btn-primary\" @click=\"limp\" :disabled=\"!ist.id\" _v-3d5a0d6c=\"\">Novo</button>\n<button type=\"button\" class=\"btn btn-primary\" data-toggle=\"modal\" data-target=\".bs-example-modal-lg1\" :disabled=\"!ist.id\" _v-3d5a0d6c=\"\">Editar</button>\n <form action=\"/newcartridge\" method=\"POST\" role=\"form\" _v-3d5a0d6c=\"\">\n\n\n<!--================================================\n=            MODAL DE EDIÇÃO DO CLIENTE            =\n=================================================-->\n\n \n\n\n\n<div class=\"modal fade bs-example-modal-lg1\" tabindex=\"-1\" role=\"dialog\" aria-labelledby=\"myLargeModalLabel\" _v-3d5a0d6c=\"\">\n      <div class=\"modal-dialog modal-lg\" role=\"document\" _v-3d5a0d6c=\"\">\n            <div class=\"modal-content\" _v-3d5a0d6c=\"\">\n               \n              <h1 _v-3d5a0d6c=\"\">Editar Cliente</h1>\n\n              <div id=\"divEdit\" _v-3d5a0d6c=\"\"> \n            <!--  <input type=\"hidden\" name=\"id\" id=\"id\" value=\"{{ist.id}}\"> -->\n       \n        <!-- name: <input type=\"text\" class=\"texto\" id=\"valueText\"> -->\n                <div class=\"form-group\" _v-3d5a0d6c=\"\">\n                  <label for=\"\" _v-3d5a0d6c=\"\">Name</label>\n                  <input type=\"text\" class=\"form-control\" autofocus=\"\" required=\"\" placeholder=\" Name\" id=\"nameEdit\" name=\"name\" v-model=\"ist.name\" _v-3d5a0d6c=\"\">\n\n                </div>\n             <div class=\"form-group\" _v-3d5a0d6c=\"\">\n                <label for=\"\" _v-3d5a0d6c=\"\">Fone</label>\n                <input type=\"text\" class=\"form-control\" required=\"\" placeholder=\"Fone\" id=\"foneEdit\" name=\"fone\" v-model=\"ist.fone\" _v-3d5a0d6c=\"\">\n            </div>\n            <div class=\"form-group\" _v-3d5a0d6c=\"\">\n                <label for=\"\" _v-3d5a0d6c=\"\">Address</label>\n                <input type=\"text\" class=\"form-control\" required=\"\" placeholder=\"Address\" id=\"addressEdit\" name=\"address\" v-model=\"ist.address\" _v-3d5a0d6c=\"\">\n            </div>\n          \n        <br _v-3d5a0d6c=\"\"><br _v-3d5a0d6c=\"\">\n         \n         <button class=\"btn btn-lg btn-primary\" data-dismiss=\"modal\" _v-3d5a0d6c=\"\">Editar</button> <br _v-3d5a0d6c=\"\">\n\n\n        <br _v-3d5a0d6c=\"\">\n        <br _v-3d5a0d6c=\"\">\n        <br _v-3d5a0d6c=\"\">\n\n        </div>\n\n        \n\n            </div>\n          </div>\n</div>\n\n\n<!--====  End of MODAL DE EDIÇÃO DO CLIENTE  ====-->\n\n     \n \n      <input type=\"hidden\" name=\"client_id\" value=\"{{ist.id}}\" _v-3d5a0d6c=\"\">\n      <div class=\"form-group\" _v-3d5a0d6c=\"\">\n        <label for=\"\" _v-3d5a0d6c=\"\">Name</label>\n        <input type=\"text\" class=\"form-control\" id=\"\" required=\"\" placeholder=\" Name\" name=\"name\" v-model=\"ist.name\" :readonly=\"ist.id\" _v-3d5a0d6c=\"\">\n\n      </div>\n      <div class=\"form-group\" _v-3d5a0d6c=\"\">\n        <label for=\"\" _v-3d5a0d6c=\"\">Fone</label>\n        <input type=\"text\" class=\"form-control\" id=\"\" required=\"\" placeholder=\"Fone\" name=\"fone\" v-model=\"ist.fone\" :readonly=\"ist.id\" _v-3d5a0d6c=\"\">\n        <label for=\"\" _v-3d5a0d6c=\"\">Address</label>\n      </div>\n      <div class=\"form-group\" _v-3d5a0d6c=\"\">\n        <input type=\"text\" class=\"form-control\" id=\"\" required=\"\" placeholder=\"Address\" name=\"address\" v-model=\"ist.address\" :readonly=\"ist.id\" _v-3d5a0d6c=\"\">\n      </div>\n \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n \n <input type=\"hidden\" name=\"_token\" value=\"{{message}}\" _v-3d5a0d6c=\"\">\n <h1 _v-3d5a0d6c=\"\">Cartucho</h1>\n  \n\n <div v-for=\"input in input_index\" _v-3d5a0d6c=\"\">\n <div class=\"row\" _v-3d5a0d6c=\"\">\n<input type=\"hidden\" name=\"control\" value=\"{{input}}\" _v-3d5a0d6c=\"\">\n <div class=\"col-md-2\" _v-3d5a0d6c=\"\"> \n    <div class=\"form-group\" _v-3d5a0d6c=\"\">\n        <label for=\"\" _v-3d5a0d6c=\"\">Marca</label>\n        <input type=\"text\" class=\"form-control\" required=\"\" autocomplete=\"off\" name=\"mark_{{input}}\" style=\"text-transform:uppercase\" _v-3d5a0d6c=\"\">\n    </div>\n  </div>\n  <div class=\"col-md-2\" _v-3d5a0d6c=\"\">\n<div class=\"form-group\" _v-3d5a0d6c=\"\">\n        <label for=\"\" _v-3d5a0d6c=\"\">Numero</label>\n        <input type=\"text\" class=\"form-control\" required=\"\" autocomplete=\"off\" name=\"number_{{input}}\" _v-3d5a0d6c=\"\">\n    </div>\n  </div>\n  <div class=\"col-md-2\" _v-3d5a0d6c=\"\">\n    <div class=\"form-group\" _v-3d5a0d6c=\"\">\n        <label for=\"\" _v-3d5a0d6c=\"\">Numero de série</label>\n        <input type=\"text\" class=\"form-control\" required=\"\" autocomplete=\"off\" name=\"serialNumber_{{input}}\" _v-3d5a0d6c=\"\">\n    </div>\n  </div>\n    <div class=\"col-md-2\" _v-3d5a0d6c=\"\">\n    <div class=\"form-group\" _v-3d5a0d6c=\"\">\n        <label for=\"\" _v-3d5a0d6c=\"\">Valor</label>\n        <input type=\"text\" class=\"form-control\" required=\"\" autocomplete=\"off\" name=\"price_{{input}}\" _v-3d5a0d6c=\"\">\n    </div>\n  </div>\n   \n \n </div> <!-- div row -->\n\n </div> <!-- div for -->\n\n\n <div class=\"col-md-2\" _v-3d5a0d6c=\"\">\n    <div class=\"form-group\" _v-3d5a0d6c=\"\">\n        <label for=\"\" _v-3d5a0d6c=\"\">Pago</label>\n        <div class=\"radio\" _v-3d5a0d6c=\"\">\n            <label _v-3d5a0d6c=\"\"><input type=\"radio\" required=\"\" name=\"pay\" value=\"yes\" v-model=\"select\" _v-3d5a0d6c=\"\">Sim</label>\n            <label _v-3d5a0d6c=\"\"><input type=\"radio\" required=\"\" name=\"pay\" value=\"no\" v-model=\"select\" _v-3d5a0d6c=\"\">Não</label>\n        </div>\n        <div v-if=\"select === 'yes' \" _v-3d5a0d6c=\"\">\n        <label _v-3d5a0d6c=\"\"><input type=\"radio\" name=\"type\" value=\"money\" _v-3d5a0d6c=\"\">Dinheiro</label>\n        <label _v-3d5a0d6c=\"\"><input type=\"radio\" name=\"type\" value=\"debit\" _v-3d5a0d6c=\"\">Débito</label>\n        <label _v-3d5a0d6c=\"\"><input type=\"radio\" name=\"type\" value=\"credit\" _v-3d5a0d6c=\"\">Crédito</label>\n        </div>\n           \n    </div>\n    </div>\n <button type=\"submit\" class=\"btn btn-lg btn-success\" _v-3d5a0d6c=\"\">Enviar</button>\n <button @click.stop.prevent=\"addInput()\" class=\"btn btn-lg btn-primary\" _v-3d5a0d6c=\"\">Add</button>\n <button @click.stop.prevent=\"removeInput()\" class=\"btn btn-lg btn-danger\" _v-3d5a0d6c=\"\">Remove</button> \n \n\n    \n  \n \n \n  \n \n\n\n\n \n\n \n\n\n</form>"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\n \n<clients _v-89d76268=\"\"></clients>\n\n<button type=\"clean\" class=\"btn btn-primary\" @click=\"limp\" :disabled=\"!ist.id\" _v-89d76268=\"\">Novo</button>\n<button type=\"button\" class=\"btn btn-primary\" data-toggle=\"modal\" data-target=\".bs-example-modal-lg1\" :disabled=\"!ist.id\" _v-89d76268=\"\">Editar</button>\n <form action=\"/newcartridge\" method=\"POST\" role=\"form\" _v-89d76268=\"\">\n\n\n<!--================================================\n=            MODAL DE EDIÇÃO DO CLIENTE            =\n=================================================-->\n\n \n\n\n\n<div class=\"modal fade bs-example-modal-lg1\" tabindex=\"-1\" role=\"dialog\" aria-labelledby=\"myLargeModalLabel\" _v-89d76268=\"\">\n      <div class=\"modal-dialog modal-lg\" role=\"document\" _v-89d76268=\"\">\n            <div class=\"modal-content\" _v-89d76268=\"\">\n               \n              <h1 _v-89d76268=\"\">Editar Cliente</h1>\n\n              <div id=\"divEdit\" _v-89d76268=\"\"> \n            <!--  <input type=\"hidden\" name=\"id\" id=\"id\" value=\"{{ist.id}}\"> -->\n       \n        <!-- name: <input type=\"text\" class=\"texto\" id=\"valueText\"> -->\n                <div class=\"form-group\" _v-89d76268=\"\">\n                  <label for=\"\" _v-89d76268=\"\">Name</label>\n                  <input type=\"text\" class=\"form-control\" autofocus=\"\" required=\"\" placeholder=\" Name\" id=\"nameEdit\" name=\"name\" v-model=\"ist.name\" _v-89d76268=\"\">\n\n                </div>\n             <div class=\"form-group\" _v-89d76268=\"\">\n                <label for=\"\" _v-89d76268=\"\">Fone</label>\n                <input type=\"text\" class=\"form-control\" required=\"\" placeholder=\"Fone\" id=\"foneEdit\" name=\"fone\" v-model=\"ist.fone\" _v-89d76268=\"\">\n            </div>\n            <div class=\"form-group\" _v-89d76268=\"\">\n                <label for=\"\" _v-89d76268=\"\">Address</label>\n                <input type=\"text\" class=\"form-control\" required=\"\" placeholder=\"Address\" id=\"addressEdit\" name=\"address\" v-model=\"ist.address\" _v-89d76268=\"\">\n            </div>\n          \n        <br _v-89d76268=\"\"><br _v-89d76268=\"\">\n         \n         <button class=\"btn btn-lg btn-primary\" data-dismiss=\"modal\" _v-89d76268=\"\">Editar</button> <br _v-89d76268=\"\">\n\n\n        <br _v-89d76268=\"\">\n        <br _v-89d76268=\"\">\n        <br _v-89d76268=\"\">\n\n        </div>\n\n        \n\n            </div>\n          </div>\n</div>\n\n\n<!--====  End of MODAL DE EDIÇÃO DO CLIENTE  ====-->\n\n     \n \n      <input type=\"hidden\" name=\"client_id\" value=\"{{ist.id}}\" _v-89d76268=\"\">\n      <div class=\"form-group\" _v-89d76268=\"\">\n        <label for=\"\" _v-89d76268=\"\">Name</label>\n        <input type=\"text\" class=\"form-control\" id=\"\" required=\"\" placeholder=\" Name\" name=\"name\" v-model=\"ist.name\" :readonly=\"ist.id\" _v-89d76268=\"\">\n\n      </div>\n      <div class=\"form-group\" _v-89d76268=\"\">\n        <label for=\"\" _v-89d76268=\"\">Fone</label>\n        <input type=\"text\" class=\"form-control\" id=\"\" required=\"\" placeholder=\"Fone\" name=\"fone\" v-model=\"ist.fone\" :readonly=\"ist.id\" _v-89d76268=\"\">\n        <label for=\"\" _v-89d76268=\"\">Address</label>\n      </div>\n      <div class=\"form-group\" _v-89d76268=\"\">\n        <input type=\"text\" class=\"form-control\" id=\"\" required=\"\" placeholder=\"Address\" name=\"address\" v-model=\"ist.address\" :readonly=\"ist.id\" _v-89d76268=\"\">\n      </div>\n \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n \n <input type=\"hidden\" name=\"_token\" value=\"{{message}}\" _v-89d76268=\"\">\n <h1 _v-89d76268=\"\">Cartucho</h1>\n  \n\n <div v-for=\"input in input_index\" _v-89d76268=\"\">\n <div class=\"row\" _v-89d76268=\"\">\n<input type=\"hidden\" name=\"control\" value=\"{{input}}\" _v-89d76268=\"\">\n <div class=\"col-md-2\" _v-89d76268=\"\"> \n    <div class=\"form-group\" _v-89d76268=\"\">\n        <label for=\"\" _v-89d76268=\"\">Marca</label>\n        <input type=\"text\" class=\"form-control\" required=\"\" autocomplete=\"off\" name=\"mark_{{input}}\" style=\"text-transform:uppercase\" _v-89d76268=\"\">\n    </div>\n  </div>\n  <div class=\"col-md-2\" _v-89d76268=\"\">\n<div class=\"form-group\" _v-89d76268=\"\">\n        <label for=\"\" _v-89d76268=\"\">Numero</label>\n        <input type=\"text\" class=\"form-control\" required=\"\" autocomplete=\"off\" name=\"number_{{input}}\" _v-89d76268=\"\">\n    </div>\n  </div>\n  <div class=\"col-md-2\" _v-89d76268=\"\">\n    <div class=\"form-group\" _v-89d76268=\"\">\n        <label for=\"\" _v-89d76268=\"\">Numero de série</label>\n        <input type=\"text\" class=\"form-control\" required=\"\" autocomplete=\"off\" name=\"serialNumber_{{input}}\" _v-89d76268=\"\">\n    </div>\n  </div>\n    <div class=\"col-md-2\" _v-89d76268=\"\">\n    <div class=\"form-group\" _v-89d76268=\"\">\n        <label for=\"\" _v-89d76268=\"\">Valor</label>\n        <input type=\"text\" class=\"form-control\" required=\"\" autocomplete=\"off\" name=\"price_{{input}}\" _v-89d76268=\"\">\n    </div>\n  </div>\n   \n \n </div> <!-- div row -->\n\n </div> <!-- div for -->\n\n\n <div class=\"col-md-2\" _v-89d76268=\"\">\n    <div class=\"form-group\" _v-89d76268=\"\">\n        <label for=\"\" _v-89d76268=\"\">Pago</label>\n        <div class=\"radio\" _v-89d76268=\"\">\n            <label _v-89d76268=\"\"><input type=\"radio\" required=\"\" name=\"pay\" value=\"yes\" v-model=\"select\" _v-89d76268=\"\">Sim</label>\n            <label _v-89d76268=\"\"><input type=\"radio\" required=\"\" name=\"pay\" value=\"no\" v-model=\"select\" _v-89d76268=\"\">Não</label>\n        </div>\n        <div v-if=\"select === 'yes' \" _v-89d76268=\"\">\n        <label _v-89d76268=\"\"><input type=\"radio\" name=\"type\" value=\"money\" _v-89d76268=\"\">Dinheiro</label>\n        <label _v-89d76268=\"\"><input type=\"radio\" name=\"type\" value=\"debit\" _v-89d76268=\"\">Débito</label>\n        <label _v-89d76268=\"\"><input type=\"radio\" name=\"type\" value=\"credit\" _v-89d76268=\"\">Crédito</label>\n        </div>\n           \n    </div>\n    </div>\n <button type=\"submit\" class=\"btn btn-lg btn-success\" _v-89d76268=\"\">Enviar</button>\n <button @click.stop.prevent=\"addInput()\" class=\"btn btn-lg btn-primary\" _v-89d76268=\"\">Add</button>\n <button @click.stop.prevent=\"removeInput()\" class=\"btn btn-lg btn-danger\" _v-89d76268=\"\">Remove</button> \n \n\n    \n  \n \n \n  \n \n\n\n\n \n\n \n\n\n</form>"
 if (module.hot) {(function () {  module.hot.accept()
-  var hotAPI = require("vue-hot-reload-api")
+  var hotAPI = require("/var/www/html/Newerplte53/node_modules/vue-hot-reload-api/index.js")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
+  var id = "/var/www/html/Newerplte53/resources/assets/js/components/OsCartridge.vue"
   if (!module.hot.data) {
-    hotAPI.createRecord("_v-3d5a0d6c", module.exports)
+    hotAPI.createRecord(id, module.exports)
   } else {
-    hotAPI.update("_v-3d5a0d6c", module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
+    hotAPI.update(id, module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"./bus":9,"./clients.vue":10,"vue":5,"vue-hot-reload-api":3}],8:[function(require,module,exports){
+},{"./bus":9,"./clients.vue":10,"/var/www/html/Newerplte53/node_modules/vue-hot-reload-api/index.js":3,"vue":5}],8:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -29213,16 +29288,17 @@ exports.default = {
 if (module.exports.__esModule) module.exports = module.exports.default
 ;(typeof module.exports === "function"? module.exports.options: module.exports).template = "  \n  <div>\n     \n \n \nName: <input type=\"text\" v-model=\"dtr.name\" name=\"\" id=\"input\" class=\"form-control\" value=\"\" required=\"required\" pattern=\"\" title=\"\">\nEmail: <input type=\"text\" v-model=\"dtr.email\" name=\"\" id=\"input\" class=\"form-control\" value=\"\" required=\"required\" pattern=\"\" title=\"\">\n  </div>\n"
 if (module.hot) {(function () {  module.hot.accept()
-  var hotAPI = require("vue-hot-reload-api")
+  var hotAPI = require("/var/www/html/Newerplte53/node_modules/vue-hot-reload-api/index.js")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
+  var id = "/var/www/html/Newerplte53/resources/assets/js/components/bar.vue"
   if (!module.hot.data) {
-    hotAPI.createRecord("_v-5f81b076", module.exports)
+    hotAPI.createRecord(id, module.exports)
   } else {
-    hotAPI.update("_v-5f81b076", module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
+    hotAPI.update(id, module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"./bus":9,"vue":5,"vue-hot-reload-api":3}],9:[function(require,module,exports){
+},{"./bus":9,"/var/www/html/Newerplte53/node_modules/vue-hot-reload-api/index.js":3,"vue":5}],9:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -29303,18 +29379,19 @@ exports.default = {
 	}
 };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\n\t\n \n \n\n\n<button type=\"button\" class=\"btn btn-primary\" data-toggle=\"modal\" data-target=\".bs-example-modal-lg\" _v-16b9cb2a=\"\">Pesquisar</button>\n\n<div class=\"modal fade bs-example-modal-lg shown.bs.modal\" :autofocus=\"\" id=\"myModal\" tabindex=\"-1\" role=\"dialog\" aria-labelledby=\"myLargeModalLabel\" _v-16b9cb2a=\"\">\n  <div class=\"modal-dialog modal-lg\" role=\"document\" _v-16b9cb2a=\"\">\n    <div class=\"modal-content\" _v-16b9cb2a=\"\">\n       \n<h1 _v-16b9cb2a=\"\">Lista de Clientes Cadastrados</h1>\n\n\n<div class=\"well\" _v-16b9cb2a=\"\">\n\t\t<input type=\"text\" class=\"form-control\" id=\"myInput\" placeholder=\"Filtrar C\" v-model=\"filterTerm\" _v-16b9cb2a=\"\">\n\t</div>\n\t<div _v-16b9cb2a=\"\">\n\n\t <table class=\"table table-bordered table-striped table-hover\" _v-16b9cb2a=\"\">\n\t \t\n\t\t<thead _v-16b9cb2a=\"\">\n\t\t\t<tr _v-16b9cb2a=\"\">\n\t\t\t\t<th _v-16b9cb2a=\"\"><a href=\"#\" @click=\"sort($event, 'id')\" _v-16b9cb2a=\"\">ID</a></th>\n\t\t\t\t<th _v-16b9cb2a=\"\"><a href=\"#\" @click=\"sort($event, 'name')\" _v-16b9cb2a=\"\">Nome</a></th>\n\t\t\t\t<th _v-16b9cb2a=\"\"><a href=\"#\" @click=\"sort($event, 'fone')\" _v-16b9cb2a=\"\">Telefone</a></th>\n\t\t\t\t<th _v-16b9cb2a=\"\">Endereço</th>\n\t\t\t\t\n\t\t\t</tr>\n\t\t</thead>\n\t\t<tbody _v-16b9cb2a=\"\">\n\t\n\t\t\t<tr v-for=\"u in users | filterBy filterTerm| orderBy sortProperty sortDirection\" _v-16b9cb2a=\"\">\n\t\t\t\t\n\t\t\t\t<td _v-16b9cb2a=\"\">{{u.id}}</td>\n\t\t\t\t<td _v-16b9cb2a=\"\">{{u.name}}</td>\n\t\t\t\t<td _v-16b9cb2a=\"\">{{u.fone}}</td>\n\t\t\t\t<td _v-16b9cb2a=\"\">{{u.address}}</td>\n\t\t\t\t<td _v-16b9cb2a=\"\"><button class=\"btn btn-success\" @click.stop.prevent=\"inserirDados(u)\" _v-16b9cb2a=\"\">Inserir</button></td>\n\t\t\t\t\n\t\t\t</tr>\n\t\t</tbody>\n\t\t\n\n\t </table> \n\n\t</div>\n\n\n\n\n    </div>\n  </div>\n</div>\n\n<br _v-16b9cb2a=\"\"><hr _v-16b9cb2a=\"\">\n\n\t\n\n\n\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\n\t\n \n \n\n\n<button type=\"button\" class=\"btn btn-primary\" data-toggle=\"modal\" data-target=\".bs-example-modal-lg\" _v-27df80ed=\"\">Pesquisar</button>\n\n<div class=\"modal fade bs-example-modal-lg shown.bs.modal\" :autofocus=\"\" id=\"myModal\" tabindex=\"-1\" role=\"dialog\" aria-labelledby=\"myLargeModalLabel\" _v-27df80ed=\"\">\n  <div class=\"modal-dialog modal-lg\" role=\"document\" _v-27df80ed=\"\">\n    <div class=\"modal-content\" _v-27df80ed=\"\">\n       \n<h1 _v-27df80ed=\"\">Lista de Clientes Cadastrados</h1>\n\n\n<div class=\"well\" _v-27df80ed=\"\">\n\t\t<input type=\"text\" class=\"form-control\" id=\"myInput\" placeholder=\"Filtrar C\" v-model=\"filterTerm\" _v-27df80ed=\"\">\n\t</div>\n\t<div _v-27df80ed=\"\">\n\n\t <table class=\"table table-bordered table-striped table-hover\" _v-27df80ed=\"\">\n\t \t\n\t\t<thead _v-27df80ed=\"\">\n\t\t\t<tr _v-27df80ed=\"\">\n\t\t\t\t<th _v-27df80ed=\"\"><a href=\"#\" @click=\"sort($event, 'id')\" _v-27df80ed=\"\">ID</a></th>\n\t\t\t\t<th _v-27df80ed=\"\"><a href=\"#\" @click=\"sort($event, 'name')\" _v-27df80ed=\"\">Nome</a></th>\n\t\t\t\t<th _v-27df80ed=\"\"><a href=\"#\" @click=\"sort($event, 'fone')\" _v-27df80ed=\"\">Telefone</a></th>\n\t\t\t\t<th _v-27df80ed=\"\">Endereço</th>\n\t\t\t\t\n\t\t\t</tr>\n\t\t</thead>\n\t\t<tbody _v-27df80ed=\"\">\n\t\n\t\t\t<tr v-for=\"u in users | filterBy filterTerm| orderBy sortProperty sortDirection\" _v-27df80ed=\"\">\n\t\t\t\t\n\t\t\t\t<td _v-27df80ed=\"\">{{u.id}}</td>\n\t\t\t\t<td _v-27df80ed=\"\">{{u.name}}</td>\n\t\t\t\t<td _v-27df80ed=\"\">{{u.fone}}</td>\n\t\t\t\t<td _v-27df80ed=\"\">{{u.address}}</td>\n\t\t\t\t<td _v-27df80ed=\"\"><button class=\"btn btn-success\" @click.stop.prevent=\"inserirDados(u)\" _v-27df80ed=\"\">Inserir</button></td>\n\t\t\t\t\n\t\t\t</tr>\n\t\t</tbody>\n\t\t\n\n\t </table> \n\n\t</div>\n\n\n\n\n    </div>\n  </div>\n</div>\n\n<br _v-27df80ed=\"\"><hr _v-27df80ed=\"\">\n\n\t\n\n\n\n"
 if (module.hot) {(function () {  module.hot.accept()
-  var hotAPI = require("vue-hot-reload-api")
+  var hotAPI = require("/var/www/html/Newerplte53/node_modules/vue-hot-reload-api/index.js")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
+  var id = "/var/www/html/Newerplte53/resources/assets/js/components/clients.vue"
   if (!module.hot.data) {
-    hotAPI.createRecord("_v-16b9cb2a", module.exports)
+    hotAPI.createRecord(id, module.exports)
   } else {
-    hotAPI.update("_v-16b9cb2a", module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
+    hotAPI.update(id, module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"./bus":9,"vue":5,"vue-hot-reload-api":3}],11:[function(require,module,exports){
+},{"./bus":9,"/var/www/html/Newerplte53/node_modules/vue-hot-reload-api/index.js":3,"vue":5}],11:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -29352,16 +29429,17 @@ exports.default = {
 if (module.exports.__esModule) module.exports = module.exports.default
 ;(typeof module.exports === "function"? module.exports.options: module.exports).template = "  \n  <div> \n\t\t\t<a href=\"#\" @click=\"buttonClickHandler\">Botao Foo</a>\n\n\n\n  </div>\n"
 if (module.hot) {(function () {  module.hot.accept()
-  var hotAPI = require("vue-hot-reload-api")
+  var hotAPI = require("/var/www/html/Newerplte53/node_modules/vue-hot-reload-api/index.js")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
+  var id = "/var/www/html/Newerplte53/resources/assets/js/components/foo.vue"
   if (!module.hot.data) {
-    hotAPI.createRecord("_v-4ad42fa9", module.exports)
+    hotAPI.createRecord(id, module.exports)
   } else {
-    hotAPI.update("_v-4ad42fa9", module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
+    hotAPI.update(id, module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"./bus":9,"vue":5,"vue-hot-reload-api":3}],12:[function(require,module,exports){
+},{"./bus":9,"/var/www/html/Newerplte53/node_modules/vue-hot-reload-api/index.js":3,"vue":5}],12:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -29412,20 +29490,21 @@ exports.default = {
 
 };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n  <button @click=\"confirm\" _v-1835d591=\"\">Confirmar</button>\n\n<form action=\"#\" method=\"POST\" role=\"form\" _v-1835d591=\"\">\n\t<legend _v-1835d591=\"\">Form title</legend>\n\n\t<div class=\"form-group\" _v-1835d591=\"\">\n\t\t<label for=\"\" _v-1835d591=\"\">Name</label>\n\t\t<input type=\"text\" class=\"form-control\" id=\"\" placeholder=\"{{nameName}}\" v-model=\"nameName\" _v-1835d591=\"\">\n\t</div>\n\t<div class=\"form-group\" _v-1835d591=\"\">\n\t\t<label for=\"\" _v-1835d591=\"\">Email</label>\n\t\t<input type=\"text\" class=\"form-control\" id=\"\" placeholder=\"Input field\" v-model=\"title\" _v-1835d591=\"\">\n\t</div>\n\n\t\n\n\t<button type=\"submit\" class=\"btn btn-primary\" _v-1835d591=\"\">Submit</button>\n</form>\n \n\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n  <button @click=\"confirm\" _v-769f304f=\"\">Confirmar</button>\n\n<form action=\"#\" method=\"POST\" role=\"form\" _v-769f304f=\"\">\n\t<legend _v-769f304f=\"\">Form title</legend>\n\n\t<div class=\"form-group\" _v-769f304f=\"\">\n\t\t<label for=\"\" _v-769f304f=\"\">Name</label>\n\t\t<input type=\"text\" class=\"form-control\" id=\"\" placeholder=\"{{nameName}}\" v-model=\"nameName\" _v-769f304f=\"\">\n\t</div>\n\t<div class=\"form-group\" _v-769f304f=\"\">\n\t\t<label for=\"\" _v-769f304f=\"\">Email</label>\n\t\t<input type=\"text\" class=\"form-control\" id=\"\" placeholder=\"Input field\" v-model=\"title\" _v-769f304f=\"\">\n\t</div>\n\n\t\n\n\t<button type=\"submit\" class=\"btn btn-primary\" _v-769f304f=\"\">Submit</button>\n</form>\n \n\n"
 if (module.hot) {(function () {  module.hot.accept()
-  var hotAPI = require("vue-hot-reload-api")
+  var hotAPI = require("/var/www/html/Newerplte53/node_modules/vue-hot-reload-api/index.js")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
+  var id = "/var/www/html/Newerplte53/resources/assets/js/components/insertClient.vue"
   if (!module.hot.data) {
-    hotAPI.createRecord("_v-1835d591", module.exports)
+    hotAPI.createRecord(id, module.exports)
   } else {
-    hotAPI.update("_v-1835d591", module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
+    hotAPI.update(id, module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"./clients.vue":10,"vue":5,"vue-hot-reload-api":3}],13:[function(require,module,exports){
+},{"./clients.vue":10,"/var/www/html/Newerplte53/node_modules/vue-hot-reload-api/index.js":3,"vue":5}],13:[function(require,module,exports){
 var __vueify_insert__ = require("vueify/lib/insert-css")
-var __vueify_style__ = __vueify_insert__.insert("\n\n.estado-PRONTO[_v-7e2c51cf]{\n\tbackground-color: #b2e09f;\n}\n.estado-ANALISE[_v-7e2c51cf]{\n\tbackground-color: #f2f085;\n}\n.estado-ENTREGUE[_v-7e2c51cf]{\n\tbackground-color: #3c8dbc;\n}\n.estado-RECEBIDO[_v-7e2c51cf]{\n\tbackground-color: #f85454;\n}\n \n\n\n")
+var __vueify_style__ = __vueify_insert__.insert("\n\n.estado-PRONTO[_v-3fed77e6]{\n\tbackground-color: #b2e09f;\n}\n.estado-ANALISE[_v-3fed77e6]{\n\tbackground-color: #f2f085;\n}\n.estado-ENTREGUE[_v-3fed77e6]{\n\tbackground-color: #3c8dbc;\n}\n.estado-RECEBIDO[_v-3fed77e6]{\n\tbackground-color: #f85454;\n}\n \n\n\n")
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -29513,24 +29592,25 @@ exports.default = {
 	}
 }; //essa classe bus serve como transporte de dados.
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\n\t\n \n \n\n\n \n       \n<h1 _v-7e2c51cf=\"\">Lista de OS</h1>\n \n \n<div class=\"well\" _v-7e2c51cf=\"\">\n\t\t<input type=\"text\" class=\"form-control\" id=\"myInput\" placeholder=\"Filtrar C\" v-model=\"filterTerm\" _v-7e2c51cf=\"\">\n\t</div>\n\t \n\n\t<div _v-7e2c51cf=\"\">\n\n\t <table class=\"table table-bordered table-striped table-hover\" _v-7e2c51cf=\"\">\n\t \t\n\t\t<thead _v-7e2c51cf=\"\">\n\t\t\t<tr _v-7e2c51cf=\"\">\n\t\t\t\t<th _v-7e2c51cf=\"\"><a href=\"#\" @click=\"sort($event, 'id')\" _v-7e2c51cf=\"\">ID</a></th>\n\t\t\t\t<th _v-7e2c51cf=\"\"><a href=\"#\" @click=\"sort($event, 'state')\" _v-7e2c51cf=\"\">Estado</a></th>\n\t\t\t\t<th _v-7e2c51cf=\"\"><a href=\"#\" @click=\"sort($event, 'created_at')\" _v-7e2c51cf=\"\">Data</a></th>\n\t\t\t\t<th _v-7e2c51cf=\"\"><a href=\"#\" @click=\"sort($event, 'name')\" _v-7e2c51cf=\"\">Nome</a></th>\n\t\t\t\t\n\t\t\t</tr>\n\t\t</thead>\n\t\t<tbody _v-7e2c51cf=\"\">\n\t\n\t\t\t<tr v-for=\"u in listOs  | filterBy filterTerm  | orderBy sortProperty sortDirection\" _v-7e2c51cf=\"\">\n\t\t\t\t \n\t\t\t\t<td class=\"estado-{{u.state}}\" _v-7e2c51cf=\"\">{{u.id}}</td>\n\t\t\t\t<td class=\"estado-{{u.state}}\" _v-7e2c51cf=\"\">{{u.state}}</td>\n\t\t\t\t<td class=\"estado-{{u.state}}\" _v-7e2c51cf=\"\">{{u.created_at}}</td>\n\t\t\t\t<td class=\"estado-{{u.state}}\" _v-7e2c51cf=\"\">{{u.name}}</td>\n\t\t\t\t<td _v-7e2c51cf=\"\"> <a href=\"/cartridge/visualizar/{{u.id}}\" _v-7e2c51cf=\"\"><button class=\"btn btn-success\" _v-7e2c51cf=\"\"> Selecionar</button></a> </td> \n\t\t\t\t \n\t\t\t</tr>\n\t\t</tbody>\n\t\t\n\n\t </table> \n\t <div class=\"text-center\" _v-7e2c51cf=\"\">\n\t <!-- <pagination :source=\"pagination\" @navigate=\"navigate\"></pagination>  discomment this for habilite pagination-->\n</div>\n\t</div>\n\n\n\n \n\n<br _v-7e2c51cf=\"\"><hr _v-7e2c51cf=\"\">\n\n\t\n\n \n\n\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\n\t\n \n \n\n\n \n       \n<h1 _v-3fed77e6=\"\">Lista de OS</h1>\n \n \n<div class=\"well\" _v-3fed77e6=\"\">\n\t\t<input type=\"text\" class=\"form-control\" id=\"myInput\" placeholder=\"Filtrar C\" v-model=\"filterTerm\" _v-3fed77e6=\"\">\n\t</div>\n\t \n\n\t<div _v-3fed77e6=\"\">\n\n\t <table class=\"table table-bordered table-striped table-hover\" _v-3fed77e6=\"\">\n\t \t\n\t\t<thead _v-3fed77e6=\"\">\n\t\t\t<tr _v-3fed77e6=\"\">\n\t\t\t\t<th _v-3fed77e6=\"\"><a href=\"#\" @click=\"sort($event, 'id')\" _v-3fed77e6=\"\">ID</a></th>\n\t\t\t\t<th _v-3fed77e6=\"\"><a href=\"#\" @click=\"sort($event, 'state')\" _v-3fed77e6=\"\">Estado</a></th>\n\t\t\t\t<th _v-3fed77e6=\"\"><a href=\"#\" @click=\"sort($event, 'created_at')\" _v-3fed77e6=\"\">Data</a></th>\n\t\t\t\t<th _v-3fed77e6=\"\"><a href=\"#\" @click=\"sort($event, 'name')\" _v-3fed77e6=\"\">Nome</a></th>\n\t\t\t\t\n\t\t\t</tr>\n\t\t</thead>\n\t\t<tbody _v-3fed77e6=\"\">\n\t\n\t\t\t<tr v-for=\"u in listOs  | filterBy filterTerm  | orderBy sortProperty sortDirection\" _v-3fed77e6=\"\">\n\t\t\t\t \n\t\t\t\t<td class=\"estado-{{u.state}}\" _v-3fed77e6=\"\">{{u.id}}</td>\n\t\t\t\t<td class=\"estado-{{u.state}}\" _v-3fed77e6=\"\">{{u.state}}</td>\n\t\t\t\t<td class=\"estado-{{u.state}}\" _v-3fed77e6=\"\">{{u.created_at}}</td>\n\t\t\t\t<td class=\"estado-{{u.state}}\" _v-3fed77e6=\"\">{{u.name}}</td>\n\t\t\t\t<td _v-3fed77e6=\"\"> <a href=\"/cartridge/visualizar/{{u.id}}\" _v-3fed77e6=\"\"><button class=\"btn btn-success\" _v-3fed77e6=\"\"> Selecionar</button></a> </td> \n\t\t\t\t \n\t\t\t</tr>\n\t\t</tbody>\n\t\t\n\n\t </table> \n\t <div class=\"text-center\" _v-3fed77e6=\"\">\n\t <!-- <pagination :source=\"pagination\" @navigate=\"navigate\"></pagination>  discomment this for habilite pagination-->\n</div>\n\t</div>\n\n\n\n \n\n<br _v-3fed77e6=\"\"><hr _v-3fed77e6=\"\">\n\n\t\n\n \n\n\n"
 if (module.hot) {(function () {  module.hot.accept()
-  var hotAPI = require("vue-hot-reload-api")
+  var hotAPI = require("/var/www/html/Newerplte53/node_modules/vue-hot-reload-api/index.js")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
+  var id = "/var/www/html/Newerplte53/resources/assets/js/components/osCartList.vue"
   module.hot.dispose(function () {
-    __vueify_insert__.cache["\n\n.estado-PRONTO[_v-7e2c51cf]{\n\tbackground-color: #b2e09f;\n}\n.estado-ANALISE[_v-7e2c51cf]{\n\tbackground-color: #f2f085;\n}\n.estado-ENTREGUE[_v-7e2c51cf]{\n\tbackground-color: #3c8dbc;\n}\n.estado-RECEBIDO[_v-7e2c51cf]{\n\tbackground-color: #f85454;\n}\n \n\n\n"] = false
+    __vueify_insert__.cache["\n\n.estado-PRONTO[_v-3fed77e6]{\n\tbackground-color: #b2e09f;\n}\n.estado-ANALISE[_v-3fed77e6]{\n\tbackground-color: #f2f085;\n}\n.estado-ENTREGUE[_v-3fed77e6]{\n\tbackground-color: #3c8dbc;\n}\n.estado-RECEBIDO[_v-3fed77e6]{\n\tbackground-color: #f85454;\n}\n \n\n\n"] = false
     document.head.removeChild(__vueify_style__)
   })
   if (!module.hot.data) {
-    hotAPI.createRecord("_v-7e2c51cf", module.exports)
+    hotAPI.createRecord(id, module.exports)
   } else {
-    hotAPI.update("_v-7e2c51cf", module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
+    hotAPI.update(id, module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"./bus":9,"./pagination.vue":15,"vue":5,"vue-hot-reload-api":3,"vueify/lib/insert-css":6}],14:[function(require,module,exports){
+},{"./bus":9,"./pagination.vue":15,"/var/www/html/Newerplte53/node_modules/vue-hot-reload-api/index.js":3,"vue":5,"vueify/lib/insert-css":6}],14:[function(require,module,exports){
 var __vueify_insert__ = require("vueify/lib/insert-css")
-var __vueify_style__ = __vueify_insert__.insert("\n\n.estado-PRONTO[_v-6c00b1e2]{\n\tbackground-color: #b2e09f;\n}\n.estado-ANALISE[_v-6c00b1e2]{\n\tbackground-color: #f2f085;\n}\n.estado-ENTREGUE[_v-6c00b1e2]{\n\tbackground-color: #3c8dbc;\n}\n.estado-RECEBIDO[_v-6c00b1e2]{\n\tbackground-color: #f85454;\n}\n \n\n\n")
+var __vueify_style__ = __vueify_insert__.insert("\n\n.estado-PRONTO[_v-1e3b684d]{\n\tbackground-color: #b2e09f;\n}\n.estado-ANALISE[_v-1e3b684d]{\n\tbackground-color: #f2f085;\n}\n.estado-ENTREGUE[_v-1e3b684d]{\n\tbackground-color: #3c8dbc;\n}\n.estado-RECEBIDO[_v-1e3b684d]{\n\tbackground-color: #f85454;\n}\n \n\n\n")
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -29618,22 +29698,23 @@ exports.default = {
 	}
 }; //essa classe bus serve como transporte de dados.
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\n\t\n \n \n\n\n \n       \n<h1 _v-6c00b1e2=\"\">Lista de OS</h1>\n \n \n<div class=\"well\" _v-6c00b1e2=\"\">\n\t\t<input type=\"text\" class=\"form-control\" id=\"myInput\" placeholder=\"Filtrar C\" v-model=\"filterTerm\" _v-6c00b1e2=\"\">\n\t</div>\n\t \n\n\t<div _v-6c00b1e2=\"\">\n\n\t <table class=\"table table-bordered table-striped table-hover\" _v-6c00b1e2=\"\">\n\t \t\n\t\t<thead _v-6c00b1e2=\"\">\n\t\t\t<tr _v-6c00b1e2=\"\">\n\t\t\t\t<th _v-6c00b1e2=\"\"><a href=\"#\" @click=\"sort($event, 'id')\" _v-6c00b1e2=\"\">ID</a></th>\n\t\t\t\t<th _v-6c00b1e2=\"\"><a href=\"#\" @click=\"sort($event, 'state')\" _v-6c00b1e2=\"\">Estado</a></th>\n\t\t\t\t<th _v-6c00b1e2=\"\"><a href=\"#\" @click=\"sort($event, 'created_at')\" _v-6c00b1e2=\"\">Data</a></th>\n\t\t\t\t<th _v-6c00b1e2=\"\"><a href=\"#\" @click=\"sort($event, 'name')\" _v-6c00b1e2=\"\">Nome</a></th>\n\t\t\t\t\n\t\t\t</tr>\n\t\t</thead>\n\t\t<tbody _v-6c00b1e2=\"\">\n\t\n\t\t\t<tr v-for=\"u in listOs  | filterBy filterTerm  | orderBy sortProperty sortDirection\" _v-6c00b1e2=\"\">\n\t\t\t\t \n\t\t\t\t<td class=\"estado-{{u.state}}\" _v-6c00b1e2=\"\">{{u.id}}</td>\n\t\t\t\t<td class=\"estado-{{u.state}}\" _v-6c00b1e2=\"\">{{u.state}}</td>\n\t\t\t\t<td class=\"estado-{{u.state}}\" _v-6c00b1e2=\"\">{{u.created_at}}</td>\n\t\t\t\t<td class=\"estado-{{u.state}}\" _v-6c00b1e2=\"\">{{u.name}}</td>\n\t\t\t\t<td _v-6c00b1e2=\"\"> <a href=\"/listos/visualizar/{{u.id}}\" _v-6c00b1e2=\"\"><button class=\"btn btn-success\" _v-6c00b1e2=\"\">Selecionar</button></a> </td> \n\t\t\t\t \n\t\t\t</tr>\n\t\t</tbody>\n\t\t\n\n\t </table> \n\t <div class=\"text-center\" _v-6c00b1e2=\"\">\n\t <!-- <pagination :source=\"pagination\" @navigate=\"navigate\"></pagination>  discomment this for habilite pagination-->\n</div>\n\t</div>\n\n\n\n \n\n<br _v-6c00b1e2=\"\"><hr _v-6c00b1e2=\"\">\n\n\t\n\n \n\n\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\n\t\n \n \n\n\n \n       \n<h1 _v-1e3b684d=\"\">Lista de OS</h1>\n \n \n<div class=\"well\" _v-1e3b684d=\"\">\n\t\t<input type=\"text\" class=\"form-control\" id=\"myInput\" placeholder=\"Filtrar C\" v-model=\"filterTerm\" _v-1e3b684d=\"\">\n\t</div>\n\t \n\n\t<div _v-1e3b684d=\"\">\n\n\t <table class=\"table table-bordered table-striped table-hover\" _v-1e3b684d=\"\">\n\t \t\n\t\t<thead _v-1e3b684d=\"\">\n\t\t\t<tr _v-1e3b684d=\"\">\n\t\t\t\t<th _v-1e3b684d=\"\"><a href=\"#\" @click=\"sort($event, 'id')\" _v-1e3b684d=\"\">ID</a></th>\n\t\t\t\t<th _v-1e3b684d=\"\"><a href=\"#\" @click=\"sort($event, 'state')\" _v-1e3b684d=\"\">Estado</a></th>\n\t\t\t\t<th _v-1e3b684d=\"\"><a href=\"#\" @click=\"sort($event, 'created_at')\" _v-1e3b684d=\"\">Data</a></th>\n\t\t\t\t<th _v-1e3b684d=\"\"><a href=\"#\" @click=\"sort($event, 'name')\" _v-1e3b684d=\"\">Nome</a></th>\n\t\t\t\t\n\t\t\t</tr>\n\t\t</thead>\n\t\t<tbody _v-1e3b684d=\"\">\n\t\n\t\t\t<tr v-for=\"u in listOs  | filterBy filterTerm  | orderBy sortProperty sortDirection\" _v-1e3b684d=\"\">\n\t\t\t\t \n\t\t\t\t<td class=\"estado-{{u.state}}\" _v-1e3b684d=\"\">{{u.id}}</td>\n\t\t\t\t<td class=\"estado-{{u.state}}\" _v-1e3b684d=\"\">{{u.state}}</td>\n\t\t\t\t<td class=\"estado-{{u.state}}\" _v-1e3b684d=\"\">{{u.created_at}}</td>\n\t\t\t\t<td class=\"estado-{{u.state}}\" _v-1e3b684d=\"\">{{u.name}}</td>\n\t\t\t\t<td _v-1e3b684d=\"\"> <a href=\"/listos/visualizar/{{u.id}}\" _v-1e3b684d=\"\"><button class=\"btn btn-success\" _v-1e3b684d=\"\">Selecionar</button></a> </td> \n\t\t\t\t \n\t\t\t</tr>\n\t\t</tbody>\n\t\t\n\n\t </table> \n\t <div class=\"text-center\" _v-1e3b684d=\"\">\n\t <!-- <pagination :source=\"pagination\" @navigate=\"navigate\"></pagination>  discomment this for habilite pagination-->\n</div>\n\t</div>\n\n\n\n \n\n<br _v-1e3b684d=\"\"><hr _v-1e3b684d=\"\">\n\n\t\n\n \n\n\n"
 if (module.hot) {(function () {  module.hot.accept()
-  var hotAPI = require("vue-hot-reload-api")
+  var hotAPI = require("/var/www/html/Newerplte53/node_modules/vue-hot-reload-api/index.js")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
+  var id = "/var/www/html/Newerplte53/resources/assets/js/components/osList.vue"
   module.hot.dispose(function () {
-    __vueify_insert__.cache["\n\n.estado-PRONTO[_v-6c00b1e2]{\n\tbackground-color: #b2e09f;\n}\n.estado-ANALISE[_v-6c00b1e2]{\n\tbackground-color: #f2f085;\n}\n.estado-ENTREGUE[_v-6c00b1e2]{\n\tbackground-color: #3c8dbc;\n}\n.estado-RECEBIDO[_v-6c00b1e2]{\n\tbackground-color: #f85454;\n}\n \n\n\n"] = false
+    __vueify_insert__.cache["\n\n.estado-PRONTO[_v-1e3b684d]{\n\tbackground-color: #b2e09f;\n}\n.estado-ANALISE[_v-1e3b684d]{\n\tbackground-color: #f2f085;\n}\n.estado-ENTREGUE[_v-1e3b684d]{\n\tbackground-color: #3c8dbc;\n}\n.estado-RECEBIDO[_v-1e3b684d]{\n\tbackground-color: #f85454;\n}\n \n\n\n"] = false
     document.head.removeChild(__vueify_style__)
   })
   if (!module.hot.data) {
-    hotAPI.createRecord("_v-6c00b1e2", module.exports)
+    hotAPI.createRecord(id, module.exports)
   } else {
-    hotAPI.update("_v-6c00b1e2", module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
+    hotAPI.update(id, module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"./bus":9,"./pagination.vue":15,"vue":5,"vue-hot-reload-api":3,"vueify/lib/insert-css":6}],15:[function(require,module,exports){
+},{"./bus":9,"./pagination.vue":15,"/var/www/html/Newerplte53/node_modules/vue-hot-reload-api/index.js":3,"vue":5,"vueify/lib/insert-css":6}],15:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -29676,16 +29757,17 @@ exports.default = {
 if (module.exports.__esModule) module.exports = module.exports.default
 ;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\t\n\n\n<ul class=\"pagination\">\n\t<li :class=\"{disabled: source.current_page == 1}\">\n\t\t<a href=\"#\" @click=\"nextPrev($event, source.current_page-1)\">«</a>\n\t</li>\n\t<li v-for=\"page in pages\" :class=\"{active: source.current_page == page}\">\n\t\t<a href=\"#\" @click=\"navigate($event, page)\">{{page}}</a>\n\t</li>\n\t \n\t<li :class=\"{disabled: source.current_page == source.last_page}\">\n\t\t<a href=\"#\" @click=\"nextPrev($event, source.current_page+1)\">»</a>\n\t</li>\n</ul>\n\n\n\n\n\n\n\n\n\n\n"
 if (module.hot) {(function () {  module.hot.accept()
-  var hotAPI = require("vue-hot-reload-api")
+  var hotAPI = require("/var/www/html/Newerplte53/node_modules/vue-hot-reload-api/index.js")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
+  var id = "/var/www/html/Newerplte53/resources/assets/js/components/pagination.vue"
   if (!module.hot.data) {
-    hotAPI.createRecord("_v-8e7ce0f2", module.exports)
+    hotAPI.createRecord(id, module.exports)
   } else {
-    hotAPI.update("_v-8e7ce0f2", module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
+    hotAPI.update(id, module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"lodash":1,"vue":5,"vue-hot-reload-api":3}],16:[function(require,module,exports){
+},{"/var/www/html/Newerplte53/node_modules/vue-hot-reload-api/index.js":3,"lodash":1,"vue":5}],16:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -29758,18 +29840,19 @@ exports.default = {
 	}
 };
 if (module.exports.__esModule) module.exports = module.exports.default
-;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\n\t<h1 _v-4e5c10ea=\"\">Usuarios</h1>\n\t \n\t{{title}}\n<input type=\"text\" class=\"form-control\" id=\"\" placeholder=\"Input field\" v-model=\"title\" _v-4e5c10ea=\"\">\n\n\n<button type=\"button\" class=\"btn btn-primary\" data-toggle=\"modal\" data-target=\".bs-example-modal-lg\" _v-4e5c10ea=\"\">Pesquisar</button>\n\n<div class=\"modal fade bs-example-modal-lg\" tabindex=\"-1\" role=\"dialog\" aria-labelledby=\"myLargeModalLabel\" _v-4e5c10ea=\"\">\n  <div class=\"modal-dialog modal-lg\" role=\"document\" _v-4e5c10ea=\"\">\n    <div class=\"modal-content\" _v-4e5c10ea=\"\">\n       \n\n\n\n<div class=\"well\" _v-4e5c10ea=\"\">\n\t\t<input type=\"text\" class=\"form-control\" placeholder=\"Filtrar\" v-model=\"filterTerm\" _v-4e5c10ea=\"\">\n\t</div>\n\t<div _v-4e5c10ea=\"\">\n\n\t <table class=\"table table-bordered table-striped table-hover\" _v-4e5c10ea=\"\">\n\t \t\n\t\t<thead _v-4e5c10ea=\"\">\n\t\t\t<tr _v-4e5c10ea=\"\">\n\t\t\t\t<th _v-4e5c10ea=\"\"><a href=\"#\" @click=\"sort($event, 'id')\" _v-4e5c10ea=\"\">ID</a></th>\n\t\t\t\t<th _v-4e5c10ea=\"\"><a href=\"#\" @click=\"sort($event, 'name')\" _v-4e5c10ea=\"\">Nome</a></th>\n\t\t\t\t<th _v-4e5c10ea=\"\"><a href=\"#\" @click=\"sort($event, 'email')\" _v-4e5c10ea=\"\">Email</a></th>\n\t\t\t\t\n\t\t\t</tr>\n\t\t</thead>\n\t\t<tbody _v-4e5c10ea=\"\">\n\t\n\t\t\t<tr v-for=\"u in users | filterBy filterTerm| orderBy sortProperty sortDirection\" _v-4e5c10ea=\"\">\n\t\t\t\t\n\t\t\t\t<td _v-4e5c10ea=\"\">{{u.id}}</td>\n\t\t\t\t<td _v-4e5c10ea=\"\">{{u.name}}</td>\n\t\t\t\t<td _v-4e5c10ea=\"\">{{u.email}}</td>\n\t\t\t\t<td _v-4e5c10ea=\"\"><button class=\"btn btn-success\" @click=\"showUser(u.id, u.name, u.email)\" _v-4e5c10ea=\"\">Editar</button></td>\n\t\t\t\t\n\t\t\t</tr>\n\t\t</tbody>\n\t\t\n\n\t </table> \n\n\t</div>\n\n\n\n\n    </div>\n  </div>\n</div>\n\n<br _v-4e5c10ea=\"\"><hr _v-4e5c10ea=\"\">\n\n\t\n\n\n\n"
+;(typeof module.exports === "function"? module.exports.options: module.exports).template = "\n\n\t<h1 _v-0d226149=\"\">Usuarios</h1>\n\t \n\t{{title}}\n<input type=\"text\" class=\"form-control\" id=\"\" placeholder=\"Input field\" v-model=\"title\" _v-0d226149=\"\">\n\n\n<button type=\"button\" class=\"btn btn-primary\" data-toggle=\"modal\" data-target=\".bs-example-modal-lg\" _v-0d226149=\"\">Pesquisar</button>\n\n<div class=\"modal fade bs-example-modal-lg\" tabindex=\"-1\" role=\"dialog\" aria-labelledby=\"myLargeModalLabel\" _v-0d226149=\"\">\n  <div class=\"modal-dialog modal-lg\" role=\"document\" _v-0d226149=\"\">\n    <div class=\"modal-content\" _v-0d226149=\"\">\n       \n\n\n\n<div class=\"well\" _v-0d226149=\"\">\n\t\t<input type=\"text\" class=\"form-control\" placeholder=\"Filtrar\" v-model=\"filterTerm\" _v-0d226149=\"\">\n\t</div>\n\t<div _v-0d226149=\"\">\n\n\t <table class=\"table table-bordered table-striped table-hover\" _v-0d226149=\"\">\n\t \t\n\t\t<thead _v-0d226149=\"\">\n\t\t\t<tr _v-0d226149=\"\">\n\t\t\t\t<th _v-0d226149=\"\"><a href=\"#\" @click=\"sort($event, 'id')\" _v-0d226149=\"\">ID</a></th>\n\t\t\t\t<th _v-0d226149=\"\"><a href=\"#\" @click=\"sort($event, 'name')\" _v-0d226149=\"\">Nome</a></th>\n\t\t\t\t<th _v-0d226149=\"\"><a href=\"#\" @click=\"sort($event, 'email')\" _v-0d226149=\"\">Email</a></th>\n\t\t\t\t\n\t\t\t</tr>\n\t\t</thead>\n\t\t<tbody _v-0d226149=\"\">\n\t\n\t\t\t<tr v-for=\"u in users | filterBy filterTerm| orderBy sortProperty sortDirection\" _v-0d226149=\"\">\n\t\t\t\t\n\t\t\t\t<td _v-0d226149=\"\">{{u.id}}</td>\n\t\t\t\t<td _v-0d226149=\"\">{{u.name}}</td>\n\t\t\t\t<td _v-0d226149=\"\">{{u.email}}</td>\n\t\t\t\t<td _v-0d226149=\"\"><button class=\"btn btn-success\" @click=\"showUser(u.id, u.name, u.email)\" _v-0d226149=\"\">Editar</button></td>\n\t\t\t\t\n\t\t\t</tr>\n\t\t</tbody>\n\t\t\n\n\t </table> \n\n\t</div>\n\n\n\n\n    </div>\n  </div>\n</div>\n\n<br _v-0d226149=\"\"><hr _v-0d226149=\"\">\n\n\t\n\n\n\n"
 if (module.hot) {(function () {  module.hot.accept()
-  var hotAPI = require("vue-hot-reload-api")
+  var hotAPI = require("/var/www/html/Newerplte53/node_modules/vue-hot-reload-api/index.js")
   hotAPI.install(require("vue"), true)
   if (!hotAPI.compatible) return
+  var id = "/var/www/html/Newerplte53/resources/assets/js/components/services.vue"
   if (!module.hot.data) {
-    hotAPI.createRecord("_v-4e5c10ea", module.exports)
+    hotAPI.createRecord(id, module.exports)
   } else {
-    hotAPI.update("_v-4e5c10ea", module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
+    hotAPI.update(id, module.exports, (typeof module.exports === "function" ? module.exports.options : module.exports).template)
   }
 })()}
-},{"./insertClient.vue":12,"vue":5,"vue-hot-reload-api":3}],17:[function(require,module,exports){
+},{"./insertClient.vue":12,"/var/www/html/Newerplte53/node_modules/vue-hot-reload-api/index.js":3,"vue":5}],17:[function(require,module,exports){
 'use strict';
 
 var _vue = require('vue');

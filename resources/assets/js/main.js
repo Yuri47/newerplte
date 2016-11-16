@@ -28,7 +28,7 @@ Vue.use(VueResource)
  		
  			ist: {},
  			 
- 		
+ 		 
 
  		 }
  	},
