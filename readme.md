@@ -25,3 +25,42 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](http://opensource.org/licenses/MIT).
+
+
+##Instructions
+
+With local server and installed composer, just put the project in the "www" folder on your server, open the console within the project folder and type the following command:
+
+composer dump-autoload
+
+composer install
+
+ren .env.example .env
+
+php artisan key:generate
+
+php artisan migrate
+
+php artisan db:seed --class=CustonUsers
+
+php artisan db:seed --class=CustonClients
+
+npm install
+
+php artisan serve
+
+*if during the compilation of js and vue files appear the error: vue-hot-reload-api type this command:
+
+npm install vueify@8.5.2
+
+open other cmd and type for compile files .JS and .VUE when save:
+
+gulp watch
+
+
+
+---
+
+To create localserver type this command from "public" folder:
+
+php -S 0.0.0.0:8000
