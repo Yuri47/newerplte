@@ -68,8 +68,8 @@ import pagination from './pagination.vue'
 			this.$http.get('/os/list').then((req) => {
 
 
-				this.listOs = req.data
-				// this.listOs = req.data.data //discomment this for habilite pagination
+				// this.listOs = req.data
+				this.listOs = req.data.data //discomment this for habilite pagination
 				this.pagination = req.data
 
 
@@ -93,7 +93,7 @@ import pagination from './pagination.vue'
 
  
        
-<h1>Lista de OS</h1>
+ 
  
  
 <div class="well">
@@ -130,7 +130,7 @@ import pagination from './pagination.vue'
 
 	 </table> 
 	 <div class="text-center">
-	 <!-- <pagination :source="pagination" @navigate="navigate"></pagination>  discomment this for habilite pagination-->
+	  <pagination :source="pagination" @navigate="navigate"></pagination> <!-- discomment this for habilite pagination-->
 </div>
 	</div>
 
